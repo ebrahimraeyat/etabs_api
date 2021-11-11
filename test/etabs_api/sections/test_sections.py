@@ -10,14 +10,16 @@ from etabs_api import functions
 @pytest.fixture
 def shayesteh(edb="shayesteh.EDB"):
     try:
-        etabs = functions.EtabsModel()
+        etabs = etabs_obj.EtabsModel(backup=False)
         if etabs.success:
             filepath = Path(etabs.SapModel.GetModelFilename())
             if 'test.' in filepath.name:
                 return etabs
             else:
                 raise NameError
-    except:
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
         helper = comtypes.client.CreateObject('ETABSv1.Helper') 
         helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
         ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")

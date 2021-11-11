@@ -17,7 +17,9 @@ def shayesteh(edb="shayesteh.EDB"):
                 return etabs
             else:
                 raise NameError
-    except:
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
         helper = comtypes.client.CreateObject('ETABSv1.Helper') 
         helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
         ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")

@@ -25,7 +25,9 @@ def shayesteh_safe(edb="shayesteh.FDB"):
                 return etabs
             else:
                 raise NameError
-    except:
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
         helper = comtypes.client.CreateObject('SAFEv1.Helper') 
         helper = helper.QueryInterface('comtypes.gen.SAFEv1.cHelper')
         ETABSObject = helper.CreateObjectProgID("CSI.SAFE.API.ETABSObject")
