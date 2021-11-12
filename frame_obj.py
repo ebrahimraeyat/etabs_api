@@ -310,7 +310,7 @@ class FrameObj:
         if type(line1) == str: # frame name in etabs model
             l1_x1, l1_y1, l1_x2, l1_y2 = self.get_xy_of_frame_points(line1)
             l2_x1, l2_y1, l2_x2, l2_y2 = self.get_xy_of_frame_points(line2)
-        elif type(line1) == Iterable:
+        elif type(line1) in (tuple, list):
             l1_x1, l1_y1, l1_x2, l1_y2 = line1
             l2_x1, l2_y1, l2_x2, l2_y2 = line2
         def dot(vector_a, vector_b):
