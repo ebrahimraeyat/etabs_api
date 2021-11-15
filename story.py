@@ -73,6 +73,11 @@ class Story:
     def get_story_names(self):
         return self.SapModel.Story.GetNameList()[1]
 
+    def get_base_name_and_level(self):
+        name = self.SapModel.Story.GetStories()[1][0]
+        level = self.SapModel.Story.GetStories()[2][0]
+        return name, level
+
     def get_story_boundbox(self, story_name) -> tuple:
         self.SapModel.SetPresentUnits_2(5, 5, 2)
         points = self.SapModel.PointObj.GetNameListOnStory(story_name)[1]
