@@ -881,8 +881,12 @@ class DatabaseTables:
 
     def get_base_columns_summary(self):
         df = self.get_frame_assignment_summary()
-        story = self.SapModel.Story.GetNameList()[1][-1]
-        filt = (df['Story'] == story) & (df['Type'] == 'Column')
+        d_j = self.get_joint_design_reactions()
+        base_points = d_j.UniqueName.unique()
+        df_cols = self.get_frame_connectivity('Column')
+        filt = df_cols.UniquePtI.isin(base_points)
+        base_columns = df_cols.loc[filt]['UniqueName']
+        filt = (df['UniqueName'].isin(base_columns)) & (df['Type'] == 'Column')
         return df.loc[filt]
 
     def get_frame_section_property_definitions_concrete_rectangular(self, cols=[]):
