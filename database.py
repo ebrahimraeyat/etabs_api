@@ -864,6 +864,7 @@ class DatabaseTables:
         else:
             cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
             df = df[cols]
+        df.dropna(inplace=True)
         return df
 
     def get_frame_assignment_summary(self):
