@@ -17,6 +17,7 @@ class LoadCases:
 
     def select_all_load_cases(self):
         load_case_names = self.get_load_cases()
+        self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(load_case_names)
 
     def select_load_cases(self, names):

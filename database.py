@@ -916,10 +916,18 @@ class DatabaseTables:
         df = self.read(table_key, to_dataframe=True, cols=cols)
         return df
     
-    def get_points_connectivity(self):
+    def get_points_connectivity(self,
+            stories : tuple = (),
+            ):
         table_key = 'Point Object Connectivity'
-        cols = ['UniqueName', 'X', 'Y', 'Z']
-        df = self.read(table_key, to_dataframe=True, cols=cols)
+        if stories:
+            cols = ['UniqueName', 'Story', 'X', 'Y', 'Z']
+            df = self.read(table_key, to_dataframe=True, cols=cols)
+            filt = df['Story'].isin(stories)
+            df = df.loc[filt]
+        else:
+            cols = ['UniqueName', 'X', 'Y', 'Z']
+            df = self.read(table_key, to_dataframe=True, cols=cols)
         import pandas as pd
         df[['X', 'Y', 'Z']] = df[['X', 'Y', 'Z']].apply(pd.to_numeric, downcast='float')
         return df
