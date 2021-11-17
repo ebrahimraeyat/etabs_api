@@ -20,7 +20,7 @@ def shayesteh(edb="shayesteh.EDB"):
             if 'test.' in filepath.name:
                 return etabs
             else:
-                raise NameError
+                raise FileNotFoundError
         else:
             raise FileNotFoundError
     except FileNotFoundError:
@@ -30,7 +30,7 @@ def shayesteh(edb="shayesteh.EDB"):
         ETABSObject.ApplicationStart()
         SapModel = ETABSObject.SapModel
         # SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / edb))
+        SapModel.File.OpenFile(str(Path(__file__).parent.parent / edb))
         asli_file_path = Path(SapModel.GetModelFilename())
         dir_path = asli_file_path.parent.absolute()
         test_file_path = dir_path / "test.EDB"
@@ -50,5 +50,24 @@ def test_add_point_coordinates(shayesteh):
     id_ = safe.is_point_exist([2820, 20, 0], content)
     assert not id_
 
+def test_add_load_patterns(shayesteh):
+    safe = CreateF2kFile(
+        Path('~\\test.f2k').expanduser(),
+        shayesteh,
+        )
+    content = safe.add_load_patterns()
+    safe.write()
+    assert  'LoadPat=DEAD' in content
+
+def test_add_loadcase_general(shayesteh):
+    safe = CreateF2kFile(
+        Path('~\\test.f2k').expanduser(),
+        shayesteh,
+        )
+    content = safe.add_loadcase_general()
+    safe.write()
+    assert  'LoadCase=DEAD' in content
+
 if __name__ == '__main__':
-    test_export_freecad_strips()
+    etabs = etabs_obj.EtabsModel(backup=False)
+    test_add_loadcase_general(etabs)
