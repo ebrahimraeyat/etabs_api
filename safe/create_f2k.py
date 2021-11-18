@@ -183,7 +183,6 @@ class CreateF2kFile(Safe):
         filt = df['Story'] == base_name
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
-        df.UniqueName.fillna(df.Label, inplace=True)
         d = {'UniqueName' : 'Point=', 'X': 'GlobalX=', 'Y': 'GlobalY=', 'Z': 'GlobalZ=', }
         for col, pref in d.items():
             df[col] = pref + df[col]
@@ -260,11 +259,15 @@ class CreateF2kFile(Safe):
         return content
     
     def add_point_loads(self):
+        self.etabs.load_cases.select_all_load_cases()
         table_key = "Joint Design Reactions"
         cols = ['Label', 'UniqueName', 'OutputCase', 'CaseType', 'FX', 'FY', 'FZ', 'MX', 'MY', 'MZ']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        drift_names = self.etabs.load_patterns.get_drift_load_pattern_names()
+        filt = df.OutputCase.isin(drift_names)
+        df = df.loc[~filt]
         filt = df.CaseType == 'LinStatic'
-        df = df[filt]
+        df = df.loc[filt]
         df.UniqueName.fillna(df.Label, inplace=True)
         df.drop(columns=['Label', 'CaseType'], inplace=True)
         for col in ('FX', 'FY', 'MX', 'MY', 'MZ'):
@@ -285,6 +288,39 @@ class CreateF2kFile(Safe):
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"
         self.add_content_to_table(table_key, content)
         return content
+    
+    def add_load_combinations(self):
+        self.etabs.load_cases.select_all_load_cases()
+        table_key = "Load Combination Definitions"
+        cols = ['Name', 'LoadName', 'Type', 'SF']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df.fillna(method='ffill', inplace=True)
+        design_load_combinations = set()
+        for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
+            load_combos_names = self.etabs.database.get_design_load_combinations(type_)
+            if load_combos_names is not None:
+                design_load_combinations.update(load_combos_names)
+        filt = df['Name'].isin(design_load_combinations)
+        df = df.loc[filt]
+        df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
+        d = {
+            'Name': 'Combo=',
+            'LoadName': 'Load=',
+            'Type' : 'Type=',
+            'SF' : 'SF=',
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "LOAD COMBINATIONS"
+        self.add_content_to_table(table_key, content)
+        return content
+
+    def create_f2k(self):
+        self.add_point_coordinates()
+        self.add_load_patterns()
+        self.add_loadcase_general()
+        self.add_loadcase_definitions()
+        self.add_point_loads()
+        self.add_load_combinations()
 
     @staticmethod
     def add_assign_to_fields_of_dataframe(

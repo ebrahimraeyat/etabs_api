@@ -86,6 +86,23 @@ def test_add_point_loads(shayesteh):
     safe.write()
     # assert  'LoadCase=DEAD' in content
 
+def test_add_load_combinations(shayesteh):
+    safe = CreateF2kFile(
+        Path('~\\test.f2k').expanduser(),
+        shayesteh,
+        )
+    content = safe.add_load_combinations()
+    safe.write()
+    assert  'Combo=COMB1   Load=DEAD Type="Linear Add"  SF=1.2' in content
+
+def test_create_f2k(shayesteh):
+    safe = CreateF2kFile(
+        Path('~\\test.f2k').expanduser(),
+        shayesteh,
+        )
+    safe.create_f2k()
+    safe.write()
+
 if __name__ == '__main__':
     etabs = etabs_obj.EtabsModel(backup=False)
     test_add_loadcase_general(etabs)
