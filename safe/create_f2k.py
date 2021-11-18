@@ -177,16 +177,14 @@ class CreateF2kFile(Safe):
 
     def add_point_coordinates(self):
         base_name = self.etabs.story.get_base_name_and_level()[0]
-        table_key = 'Point Object Connectivity'
-        cols = ['UniqueName', 'X', 'Y', 'Z', 'Story']
+        table_key = 'Objects and Elements - Joints'
+        cols = ['ElmName', 'GlobalX', 'GlobalY', 'GlobalZ', 'Story']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         filt = df['Story'] == base_name
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
-        d = {'UniqueName' : 'Point=', 'X': 'GlobalX=', 'Y': 'GlobalY=', 'Z': 'GlobalZ=', }
-        for col, pref in d.items():
-            df[col] = pref + df[col]
-        content = df.to_string(header=False, index=False)
+        d = {'ElmName' : 'Point=', 'GlobalX': 'GlobalX=', 'GlobalY': 'GlobalY=', 'GlobalZ': 'GlobalZ=', }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "OBJECT GEOMETRY - POINT COORDINATES"
         self.add_content_to_table(table_key, content)
         return content
