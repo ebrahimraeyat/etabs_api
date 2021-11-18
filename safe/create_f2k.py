@@ -235,6 +235,24 @@ class CreateF2kFile(Safe):
         table_key = "LOAD CASES 01 - GENERAL"
         self.add_content_to_table(table_key, content)
         return content
+    
+    def add_loadcase_definitions(self):
+        table_key = 'Load Case Definitions - Linear Static'
+        cols = ['Name', 'LoadName', 'LoadSF']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        drifts = self.etabs.load_patterns.get_drift_load_pattern_names()
+        if drifts:
+            filt = df['LoadName'].isin(drifts)
+            df = df.loc[~filt]
+        d = {
+            'Name': 'LoadCase=',
+            'LoadName': 'LoadPat=',
+            'LoadSF' : 'SF='
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "LOAD CASES 06 - LOADS APPLIED"
+        self.add_content_to_table(table_key, content)
+        return content
 
     @staticmethod
     def add_assign_to_fields_of_dataframe(
