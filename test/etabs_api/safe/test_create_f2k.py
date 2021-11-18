@@ -77,6 +77,15 @@ def test_add_loadcase_definitions(shayesteh):
     safe.write()
     assert  'LoadCase=DEAD' in content
 
+def test_add_point_loads(shayesteh):
+    safe = CreateF2kFile(
+        Path('~\\test.f2k').expanduser(),
+        shayesteh,
+        )
+    content = safe.add_point_loads()
+    safe.write()
+    # assert  'LoadCase=DEAD' in content
+
 if __name__ == '__main__':
     etabs = etabs_obj.EtabsModel(backup=False)
     test_add_loadcase_general(etabs)

@@ -149,6 +149,7 @@ class CreateF2kFile(Safe):
             etabs = None,
             load_cases : list = None,
             case_types : list = None,
+            model_datum : float = None,
             ):
         input_f2k.touch()
         super().__init__(input_f2k)
@@ -157,6 +158,9 @@ class CreateF2kFile(Safe):
             etabs = etabs_obj.EtabsModel(backup=False)
         self.etabs = etabs
         self.etabs.set_current_unit('N', 'mm')
+        if model_datum is None:
+            model_datum = self.etabs.story.get_base_name_and_level()[1]
+        self.model_datum = model_datum
         if load_cases is None:
             load_cases = self.etabs.load_cases.get_load_cases()
         self.load_cases = load_cases
@@ -167,7 +171,7 @@ class CreateF2kFile(Safe):
 
     def initiate(self):
         table_key = "PROGRAM CONTROL"
-        content = 'ProgramName="SAFE 2016"   Version=16.0.0   ProgLevel="Post Tensioning"   CurrUnits="N, mm, C"\n'
+        content = f'ProgramName="SAFE 2014"   Version=14.0.0   ProgLevel="Post Tensioning"   CurrUnits="N, mm, C"  ModelDatum={self.model_datum}\n'
         self.tables_contents = dict()
         self.tables_contents[table_key] =  content
 
@@ -179,6 +183,7 @@ class CreateF2kFile(Safe):
         filt = df['Story'] == base_name
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
+        df.UniqueName.fillna(df.Label, inplace=True)
         d = {'UniqueName' : 'Point=', 'X': 'GlobalX=', 'Y': 'GlobalY=', 'Z': 'GlobalZ=', }
         for col, pref in d.items():
             df[col] = pref + df[col]
@@ -251,6 +256,33 @@ class CreateF2kFile(Safe):
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD CASES 06 - LOADS APPLIED"
+        self.add_content_to_table(table_key, content)
+        return content
+    
+    def add_point_loads(self):
+        table_key = "Joint Design Reactions"
+        cols = ['Label', 'UniqueName', 'OutputCase', 'CaseType', 'FX', 'FY', 'FZ', 'MX', 'MY', 'MZ']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        filt = df.CaseType == 'LinStatic'
+        df = df[filt]
+        df.UniqueName.fillna(df.Label, inplace=True)
+        df.drop(columns=['Label', 'CaseType'], inplace=True)
+        for col in ('FX', 'FY', 'MX', 'MY', 'MZ'):
+            df[col] = -df[col].astype(float)
+        df['xim'] = 'XDim=0'
+        df['yim'] = 'YDim=0'
+        d = {
+            'UniqueName': 'Point=',
+            'OutputCase': 'LoadPat=',
+            'FX' : 'Fx=',
+            'FY' : 'Fy=',
+            'FZ' : 'Fgrav=',
+            'MX' : 'Mx=',
+            'MY' : 'My=',
+            'MZ' : 'Mz=',
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "LOAD ASSIGNMENTS - POINT LOADS"
         self.add_content_to_table(table_key, content)
         return content
 
