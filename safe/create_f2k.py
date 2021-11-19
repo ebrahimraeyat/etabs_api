@@ -293,14 +293,16 @@ class CreateF2kFile(Safe):
         cols = ['Name', 'LoadName', 'Type', 'SF']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         df.fillna(method='ffill', inplace=True)
-        design_load_combinations = set()
-        for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
-            load_combos_names = self.etabs.database.get_design_load_combinations(type_)
-            if load_combos_names is not None:
-                design_load_combinations.update(load_combos_names)
-        filt = df['Name'].isin(design_load_combinations)
+        # design_load_combinations = set()
+        # for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
+        #     load_combos_names = self.etabs.database.get_design_load_combinations(type_)
+        #     if load_combos_names is not None:
+        #         design_load_combinations.update(load_combos_names)
+        # filt = df['Name'].isin(design_load_combinations)
+        filt = df['Type'] == 'Linear Add'
         df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
+
         d = {
             'Name': 'Combo=',
             'LoadName': 'Load=',
