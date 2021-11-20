@@ -315,12 +315,18 @@ class CreateF2kFile(Safe):
         return content
 
     def create_f2k(self):
+        yield ('Write Points Coordinates ...', 5, 1)
         self.add_point_coordinates()
+        yield ('Add Load Patterns ...', 20, 2)
         self.add_load_patterns()
+        yield ('Add Load Cases ...', 30, 3)
         self.add_loadcase_general()
         self.add_loadcase_definitions()
+        yield ('Add Loads ...', 50, 4)
         self.add_point_loads()
+        yield ('Add Load Combinations ...', 70, 5)
         self.add_load_combinations()
+        yield (f'Successfully Write {self.output_f2k_path} ...', 100, 6)
         self.write()
 
     @staticmethod
