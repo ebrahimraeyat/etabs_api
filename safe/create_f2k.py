@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Union
-import math
 
 
 __all__ = ['Safe', 'CreateF2kFile']
@@ -205,6 +204,22 @@ class CreateF2kFile(Safe):
         df.replace({'Type' : replacements}, inplace=True)
         df.Type = df.Type.str.upper()
         df['Type'] = '"' + df['Type'] + '"'
+        # add load cases ! with 2 or more load patterns. Safe define
+        # this load cases in load patterns!
+        load_pats = list(df.Name.unique())
+        all_load_cases = self.etabs.SapModel.LoadCases.GetNameList()[1]
+        load_cases = set(all_load_cases).difference(load_pats)
+        import pandas as pd
+        for load_case in load_cases:
+            try:
+                loads = self.etabs.SapModel.LoadCases.StaticLinear.GetLoads(load_case)
+                n = loads[0]
+                if n > 1:
+                    type_ = get_design_type(load_case, self.etabs)
+                    load_pats = pd.Series([load_case, type_, 0], index=df.columns)
+                    df = df.append(load_pats, ignore_index=True)
+            except IndexError:
+                pass
         d = {
             'Name': 'LoadPat=',
             'Type': 'Type=',
