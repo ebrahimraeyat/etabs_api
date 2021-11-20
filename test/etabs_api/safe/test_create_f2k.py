@@ -101,7 +101,6 @@ def test_create_f2k(shayesteh):
         shayesteh,
         )
     safe.create_f2k()
-    safe.write()
 
 if __name__ == '__main__':
     etabs = etabs_obj.EtabsModel(backup=False)

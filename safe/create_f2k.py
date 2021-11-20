@@ -321,6 +321,7 @@ class CreateF2kFile(Safe):
         self.add_loadcase_definitions()
         self.add_point_loads()
         self.add_load_combinations()
+        self.write()
 
     @staticmethod
     def add_assign_to_fields_of_dataframe(
