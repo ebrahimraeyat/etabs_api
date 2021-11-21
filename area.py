@@ -284,7 +284,7 @@ if __name__ == '__main__':
     if FreeCAD.GuiUp:
         document = FreeCAD.ActiveDocument
     else:
-        filename = Path(__file__).absolute().parent.parent / 'test' / 'etabs_api' / 'test_files' / 'freecad' / 'mat.FCStd'
+        filename = Path(__file__).absolute().parent.parent / 'etabs_api' / 'test' / 'etabs_api' / 'test_files' / 'freecad' / 'mat.FCStd'
         document= FreeCAD.openDocument(str(filename))
     slabs = document.Foundation.tape_slabs
     openings = document.Foundation.openings
