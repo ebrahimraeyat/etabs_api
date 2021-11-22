@@ -335,7 +335,7 @@ class DatabaseTables:
         filt = new_loadcombo_df['LoadName'].isin(zip_loadcases)
         df_loadcombos_include_zip_loadcases = new_loadcombo_df.loc[filt]
         df_loadcombos_not_include_zip_loadcases = new_loadcombo_df.loc[~filt]
-        df_loadcombos_include_zip_loadcases['LoadName'] = df_loadcombos_include_zip_loadcases['LoadName'].map(loads_expanded)
+        df_loadcombos_include_zip_loadcases.loc[:, 'LoadName'] = df_loadcombos_include_zip_loadcases.loc[:, 'LoadName'].map(loads_expanded)
         df_loadcombos_include_zip_loadcases = df_loadcombos_include_zip_loadcases.explode('LoadName')
         df = df_loadcombos_not_include_zip_loadcases.append(df_loadcombos_include_zip_loadcases)
         return df
@@ -471,7 +471,7 @@ class DatabaseTables:
         ret = self.expand_seismic_load_patterns(equal_names, replace_ex, replace_ey, drift_prefix, drift_suffix)
         if ret is None:
             yield ('There is No zip load pattern in this Model.', 100)
-            yield False
+            return False
         dflp, convert_lps = ret
         yield ("Get expanding load cases ...", 15)
         dflc, convert_lcs = self.expand_loadcases(convert_lps)
@@ -503,7 +503,7 @@ class DatabaseTables:
         filt = df[col_name].isin(expand_keys)
         df_include = df[filt]
         df_not_include = df[~filt]
-        df_include[col_name] = df_include[col_name].map(expand)
+        df_include.loc[:, col_name] = df_include.loc[:, col_name].map(expand)
         df_include = df_include.explode(col_name)
         new_df = df_not_include.append(df_include)
         return new_df
