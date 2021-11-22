@@ -292,7 +292,8 @@ class FrameObj:
                 if mask.any():
                     df['ratio'] = df['ratio'].clip(j_min_value, j_max_value)
                     df.loc[mask, 'j'] = df.loc[mask, 'ratio']
-                j_dict = dict(zip(df['UniqueName'], df['j']))
+                j_dict = dict(zip(df['UniqueName'],
+                    df['j'].round(decimals=decimals) if decimals else df['j']))
                 self.apply_torsion_stiffness_coefficient(j_dict)
                 self.etabs.run_analysis()
                 cols=['UniqueName', 'T']
@@ -300,8 +301,6 @@ class FrameObj:
                 df['T'] = df['UniqueName'].map(torsion_dict)
         df.drop(columns=['ratio'], inplace=True)
         df = df[['Story', 'Beam', 'UniqueName', 'section', 'phi_Tcr', 'T', 'j', 'init_j']]
-        if decimals is not None:
-            df['j'] = df['j'].round(decimals=decimals)
         return df
 
     def angle_between_two_lines(self,
