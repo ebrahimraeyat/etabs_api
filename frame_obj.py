@@ -262,6 +262,7 @@ class FrameObj:
                 j_max_value = 1.0,
                 j_min_value = 0.01,
                 initial_j : Union[float, None] = None,
+                decimals : Union[int, None] = None,
                 ):
         import numpy as np
         if beams_names is None:
@@ -299,6 +300,8 @@ class FrameObj:
                 df['T'] = df['UniqueName'].map(torsion_dict)
         df.drop(columns=['ratio'], inplace=True)
         df = df[['Story', 'Beam', 'UniqueName', 'section', 'phi_Tcr', 'T', 'j', 'init_j']]
+        if decimals is not None:
+            df['j'] = df['j'].round(decimals=decimals)
         return df
 
     def angle_between_two_lines(self,
