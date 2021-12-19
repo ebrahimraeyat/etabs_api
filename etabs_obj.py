@@ -287,6 +287,7 @@ class EtabsModel:
                     self,
                     loadcases=[],
                     only_ecc=True,
+                    cols=None,
                     ):
         self.run_analysis()
         if not loadcases:
@@ -296,7 +297,8 @@ class EtabsModel:
         x_names, y_names = self.load_patterns.get_load_patterns_in_XYdirection()
         self.load_cases.select_load_cases(loadcases)
         table_key = 'Diaphragm Max Over Avg Drifts'
-        cols = ['Story', 'OutputCase', 'Max Drift', 'Avg Drift', 'Label', 'Ratio', 'Item']
+        if cols is None:
+            cols = ['Story', 'OutputCase', 'Max Drift', 'Avg Drift', 'Label', 'Ratio', 'Item']
         df = self.database.read(table_key, to_dataframe=True, cols=cols)
         if len(df) == 0:
             return
@@ -443,7 +445,8 @@ class EtabsModel:
 
     def get_magnification_coeff_aj(self):
         story_length = self.story.get_stories_length()
-        df = self.get_diaphragm_max_over_avg_drifts()
+        cols = ['Story', 'OutputCase', 'Max Drift', 'Avg Drift', 'Ratio', 'Item']
+        df = self.get_diaphragm_max_over_avg_drifts(cols=cols)
         df['aj'] = (df['Ratio'] / 1.2) ** 2
         df['aj'].clip(1,3, inplace=True)
         df['Ecc. Ratio'] = df['aj'] * .05
