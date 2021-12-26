@@ -27,8 +27,8 @@ class LoadPatterns:
         
     def get_drift_load_pattern_names(self):
         '''
-        Drift loadType number is 37, when user tick the eccentricity of load,
-        etabs create aditional (1/3), (2/3) and (3/3) load when structure is analyzed
+        Drift loadType number is 37, when user ticks the eccentricity of load,
+        etabs creates additional (1/3), (2/3), and (3/3) load when structure is analyzed
         '''
         return self.get_special_load_pattern_names(37)
 
@@ -79,7 +79,7 @@ class LoadPatterns:
 
     def get_EX_EY_load_pattern(self):
         '''
-        return earthquakes in x, y direction that did not ecnetricity
+        return earthquakes in x, y direction that did not eccentricity
         '''
         self.select_all_load_patterns()
         TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'

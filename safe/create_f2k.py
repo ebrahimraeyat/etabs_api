@@ -29,16 +29,16 @@ class Safe():
             lines = reader.readlines()
             tables_contents = dict()
             n = len("TABLE:  ")
-            contex = ''
+            context = ''
             table_key = None
             for line in lines:
                 if line.startswith("TABLE:"):
-                    if table_key and contex:
-                        tables_contents[table_key] = contex
-                    contex = ''
+                    if table_key and context:
+                        tables_contents[table_key] = context
+                    context = ''
                     table_key = line[n+1:-2]
                 else:
-                    contex += line
+                    context += line
         self.tables_contents = tables_contents
         return tables_contents
 
@@ -164,7 +164,7 @@ class CreateF2kFile(Safe):
             load_cases = self.etabs.load_cases.get_load_cases()
         self.load_cases = load_cases
         if case_types is None:
-            case_types = ['LinModEigen', 'LinStatic', 'LinRespSpec']
+            case_types = ['LinStatic']
         self.case_types = case_types
         self.initiate()
 
@@ -173,6 +173,29 @@ class CreateF2kFile(Safe):
         content = f'ProgramName="SAFE 2014"   Version=14.0.0   ProgLevel="Post Tensioning"   CurrUnits="N, mm, C"  ModelDatum={self.model_datum}\n'
         self.tables_contents = dict()
         self.tables_contents[table_key] =  content
+
+    def add_grids(self):
+        table_key = 'Grid Definitions - Grid Lines'
+        cols = ['LineType', 'ID', 'Ordinate']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        filt = df.LineType.isin(('X (Cartesian)', 'Y (Cartesian)'))
+        df = df.loc[filt]
+        replacements = {
+            'X (Cartesian)' : 'X',
+            'Y (Cartesian)' : 'Y',
+            }
+        df.replace({'LineType' : replacements}, inplace=True)
+        df.insert(loc=0, column='CoordSys', value='CoordSys=GLOBAL')
+        df['ID'] = '"' +  df['ID'] + '"'
+        d = {
+            'LineType': 'AxisDir=',
+            'ID': 'GridID=',
+            'Ordinate' : 'Ordinate='
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "GRID LINES"
+        self.add_content_to_table(table_key, content)
+        return content
 
     def add_point_coordinates(self):
         base_name = self.etabs.story.get_base_name_and_level()[0]
@@ -197,13 +220,8 @@ class CreateF2kFile(Safe):
         filt = df['Type'] == 'Seismic (Drift)'
         df = df.loc[~filt]
         # drift_names = df.loc[filt]['Name'].unique()
-        replacements = {
-            'Seismic' : 'QUAKE',
-            'Roof Live' : 'LIVE',
-            }
-        df.replace({'Type' : replacements}, inplace=True)
-        df.Type = df.Type.str.upper()
-        df['Type'] = '"' + df['Type'] + '"'
+        df['Type'] = df.Name.apply(get_design_type, args=(self.etabs,))
+        df.dropna(inplace=True)
         # add load cases ! with 2 or more load patterns. Safe define
         # this load cases in load patterns!
         load_pats = list(df.Name.unique())
@@ -216,6 +234,8 @@ class CreateF2kFile(Safe):
                 n = loads[0]
                 if n > 1:
                     type_ = get_design_type(load_case, self.etabs)
+                    if type_ is None:
+                        continue
                     load_pats = pd.Series([load_case, type_, 0], index=df.columns)
                     df = df.append(load_pats, ignore_index=True)
             except IndexError:
@@ -234,13 +254,14 @@ class CreateF2kFile(Safe):
         table_key = 'Load Case Definitions - Summary'
         cols = ['Name', 'Type']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        filt = df['Type'].isin(('Linear Static', 'Response Spectrum'))
+        filt = df['Type'].isin(('Linear Static',))
         df = df.loc[filt]
         df['DesignType'] = df.Name.apply(get_design_type, args=(self.etabs,))
         df.dropna(inplace=True)
         replacements = {
             'Linear Static' : 'LinStatic',
-            'Response Spectrum' : 'LinRespSpec',
+            # 'Response Spectrum' : 'LinRespSpec',
+            # 'Modal - Eigen' : 'LinModal',
             }
         df.replace({'Type' : replacements}, inplace=True)
         d = {
@@ -253,6 +274,25 @@ class CreateF2kFile(Safe):
         self.add_content_to_table(table_key, content)
         return content
     
+    def add_modal_loadcase_definitions(self):
+        table_key = 'Modal Case Definitions - Eigen'
+        cols = ['Name', 'MaxModes', 'MinModes']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df.dropna(inplace=True)
+        df['InitialCond'] = 'Zero'
+        df['ModeType'] = 'Eigen'
+        d = {
+            'Name': 'LoadCase=',
+            'MaxModes' : 'MaxModes=',
+            'MinModes' : 'MinModes=',
+            'InitialCond' : 'InitialCond=',
+            'ModeType' : 'ModeType=',
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "LOAD CASES 04 - MODAL"
+        self.add_content_to_table(table_key, content)
+        return content
+    
     def add_loadcase_definitions(self):
         table_key = 'Load Case Definitions - Linear Static'
         cols = ['Name', 'LoadName', 'LoadSF']
@@ -261,6 +301,9 @@ class CreateF2kFile(Safe):
         if drifts:
             filt = df['LoadName'].isin(drifts)
             df = df.loc[~filt]
+            filt = df['Name'].isin(drifts)
+            df = df.loc[~filt]
+        df.dropna(inplace=True)
         d = {
             'Name': 'LoadCase=',
             'LoadName': 'LoadPat=',
@@ -332,10 +375,12 @@ class CreateF2kFile(Safe):
     def create_f2k(self):
         yield ('Write Points Coordinates ...', 5, 1)
         self.add_point_coordinates()
+        self.add_grids()
         yield ('Add Load Patterns ...', 20, 2)
         self.add_load_patterns()
         yield ('Add Load Cases ...', 30, 3)
         self.add_loadcase_general()
+        # self.add_modal_loadcase_definitions()
         self.add_loadcase_definitions()
         yield ('Add Loads ...', 50, 4)
         self.add_point_loads()

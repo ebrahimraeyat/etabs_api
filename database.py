@@ -28,7 +28,7 @@ class DatabaseTables:
         n = len(FieldsKeysIncluded)
         data = [list(table_data[i:i+n]) for i in range(0, len(table_data), n)]
         return data
-    
+
     @staticmethod
     def reshape_data_to_df(
                 FieldsKeysIncluded,
@@ -88,7 +88,7 @@ class DatabaseTables:
         self.SapModel.DatabaseTables.SetTableForEditingArray(table_key, 0, fields, 0, data)
         self.apply_table()
         return True
-    
+
     def apply_table(self):
         if self.SapModel.GetModelIsLocked():
             self.SapModel.SetModelIsLocked(False)
@@ -124,7 +124,7 @@ class DatabaseTables:
         FieldsKeysIncluded1 = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
                             'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
                             'Ecc Ratio', 'Top Story', 'Bot Story',
-                            ]   
+                            ]
         if len(FieldsKeysIncluded) == len(FieldsKeysIncluded1) + 2:
             FieldsKeysIncluded1.extend(['C', 'K'])
         else:
@@ -155,7 +155,7 @@ class DatabaseTables:
         drift_load_names = self.etabs.load_patterns.get_drift_load_pattern_names()
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         df = self.read(table_key, to_dataframe=True)
-        # remove aj applide
+        # remove aj applied
         filt = df['XDir'].isin(('Yes', 'No'))
         df = df.loc[filt]
         self.remove_df_columns(df, ('OverStory', 'OverDiaph', 'OverEcc'))
@@ -168,7 +168,7 @@ class DatabaseTables:
         if not True in filt_multi.values:
             return None
         df_multi = df.loc[filt_multi]
-        # search for existance EX and EY
+        # search for existence of EX and EY
         filt_ex = ~((df['XDir'] == 1) & (df[cols].sum(axis=1) == 1))
         is_ex = False in filt_ex.values
         filt_ey = ~((df['YDir'] == 1) & (df[cols].sum(axis=1) == 1))
@@ -212,7 +212,7 @@ class DatabaseTables:
                     else:
                         converted_loads[name].append((load_name, load_type))
                     self.SapModel.LoadPatterns.Add(load_name, load_type, 0, False)
-        
+
         df_expanded = pd.DataFrame.from_records(additional_rows, columns=df.columns)
         # remove ex or ey if replace
         if replace_ex and replace_ey:
@@ -271,7 +271,7 @@ class DatabaseTables:
                         else:
                             zip_loadcases[loadcase].append(name)
         return new_loadcase_df, zip_loadcases
-    
+
     def expand_linear_loadcombos(self,
             loads_expanded : Union[dict, bool] = None,
             loadcombos_df : Union[pd.DataFrame, bool] = None,
@@ -313,7 +313,7 @@ class DatabaseTables:
                         else:
                             zip_loadcombos[loadcombo].append(name)
         return new_loadcombo_df, zip_loadcombos
-    
+
     def expand_envelop_loadcombos(self,
             loads_expanded : Union[dict, bool] = None,
             loadcombos_df : Union[pd.DataFrame, bool] = None,
@@ -382,7 +382,7 @@ class DatabaseTables:
         filt = ~(dflp.Name.isin(multi_load_names))
         dflp = dflp.loc[filt]
         self.apply_data(table_key, dflp)
-    
+
     def set_expand_loadcases(self,
             df : pd.core.frame.DataFrame,
             converted_loadcases : dict,
@@ -442,7 +442,7 @@ class DatabaseTables:
                     type_ = 0
                 scale_factor = float(row['SF'])
                 self.SapModel.RespCombo.SetCaseList(name, type_, loadname, scale_factor)
-    
+
     def apply_expand_design_combos(self,
             expanded_tables : dict,
             ):
@@ -577,7 +577,7 @@ class DatabaseTables:
         self.SapModel.DatabaseTables.SetTableForEditingArray(TableKey, 0, FieldsKeysIncluded1, 0, TableData)
         NumFatalErrors, ret = self.apply_table()
         return NumFatalErrors, ret
-    
+
     def write_daynamic_aj_user_coefficient(self, df=None):
         if df is None:
             df = self.etabs.get_dynamic_magnification_coeff_aj()
@@ -791,12 +791,12 @@ class DatabaseTables:
         table_key = 'Concrete Frame Design Load Combination Data'
         df = self.read(table_key, to_dataframe=True)
         return list(df['ComboName'])
-    
+
     def get_design_load_combinations(self,
             type_ : str = 'concrete', # 'steel', 'shearwall', 'slab'
             ):
         if type_ == 'concrete':
-            table_key = 'Concrete Frame Design Load Combination Data'   
+            table_key = 'Concrete Frame Design Load Combination Data'
         elif type_ == 'steel':
             table_key = 'Steel Design Load Combination Data'
         elif type_ == 'shearwall':
@@ -915,7 +915,7 @@ class DatabaseTables:
         cols = ['UniqueName', 'UniquePtI', 'UniquePtJ']
         df = self.read(table_key, to_dataframe=True, cols=cols)
         return df
-    
+
     def get_points_connectivity(self,
             stories : tuple = (),
             ):
@@ -1077,7 +1077,7 @@ class DatabaseTables:
         self.etabs.set_current_unit('kgf', 'mm')
         self.apply_data(table_key, data, fields)
 
-    
+
 
 
 
