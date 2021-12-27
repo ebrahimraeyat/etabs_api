@@ -153,7 +153,7 @@ class CreateF2kFile(Safe):
         input_f2k.touch()
         super().__init__(input_f2k)
         if etabs is None:
-            from etabs_api import etabs_obj
+            import etabs_obj
             etabs = etabs_obj.EtabsModel(backup=False)
         self.etabs = etabs
         self.etabs.set_current_unit('N', 'mm')
