@@ -1,27 +1,24 @@
-import sys
 import comtypes.client
 from pathlib import Path
 from typing import Tuple, Union
 import shutil
 import math
 
-civiltools_path = Path(__file__).parent.parent
-sys.path.insert(0, str(civiltools_path))
 
-from etabs_api.load_patterns import LoadPatterns
-from etabs_api.load_cases import LoadCases
-from etabs_api.story import Story
-from etabs_api.frame_obj import FrameObj
-from etabs_api.analyze import Analyze
-from etabs_api.view import View
-from etabs_api.database import DatabaseTables
-from etabs_api.sections.sections import Sections
-from etabs_api.results import Results
-from etabs_api.points import Points
-from etabs_api.group import Group
-from etabs_api.select_obj import SelectObj
-from etabs_api.material import Material
-from etabs_api.area import Area
+from load_patterns import LoadPatterns
+from load_cases import LoadCases
+from story import Story
+from frame_obj import FrameObj
+from analyze import Analyze
+from view import View
+from database import DatabaseTables
+from sections.sections import Sections
+from results import Results
+from points import Points
+from group import Group
+from select_obj import SelectObj
+from material import Material
+from area import Area
 
 __all__ = ['EtabsModel']
 

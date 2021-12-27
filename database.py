@@ -3,10 +3,6 @@ import sys
 from typing import Iterable, Union
 
 import pandas as pd
-from pandas.core.tools.datetimes import to_datetime
-
-civil_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(civil_path))
 
 
 __all__ = ['DatabaseTables']
@@ -532,7 +528,6 @@ class DatabaseTables:
                             'Ecc Ratio', 'Top Story', 'Bot Story', 'Ecc Overwrite Story',
                             'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length', 'C', 'K'
                             ]
-        import pandas as pd
         TableData = self.reshape_data(FieldsKeysIncluded, TableData)
         df1 = pd.DataFrame.from_records(TableData, columns=FieldsKeysIncluded)
         extra_fields = ('OverStory', 'OverDiaph', 'OverEcc')
@@ -593,7 +588,6 @@ class DatabaseTables:
                 'OverDiaph', 'OverEccen',
                 ]
         df1 = self.read(table_key, to_dataframe=True, cols=fields1)
-        import pandas as pd
         extra_fields = ('OverStory', 'OverDiaph', 'OverEccen')
         if df1.shape[1] < len(fields1):
             i_ecc_ow_story = fields1.index('OverStory')
@@ -890,8 +884,10 @@ class DatabaseTables:
         filt = (df['UniqueName'].isin(base_columns)) & (df['Type'] == 'Column')
         return df.loc[filt]
 
-    def get_frame_section_property_definitions_concrete_rectangular(self, cols=[]):
+    def get_frame_section_property_definitions_concrete_rectangular(self, cols=None):
         table_key = 'Frame Section Property Definitions - Concrete Rectangular'
+        if cols is None:
+            cols = ['Name', 't3', 't2']
         df = self.read(table_key, to_dataframe=True, cols=cols)
         return df
 
@@ -1087,7 +1083,7 @@ if __name__ == '__main__':
     import sys
     sys.path.insert(0, str(current_path))
     from etabs_obj import EtabsModel
-    etabs = EtabsModel()
+    etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
     etabs.database.expand_loads()
     print('Wow')
