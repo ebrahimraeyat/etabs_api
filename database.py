@@ -751,6 +751,19 @@ class DatabaseTables:
                         beams : list = None,
                         cols : list = None,
                         ) -> 'pandas.DataFrame':
+        return self.get_element_forces(
+            element_type='Beams',
+            load_combinations=load_combinations,
+            elements=beams,
+            cols=cols,
+        )
+
+    def get_element_forces(self,
+                        element_type : str = 'Beams', # 'Columns'
+                        load_combinations : list = None,
+                        elements : list = None,
+                        cols : list = None,
+                        ) -> 'pandas.DataFrame':
         '''
         cols : columns in dataframe that we want to get
         '''
@@ -759,11 +772,10 @@ class DatabaseTables:
             load_combinations = self.get_concrete_frame_design_load_combinations()
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
-        TableKey = 'Element Forces - Beams'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)
-        df = self.reshape_data_to_df(FieldsKeysIncluded, TableData, cols)
-        if beams is not None:
-            df = df[df['UniqueName'].isin(beams)]
+        table_key = f'Element Forces - {element_type}'
+        df = self.read(table_key, to_dataframe=True, cols=cols)
+        if elements is not None:
+            df = df[df['UniqueName'].isin(elements)]
         return df
 
     def get_beams_torsion(self,
