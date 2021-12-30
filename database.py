@@ -873,7 +873,8 @@ class DatabaseTables:
         df.dropna(inplace=True)
         return df
 
-    def get_frame_assignment_summary(self):
+    def get_frame_assignment_summary(self,
+            frames : list = None):
         table_key = 'Frame Assignments - Summary'
         df = self.read(table_key, to_dataframe=True)
         if 'AxisAngle' in df.columns:
@@ -884,6 +885,9 @@ class DatabaseTables:
             cols = ['Story', 'Label', 'UniqueName', 'Type', 'DesignSect']
             df = df[cols]
             df['AxisAngle'] = 0
+        if frames is not None:
+            filt = df['UniqueName'].isin(frames)
+            df = df.loc[filt]
         return df
 
     def get_base_columns_summary(self):
@@ -1085,6 +1089,38 @@ class DatabaseTables:
         self.etabs.set_current_unit('kgf', 'mm')
         self.apply_data(table_key, data, fields)
 
+    def get_hight_pressure_columns(self,
+        ):
+        self.etabs.set_current_unit('N', 'mm')
+        cols = ['Story', 'UniqueName', 'P']
+        column_forces = self.get_element_forces(element_type='Columns', cols=cols)
+        column_forces = column_forces.groupby(['UniqueName'], as_index=False).max()
+        col_names = list(column_forces['UniqueName'])
+        assignment = self.get_frame_assignment_summary(frames=col_names)
+        assignment.set_index(assignment.UniqueName, inplace=True)
+        column_forces['section'] = column_forces.UniqueName.map(assignment.DesignSect)
+        cols = ['Name', 'Material', 't3', 't2']
+        df_sections = self.get_frame_section_property_definitions_concrete_rectangular(cols=cols)
+        filt = df_sections['Name'].isin(column_forces['section'])
+        df_sections = df_sections.loc[filt]
+        for t in ['Material', 't2', 't3']:
+            s = df_sections[t]
+            s.index = df_sections['Name']
+            column_forces[t] = column_forces['section'].map(s)
+        materials = column_forces.Material.unique()
+        d = dict()
+        for m in materials:
+            d[m] = self.SapModel.PropMaterial.GetOConcrete(m)[0]
+        column_forces['fc'] = column_forces.Material.map(d)
+        for col in ('P', 't2', 't3', 'fc'):
+            column_forces[col] = pd.to_numeric(column_forces[col])
+        column_forces['P'] = column_forces['P'] * -1
+        column_forces['0.3*Ag*fc'] = 0.3 * column_forces['t2'] * column_forces['t2'] * column_forces['fc']
+        import numpy as np
+        column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
+        fields = ('Story', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
+        return column_forces, fields
+
 
 
 
@@ -1097,5 +1133,5 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    etabs.database.expand_loads()
+    etabs.database.get_hight_pressure_columns()
     print('Wow')
