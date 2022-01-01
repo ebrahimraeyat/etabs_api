@@ -32,3 +32,13 @@ class View:
         self.SapModel.FrameObj.SetSelected(name, True)
         self.SapModel.View.RefreshView()
         return True
+    
+    def show_frames(
+            self,
+            names : str,
+            ):
+        self.SapModel.SelectObj.ClearSelection()
+        for name in names:
+            self.SapModel.FrameObj.SetSelected(name, True)
+        self.SapModel.View.RefreshView()
+        return True
