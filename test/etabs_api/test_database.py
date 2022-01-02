@@ -127,16 +127,15 @@ def test_multiply_seismic_loads(shayesteh):
 
 def test_write_aj_user_coefficient(shayesteh):
     shayesteh.load_patterns.select_all_load_patterns()
-    TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-    [_, _, FieldsKeysIncluded, _, TableData, _] = shayesteh.database.read_table(TableKey)
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    input_df = shayesteh.database.read(table_key, to_dataframe=True)
     import pandas as pd
     df = pd.DataFrame({'OutputCase': 'QXP',
                         'Story': 'Story1',
                         'Diaph': 'D1',
                         'Ecc. Length (Cm)': 82,
                         }, index=range(1))
-    NumFatalErrors, ret = shayesteh.database.write_aj_user_coefficient(TableKey, FieldsKeysIncluded, TableData, df)
-    assert NumFatalErrors == ret == 0
+    shayesteh.database.write_aj_user_coefficient(table_key, input_df, df)
     ret = shayesteh.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 

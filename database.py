@@ -521,29 +521,27 @@ class DatabaseTables:
             story_mass.append([story, massx])
         return story_mass
 
-    def write_aj_user_coefficient(self, TableKey, FieldsKeysIncluded, TableData, df):
+    def write_aj_user_coefficient(self, table_key, input_df, df):
         if len(df) == 0: return
         FieldsKeysIncluded1 = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
                             'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
                             'Ecc Ratio', 'Top Story', 'Bot Story', 'Ecc Overwrite Story',
                             'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length', 'C', 'K'
                             ]
-        TableData = self.reshape_data(FieldsKeysIncluded, TableData)
-        df1 = pd.DataFrame.from_records(TableData, columns=FieldsKeysIncluded)
         extra_fields = ('OverStory', 'OverDiaph', 'OverEcc')
-        if len(FieldsKeysIncluded) < len(FieldsKeysIncluded1):
+        if input_df.shape[1] < len(FieldsKeysIncluded1):
             i_ecc_ow_story = FieldsKeysIncluded1.index('Ecc Overwrite Story')
             indexes = range(i_ecc_ow_story, i_ecc_ow_story + 3)
             for i, header in zip(indexes, extra_fields):
-                df1.insert(i, header, None)
+                input_df.insert(i, header, None)
         cases = df['OutputCase'].unique()
-        df1['C'] = df1['C'].astype(str)
-        df1 = df1.loc[df1['C'] != 'None']
+        input_df['C'] = input_df['C'].astype(str)
+        input_df = input_df.loc[input_df['C'] != 'None']
         for field in extra_fields:
-            df1[field] = None
+            input_df[field] = None
         additional_rows = []
         import copy
-        for i, row in df1.iterrows():
+        for i, row in input_df.iterrows():
             case = row['Name']
             if case in cases:
                 ecc_length = df[
@@ -563,16 +561,12 @@ class DatabaseTables:
                         new_row['OverDiaph'] = diaph
                         new_row['OverEcc'] = str(length)
                         additional_rows.append(new_row)
-        # df1 = df1.append(pd.DataFrame.from_records(additional_rows, columns=FieldsKeysIncluded1))
+        # input_df = input_df.append(pd.DataFrame.from_records(additional_rows, columns=FieldsKeysIncluded1))
         for row in additional_rows:
-            df1 = df1.append(row)
-        TableData = []
-        for _, row in df1.iterrows():
-            TableData.extend(list(row))
-        self.SapModel.DatabaseTables.SetTableForEditingArray(TableKey, 0, FieldsKeysIncluded1, 0, TableData)
-        NumFatalErrors, ret = self.apply_table()
-        return NumFatalErrors, ret
-
+            input_df = input_df.append(row)
+        self.apply_data(table_key, input_df, FieldsKeysIncluded1)
+    
+    
     def write_daynamic_aj_user_coefficient(self, df=None):
         if df is None:
             df = self.etabs.get_dynamic_magnification_coeff_aj()

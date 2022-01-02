@@ -504,11 +504,9 @@ class EtabsModel:
         print("Applying cfactor to edb\n")
         self.SapModel.SetModelIsLocked(False)
         self.load_patterns.select_all_load_patterns()
-        TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
-        NumFatalErrors, ret = self.database.write_aj_user_coefficient(TableKey, FieldsKeysIncluded, TableData, df)
-        print(f"NumFatalErrors, ret = {NumFatalErrors}, {ret}")
-        return NumFatalErrors, ret
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        input_df = self.database.read(table_key, to_dataframe=True)
+        self.database.write_aj_user_coefficient(table_key, input_df, df)
 
     def get_irregularity_of_mass(self, story_mass=None):
         if not story_mass:
