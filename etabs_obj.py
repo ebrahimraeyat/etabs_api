@@ -447,11 +447,14 @@ class EtabsModel:
         df['aj'] = (df['Ratio'] / 1.2) ** 2
         df['aj'].clip(1,3, inplace=True)
         df['Ecc. Ratio'] = df['aj'] * .05
-        x_story_length = {key: value[0] for key, value in story_length.items()}
-        y_story_length = {key: value[1] for key, value in story_length.items()}
-        df['Length (Cm)'] = df['Story'].map(y_story_length)
-        mask = df['Dir'] == 'Y'
-        df['Length (Cm)'].loc[mask] = df.loc[mask]['Story'].map(x_story_length)
+        conditions =[]
+        choises = []
+        for story, xy_lenght in story_length.items():
+            conditions.append(df['Dir'].eq('Y') & df['Story'].eq(story))
+            conditions.append(df['Dir'].eq('X') & df['Story'].eq(story))
+            choises.extend(xy_lenght)
+        import numpy as np
+        df['Length (Cm)'] = np.select(conditions, choises)
         df['Ecc. Length (Cm)'] = df['Ecc. Ratio'] * df['Length (Cm)']
         story_names = df['Story'].unique()
         story_diaphs = self.story.get_stories_diaphragms(story_names)
