@@ -575,23 +575,30 @@ class DatabaseTables:
         loadcases = list(df['OutputCase'].unique())
         self.etabs.load_cases.select_load_cases(loadcases)
         table_key = 'Load Case Definitions - Response Spectrum'
-        fields1 = [
-                'Name', 'MassSource', 'LoadName', 'Function', 'TransAccSF', 'RotAccSF',
-                'CoordSys', 'Angle', 'ModalCase', 'ModalCombo', 'RigidResp', 'f1', 'f2',
-                'RigidCombo', 'td', 'DirCombo', 'AbsSF', 'EccenRatio', 'OverStory',
-                'OverDiaph', 'OverEccen',
+        fields = [
+                'Name', 'MassSource', 'LoadName', 'Function', 'TransAccSF',
+                'CoordSys', 'Angle', 'ModalCase', 'ModalCombo',
+                'DirCombo', 'EccenRatio', 
                 ]
-        df1 = self.read(table_key, to_dataframe=True, cols=fields1)
+        col_map = {
+                    'MassSource': 'Mass Source',
+                    'LoadName': 'Load Name',
+                    'TransAccSF': 'Trans Accel SF',
+                    'CoordSys': 'Coordinate System',
+                    'ModalCase': 'Modal Case',
+                    'ModalCombo': 'Modal Combo Method',
+                    'DirCombo': 'Directional Combo Type',
+                    'EccenRatio': 'Eccentricity Ratio', 
+                    'OverDiaph': 'Diaphragm Overwrite',
+                    'OverEccen': 'Eccentricity OverWrite',
+                    'OverStory': 'Story Overwrite',
+                    }
+        df1 = self.read(table_key, to_dataframe=True, cols=fields)
         extra_fields = ('OverStory', 'OverDiaph', 'OverEccen')
-        if df1.shape[1] < len(fields1):
-            i_ecc_ow_story = fields1.index('OverStory')
-            indexes = range(i_ecc_ow_story, i_ecc_ow_story + 3)
-            for i, header in zip(indexes, extra_fields):
-                df1.insert(i, header, None)
-        df1['Angle'] = df1['Angle'].astype(str)
-        df1 = df1.loc[df1['Angle'] != 'None']
         for field in extra_fields:
             df1[field] = None
+        df1['Angle'] = df1['Angle'].astype(str)
+        df1 = df1.loc[df1['Angle'] != 'None']
         additional_rows = []
         import copy
         for i, row in df1.iterrows():
@@ -616,14 +623,9 @@ class DatabaseTables:
                         additional_rows.append(new_row)
         for row in additional_rows:
             df1 = df1.append(row)
-        data = []
-        for _, row in df1.iterrows():
-            data.extend(list(row))
-        fields = list(df1.columns)
+        df1 = df1.rename(col_map, axis=1)
         self.SapModel.SetModelIsLocked(False)
-        self.SapModel.DatabaseTables.SetTableForEditingArray(table_key, 0, fields, 0, data)
-        num_errors, ret = self.apply_table()
-        return num_errors, ret
+        self.apply_data(table_key, df1)
 
     def get_center_of_rigidity(self):
         self.etabs.run_analysis()
@@ -1127,5 +1129,5 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    etabs.database.get_hight_pressure_columns()
+    etabs.database.write_daynamic_aj_user_coefficient()
     print('Wow')

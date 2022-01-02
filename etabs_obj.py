@@ -507,7 +507,7 @@ class EtabsModel:
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         input_df = self.database.read(table_key, to_dataframe=True)
         self.database.write_aj_user_coefficient(table_key, input_df, df)
-
+    
     def get_irregularity_of_mass(self, story_mass=None):
         if not story_mass:
             story_mass = self.database.get_story_mass()
