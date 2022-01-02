@@ -96,7 +96,12 @@ class EtabsModel:
         if name is None:
             filename = self.get_file_name_without_suffix()
             file_path = self.get_filepath()
-            for edb in file_path.glob(f'BACKUP_{filename}*.EDB'):
+            backup_path = file_path / 'backups'
+            if not backup_path.exists():
+                import os
+                os.mkdir(str(backup_path))
+            backup_path = backup_path
+            for edb in backup_path.glob(f'BACKUP_{filename}*.EDB'):
                 num = edb.name.rstrip('.EDB')[len('BACKUP_') + len(filename) + 1:]
                 try:
                     num = int(num)
@@ -108,12 +113,12 @@ class EtabsModel:
             name += '.EDB'
         asli_file_path = self.get_filename()
         asli_file_path = asli_file_path.with_suffix('.EDB')
-        new_file_path = asli_file_path.with_name(name)
+        new_file_path = backup_path / name
         shutil.copy(asli_file_path, new_file_path)
         return new_file_path
 
     def remove_backups(self):
-        file_path = self.get_filepath()
+        file_path = self.get_filepath() / 'backups'
         for edb in file_path.glob(f'BACKUP_*.EDB'):
             edb.unlink()
         return None
@@ -804,7 +809,7 @@ class Build:
 if __name__ == '__main__':
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    df = etabs.get_dynamic_magnification_coeff_aj()
+    df = etabs.backup_model()
     # df = etabs.get_diaphragm_max_over_avg_drifts()
     etabs.angles_response_spectrums_analysis('EX', 'EY', ('SPEC0', 'SPEC15', 'SPEC30', 'SPEC45', 'SPEC60', 'SPEC75', 'SPEC90', 'SPEC105', 'SPEC120', 'SPEC135', 'SPEC150', 'SPEC165', 'SPEC180'), 
             section_cuts=('SEC0', 'SEC15', 'SEC30', 'SEC45', 'SEC60', 'SEC75', 'SEC90', 'SEC105', 'SEC120', 'SEC135', 'SEC150', 'SEC165', 'SEC180'), num_iteration=5)
