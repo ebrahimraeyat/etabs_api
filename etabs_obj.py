@@ -256,10 +256,9 @@ class EtabsModel:
                 self.SapModel.FrameObj.SetModifiers(label, modifiers)
         for label in self.SapModel.AreaObj.GetLabelNameList()[1]:
             if self.SapModel.AreaObj.GetDesignOrientation(label)[0] == 1: # Wall
-                IMod = IMod_col_wall
-            modifiers = list(self.SapModel.AreaObj.GetModifiers(label)[0])
-            modifiers[:7] = 6 * [IMod]
-            self.SapModel.AreaObj.SetModifiers(label, modifiers)
+                modifiers = list(self.SapModel.AreaObj.GetModifiers(label)[0])
+                modifiers[:6] = 6 * [IMod_col_wall]
+                self.SapModel.AreaObj.SetModifiers(label, modifiers)
 
         # run model (this will create the analysis model)
         print("start running T file analysis")
