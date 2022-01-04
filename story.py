@@ -66,9 +66,9 @@ class Story:
         if bot_level_x is None:
             bot_level_x, top_level_x, bot_level_y, top_level_y = self.get_top_bot_levels()
         levels = self.SapModel.Story.GetStories()[2]
-        no_of_x_story = len([i for i in levels if bot_level_x * 1.01 < i <= top_level_x * 1.01])
-        no_of_y_story = len([i for i in levels if bot_level_y * 1.01 < i <= top_level_y * 1.01])
-        return no_of_x_story, no_of_y_story
+        no_of_x_story = len([i for i in levels if bot_level_x  <= i <= top_level_x])
+        no_of_y_story = len([i for i in levels if bot_level_y  <= i <= top_level_y])
+        return no_of_x_story - 1, no_of_y_story - 1
 
     def get_story_names(self):
         return self.SapModel.Story.GetNameList()[1]
