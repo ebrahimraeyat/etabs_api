@@ -399,44 +399,6 @@ class EtabsModel:
         print(f"NumFatalErrors, ret = {NumFatalErrors}, {ret}")
         return NumFatalErrors
 
-    def get_drift_periods_calculate_cfactor_and_apply_to_edb(
-            self,
-            widget,
-            ):
-        Tx, Ty, _ = self.get_drift_periods()
-        widget.xTAnalaticalSpinBox.setValue(Tx)
-        widget.yTAnalaticalSpinBox.setValue(Ty)
-        widget.calculate()
-        num_errors = self.apply_cfactor_to_edb(widget.final_building)
-        return num_errors
-
-    def calculate_drifts(
-                self,
-                widget,
-                no_story=None,
-                auto_no_story=False,
-                auto_height=False,
-                loadcases=None,
-                ):
-        if auto_height:
-            hx = self.get_heights()[0]
-            widget.HSpinBox.setValue(hx)
-        if auto_no_story:
-            no_story = self.get_no_of_stories()[0]
-            widget.storySpinBox.setValue(no_story)
-        if not no_story:
-            no_story = widget.storySpinBox.value()
-        self.get_drift_periods_calculate_cfactor_and_apply_to_edb(widget)
-        # if loadcases is not None:
-        #     self.analyze.set_load_cases_to_analyze(loadcases)
-        self.SapModel.Analyze.RunAnalysis()
-        # if loadcases is not None:
-        #     self.analyze.set_load_cases_to_analyze()
-        cdx = widget.final_building.x_system.cd
-        cdy = widget.final_building.y_system.cd
-        drifts, headers = self.get_drifts(no_story, cdx, cdy, loadcases)
-        return drifts, headers
-
     def is_etabs_running(self):
         try:
             comtypes.client.GetActiveObject("CSI.ETABS.API.ETABSObject")
