@@ -24,7 +24,7 @@ __all__ = ['EtabsModel']
 
 
 class EtabsModel:
-    force_units = dict(N=3, kN=4, kgf=5, tonf=6)
+    force_units = dict(N=3, kN=4, KN=4, kgf=5, Kgf=5, tonf=6, Tonf=6)
     length_units = dict(mm=4, cm=5, m=6)
 
     def __init__(

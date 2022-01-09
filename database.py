@@ -1088,9 +1088,15 @@ class DatabaseTables:
     def get_hight_pressure_columns(self,
         ):
         self.etabs.set_current_unit('N', 'mm')
-        cols = ['Story', 'UniqueName', 'P']
+        cols = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P']
         column_forces = self.get_element_forces(element_type='Columns', cols=cols)
-        column_forces = column_forces.groupby(['UniqueName'], as_index=False).max()
+        load_combinations = self.get_design_load_combinations('concrete')
+        filt = column_forces['OutputCase'].isin(load_combinations)
+        column_forces = column_forces.loc[filt]
+        column_forces['P'] = pd.to_numeric(column_forces['P'])
+        column_forces['P'] = column_forces['P'] * -1
+        filt = column_forces.groupby(['UniqueName'])['P'].idxmax()
+        column_forces = column_forces.loc[filt, :]
         col_names = list(column_forces['UniqueName'])
         assignment = self.get_frame_assignment_summary(frames=col_names)
         assignment.set_index(assignment.UniqueName, inplace=True)
@@ -1108,13 +1114,12 @@ class DatabaseTables:
         for m in materials:
             d[m] = self.SapModel.PropMaterial.GetOConcrete(m)[0]
         column_forces['fc'] = column_forces.Material.map(d)
-        for col in ('P', 't2', 't3', 'fc'):
+        for col in ('t2', 't3', 'fc'):
             column_forces[col] = pd.to_numeric(column_forces[col])
-        column_forces['P'] = column_forces['P'] * -1
         column_forces['0.3*Ag*fc'] = 0.3 * column_forces['t2'] * column_forces['t2'] * column_forces['fc']
         import numpy as np
         column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
-        fields = ('Story', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
+        fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
         return column_forces, fields
 
 
@@ -1129,5 +1134,5 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    etabs.database.write_daynamic_aj_user_coefficient()
+    etabs.database.get_hight_pressure_columns()
     print('Wow')
