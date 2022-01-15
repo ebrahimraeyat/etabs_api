@@ -3,6 +3,7 @@ import sys
 from typing import Iterable, Union
 
 import pandas as pd
+pd.options.mode.chained_assignment = None
 
 
 __all__ = ['DatabaseTables']

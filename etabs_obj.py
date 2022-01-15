@@ -412,6 +412,8 @@ class EtabsModel:
         df = self.get_diaphragm_max_over_avg_drifts(cols=cols)
         df['aj'] = (df['Ratio'] / 1.2) ** 2
         df['aj'].clip(1,3, inplace=True)
+        filt = df['aj'] > 1
+        df = df.loc[filt]
         df['Ecc. Ratio'] = df['aj'] * .05
         conditions =[]
         choises = []
@@ -770,20 +772,4 @@ class Build:
 if __name__ == '__main__':
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    df = etabs.backup_model()
-    # df = etabs.get_diaphragm_max_over_avg_drifts()
-    etabs.angles_response_spectrums_analysis('EX', 'EY', ('SPEC0', 'SPEC15', 'SPEC30', 'SPEC45', 'SPEC60', 'SPEC75', 'SPEC90', 'SPEC105', 'SPEC120', 'SPEC135', 'SPEC150', 'SPEC165', 'SPEC180'), 
-            section_cuts=('SEC0', 'SEC15', 'SEC30', 'SEC45', 'SEC60', 'SEC75', 'SEC90', 'SEC105', 'SEC120', 'SEC135', 'SEC150', 'SEC165', 'SEC180'), num_iteration=5)
-    # TableKey = 'Frame Section Property Definitions - Summary'
-    # [_, TableVersion, FieldsKeysIncluded, NumberRecords, TableData, _] = self.database.read_table(TableKey, self.SapModel)
-    # get_load_patterns()
-    # x, y = get_load_patterns_in_XYdirection()
-    # print(x)
-    # print(y)
-    # building = Build()
-    # apply_cfactor_to_edb(building)
-    # get_beqams_columns()
-    # self.SapModel = etabs.self.SapModel
-    # TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-    # [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey, self.SapModel)
-    # is_auto_load_yes_in_seismic_load_patterns(TableData, FieldsKeysIncluded)
+    etabs.get_magnification_coeff_aj()
