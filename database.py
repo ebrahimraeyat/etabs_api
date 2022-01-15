@@ -1116,7 +1116,7 @@ class DatabaseTables:
         column_forces['fc'] = column_forces.Material.map(d)
         for col in ('t2', 't3', 'fc'):
             column_forces[col] = pd.to_numeric(column_forces[col])
-        column_forces['0.3*Ag*fc'] = 0.3 * column_forces['t2'] * column_forces['t2'] * column_forces['fc']
+        column_forces['0.3*Ag*fc'] = 0.3 * column_forces['t2'] * column_forces['t3'] * column_forces['fc']
         import numpy as np
         column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
         fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
