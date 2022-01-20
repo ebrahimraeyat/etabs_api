@@ -1125,8 +1125,6 @@ class DatabaseTables:
 
 
 
-
-
 if __name__ == '__main__':
     from pathlib import Path
     current_path = Path(__file__).parent
@@ -1135,5 +1133,5 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    etabs.database.get_hight_pressure_columns()
+    etabs.database.require_100_30()
     print('Wow')

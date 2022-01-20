@@ -650,6 +650,78 @@ class FrameObj:
         self.SapModel.View.RefreshView()
         return None
 
+    def set_column_dns_overwrite(self,
+            code : str,
+            type_: str = 'Concrete', # 'Steel'
+            ):
+        type_number = 1 if type_ == 'Steel' else 2
+        epsilon = .00000001
+        columns = []
+        for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
+            if (self.is_column(name) and
+                self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
+                ):
+                self.etabs.design.set_overwrite(name, 9, epsilon, type_, code)
+                self.etabs.design.set_overwrite(name, 10, epsilon, type_, code)
+                self.etabs.design.set_overwrite(name, 11, epsilon, type_, code)
+                self.etabs.design.set_overwrite(name, 12, epsilon, type_, code)
+                columns.append(name)
+        return columns
+
+    def require_100_30(self,
+            ex: Union[str, bool]=None,
+            ey: Union[str, bool]=None,
+            file_name: Union[str, Path] = '100_30.EDB',
+            type_: str = 'Concrete', # 'Steel'
+            code : Union[str, None] = None,
+            ):
+        # create new file and open it
+        asli_file_path = Path(self.SapModel.GetModelFilename())
+        if isinstance(file_name, Path):
+            new_file_path = file_name
+        else:
+            new_file_path = self.etabs.backup_model(name=file_name)
+        print(f"Saving file as {new_file_path}\n")
+        self.SapModel.File.Save(str(new_file_path))
+        if ex is None:
+            ex, ey = self.etabs.load_patterns.get_EX_EY_load_pattern()
+        self.SapModel.RespCombo.Add('EX_100_30', 0)
+        self.SapModel.RespCombo.Add('EY_100_30', 0)
+        self.SapModel.RespCombo.SetCaseList('EX_100_30', 0, ex, 1)
+        self.SapModel.RespCombo.SetCaseList('EY_100_30', 0, ey, 1)
+        # set overwrite for columns
+        if code is None:
+            code = self.etabs.design.get_code(type_)
+        code_string = self.etabs.design.get_code_string(type_, code)
+        columns = self.set_column_dns_overwrite(code=code_string, type_=type_)
+        # set design combo
+        import pandas as pd
+        df = pd.DataFrame([['Strength', 'EX_100_30'], ['Strength', 'EY_100_30']],columns=['Combo Type', 'Combo Name'])
+        table_key = 'Concrete Frame Design Load Combination Data'
+        self.etabs.database.apply_data(table_key, df)
+        # run analysis
+        self.etabs.analyze.set_load_cases_to_analyze([ex, ey])
+        self.etabs.run_analysis()
+        self.set_frame_obj_selected(columns)
+        print('Start Design ...')
+        exec(f"self.SapModel.Design{type_}.StartDesign()")
+        # get the PMM ratio table
+        self.etabs.set_current_unit('tonf', 'm')
+        table_key = f'Concrete Column PMM Envelope - {code}'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        del df['Location']
+        df['RatioRebar'] = df['RatioRebar'].astype(float)
+        df['MMajor'] = df['MMajor'].astype(float).astype(int)
+        df['MMinor'] = df['MMinor'].astype(float).astype(int)
+        df['P'] = df['P'].astype(float)
+        filt = df.groupby(['UniqueName'])['RatioRebar'].idxmax()
+        df = df.loc[filt, :]
+        import numpy as np
+        df['Result'] = np.where(df['RatioRebar'] < .2 , True, False)
+        return df
+
+
+
 
 
 
@@ -661,7 +733,7 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel()
     SapModel = etabs.SapModel
-    df = etabs.frame_obj.get_heigth_from_top_of_below_story_to_below_of_beam('115')
+    df = etabs.frame_obj.require_100_30()
     print(df)
     print('Wow')
 

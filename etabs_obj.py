@@ -19,6 +19,7 @@ from group import Group
 from select_obj import SelectObj
 from material import Material
 from area import Area
+from design import Design
 
 __all__ = ['EtabsModel']
 
@@ -84,6 +85,7 @@ class EtabsModel:
             self.select_obj = SelectObj(self)
             self.material = Material(self)
             self.area = Area(self)
+            self.design = Design(self)
     
     def close_etabs(self):
         self.SapModel.SetModelIsLocked(False)
@@ -93,6 +95,7 @@ class EtabsModel:
 
     def backup_model(self, name=None):
         max_num = 0
+        backup_path=None
         if name is None:
             filename = self.get_file_name_without_suffix()
             file_path = self.get_filepath()
@@ -113,7 +116,10 @@ class EtabsModel:
             name += '.EDB'
         asli_file_path = self.get_filename()
         asli_file_path = asli_file_path.with_suffix('.EDB')
-        new_file_path = backup_path / name
+        if backup_path is None:
+            new_file_path = asli_file_path.parent / name
+        else:
+            new_file_path = backup_path / name
         shutil.copy(asli_file_path, new_file_path)
         return new_file_path
 
