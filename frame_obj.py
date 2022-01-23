@@ -668,6 +668,31 @@ class FrameObj:
                 columns.append(name)
         return columns
 
+    def set_infinite_bending_capacity_for_steel_columns(self,
+            code_string : str,
+            ):
+        type_number = 1 # 'Steel' 
+        infinit = 1e10
+        columns = []
+        if code_string == 'AISC360_05':
+            mn3 = 39
+            mn2 = 40
+        if code_string == 'AISC360_10':
+            mn3 = 42
+            mn2 = 43
+        if code_string == 'AISC360_16':
+            mn3 = 46
+            mn2 = 47
+        for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
+            if (self.is_column(name) and
+                self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
+                ):
+                self.etabs.design.set_overwrite(name, mn3, infinit, 'Steel', code_string)
+                self.etabs.design.set_overwrite(name, mn2, infinit, 'Steel', code_string)
+                columns.append(name)
+        return columns
+        
+
     def require_100_30(self,
             ex: Union[str, bool]=None,
             ey: Union[str, bool]=None,
@@ -677,12 +702,16 @@ class FrameObj:
             ):
         # create new file and open it
         asli_file_path = Path(self.SapModel.GetModelFilename())
-        if isinstance(file_name, Path):
-            new_file_path = file_name
-        else:
-            new_file_path = self.etabs.backup_model(name=file_name)
-        print(f"Saving file as {new_file_path}\n")
-        self.SapModel.File.Save(str(new_file_path))
+        if type_ == 'Concrete':
+            if isinstance(file_name, Path):
+                new_file_path = file_name
+            else:
+                new_file_path = self.etabs.backup_model(name=file_name)
+            print(f"Saving file as {new_file_path}\n")
+            self.SapModel.File.Save(str(new_file_path))
+        elif type_ == 'Steel':
+            pass
+            # self.SapModel.File.Open(str(file_name))
         if ex is None:
             ex, ey = self.etabs.load_patterns.get_EX_EY_load_pattern()
         self.SapModel.RespCombo.Add('EX_100_30', 0)
@@ -693,11 +722,20 @@ class FrameObj:
         if code is None:
             code = self.etabs.design.get_code(type_)
         code_string = self.etabs.design.get_code_string(type_, code)
-        columns = self.set_column_dns_overwrite(code=code_string, type_=type_)
         # set design combo
         import pandas as pd
-        df = pd.DataFrame([['Strength', 'EX_100_30'], ['Strength', 'EY_100_30']],columns=['Combo Type', 'Combo Name'])
-        table_key = 'Concrete Frame Design Load Combination Data'
+        if type_ == 'Concrete':
+            columns = self.set_column_dns_overwrite(code=code_string, type_=type_)
+            df = pd.DataFrame([['Strength', 'EX_100_30'], ['Strength', 'EY_100_30']],columns=['Combo Type', 'Combo Name'])
+            table_key = 'Concrete Frame Design Load Combination Data'
+        elif type_ == 'Steel':
+            # self.set_infinite_bending_capacity_for_steel_columns(code_string)
+            df = pd.DataFrame([['Steel Frame', 'Strength', 'EX_100_30'],
+                                ['Steel Frame', 'Strength', 'EY_100_30']],
+                                columns=['Design Type', 'Combo Type', 'Combo Name']
+                                )
+            table_key = 'Steel Design Load Combination Data'
+            columns = self.get_beams_columns(type_=1)[1]
         self.etabs.database.apply_data(table_key, df)
         # run analysis
         self.etabs.analyze.set_load_cases_to_analyze([ex, ey])
@@ -707,17 +745,37 @@ class FrameObj:
         exec(f"self.SapModel.Design{type_}.StartDesign()")
         # get the PMM ratio table
         self.etabs.set_current_unit('tonf', 'm')
-        table_key = f'Concrete Column PMM Envelope - {code}'
-        df = self.etabs.database.read(table_key, to_dataframe=True)
-        del df['Location']
-        df['RatioRebar'] = df['RatioRebar'].astype(float)
-        df['MMajor'] = df['MMajor'].astype(float).astype(int)
-        df['MMinor'] = df['MMinor'].astype(float).astype(int)
-        df['P'] = df['P'].astype(float)
-        filt = df.groupby(['UniqueName'])['RatioRebar'].idxmax()
-        df = df.loc[filt, :]
+        if type_ == 'Concrete':
+            table_key = f'Concrete Column PMM Envelope - {code}'
+            df = self.etabs.database.read(table_key, to_dataframe=True)
+            del df['Location']
+            df['Ratio'] = df['RatioRebar'].astype(float)
+            del df['RatioRebar']
+            df['MMajor'] = df['MMajor'].astype(float).astype(int)
+            df['MMinor'] = df['MMinor'].astype(float).astype(int)
+            df['P'] = df['P'].astype(float)
+            filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
+            df = df.loc[filt, :]
+            # import numpy as np
+            # df['Result'] = np.where(df['Ratio'] < .2 , True, False)
+        elif type_ == 'Steel':
+            table_key = f'Steel Frame Design Summary - {code}'
+            cols = ['Story', 'Label', 'UniqueName', 'DesignType', 'DesignSect', 
+                    'PMMCombo', 'PMMRatio', 'PRatio', 'MMajRatio', 'MMinRatio']
+            df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+            filt = df['DesignType'] == 'Column'
+            df = df.loc[filt]
+            del df['DesignType']
+            df['Ratio'] = df['PMMRatio'].astype(float)
+            df['MMajor'] = df['MMajRatio'].astype(float)
+            df['MMinor'] = df['MMinRatio'].astype(float)
+            df['P'] = df['PRatio'].astype(float)
+            for col in ('PMMRatio', 'PRatio', 'MMajRatio', 'MMinRatio'):
+                del df[col]
+            filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
+            df = df.loc[filt, :]
         import numpy as np
-        df['Result'] = np.where(df['RatioRebar'] < .2 , True, False)
+        df['Result'] = np.where(df['Ratio'] < .2 , True, False)
         return df
 
 
@@ -733,7 +791,8 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel()
     SapModel = etabs.SapModel
-    df = etabs.frame_obj.require_100_30()
+    # filename = Path(r'F:\alaki\zibaee\steel\100_30.EDB')
+    df = etabs.frame_obj.require_100_30(type_='Steel')
     print(df)
     print('Wow')
 
