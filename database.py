@@ -875,11 +875,11 @@ class DatabaseTables:
         table_key = 'Frame Assignments - Summary'
         df = self.read(table_key, to_dataframe=True)
         if 'AxisAngle' in df.columns:
-            cols = ['Story', 'Label', 'UniqueName', 'Type', 'DesignSect', 'AxisAngle']
+            cols = ['Story', 'Label', 'UniqueName', 'Type', 'AnalysisSect', 'AxisAngle']
             df = df[cols]
             df['AxisAngle'].fillna(0, inplace=True)
         else:
-            cols = ['Story', 'Label', 'UniqueName', 'Type', 'DesignSect']
+            cols = ['Story', 'Label', 'UniqueName', 'Type', 'AnalysisSect']
             df = df[cols]
             df['AxisAngle'] = 0
         if frames is not None:
@@ -908,12 +908,12 @@ class DatabaseTables:
         df_props = self.get_base_columns_summary()
         cols = ['Name', 't3', 't2']
         df_sections = self.get_frame_section_property_definitions_concrete_rectangular(cols=cols)
-        filt = df_sections['Name'].isin(df_props['DesignSect'])
+        filt = df_sections['Name'].isin(df_props['AnalysisSect'])
         df_sections = df_sections.loc[filt]
         for t in ['t2', 't3']:
             s = df_sections[t]
             s.index = df_sections['Name']
-            df_props[t] = df_props['DesignSect'].map(s)
+            df_props[t] = df_props['AnalysisSect'].map(s)
         return df_props
 
     def get_frame_connectivity(self, frame_type='Beam'):
@@ -1101,7 +1101,7 @@ class DatabaseTables:
         col_names = list(column_forces['UniqueName'])
         assignment = self.get_frame_assignment_summary(frames=col_names)
         assignment.set_index(assignment.UniqueName, inplace=True)
-        column_forces['section'] = column_forces.UniqueName.map(assignment.DesignSect)
+        column_forces['section'] = column_forces.UniqueName.map(assignment.AnalysisSect)
         cols = ['Name', 'Material', 't3', 't2']
         df_sections = self.get_frame_section_property_definitions_concrete_rectangular(cols=cols)
         filt = df_sections['Name'].isin(column_forces['section'])
@@ -1133,5 +1133,8 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    etabs.database.require_100_30()
+    joint_design_reactions = etabs.database.get_joint_design_reactions()
+    basepoints_coord_and_dims = etabs.database.get_basepoints_coord_and_dims(
+                joint_design_reactions
+            )
     print('Wow')
