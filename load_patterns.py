@@ -1,4 +1,31 @@
 class LoadPatterns:
+
+    map_number_to_pattern = {
+            1 : 'Dead',
+            2 : 'Super Dead',
+            3 : 'Live',
+            4 : 'Reducible Live',
+            5 : 'Seismic',
+            6 : 'Wind',
+            7 : 'Snow',
+            8 : 'Other',
+            11 : 'ROOF Live',
+            12 : 'Notional',
+        }
+
+    map_pattern_to_number = {
+            'Dead' : 1,
+            'Super Dead' : 2,
+            'Live' : 3,
+            'Reducible Live' : 4,
+            'Seismic' : 5,
+            'Wind' : 6,
+            'Snow' : 7,
+            'Other' : 8,
+            'ROOF Live' : 11,
+            'Notional' : 12,
+        }
+
     def __init__(
                 self,
                 SapModel=None,
@@ -164,6 +191,14 @@ class LoadPatterns:
     def select_all_load_patterns(self):
         load_pattern_names = list(self.get_load_patterns())
         self.SapModel.DatabaseTables.SetLoadPatternsSelectedForDisplay(load_pattern_names) 
+
+    def get_design_type(self, pattern_name):
+        '''
+        get a load pattern name and return design type of it appropriate
+        '''
+        type_num = self.SapModel.LoadCases.GetTypeOAPI_1(pattern_name)[2]
+        design_type = self.map_number_to_pattern.get(type_num, None)
+        return design_type
 
 if __name__ == '__main__':
     from pathlib import Path

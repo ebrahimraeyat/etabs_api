@@ -3,10 +3,10 @@ import comtypes.client
 from pathlib import Path
 import sys
 
-civil_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(civil_path))
+etabs_api_path = Path(__file__).parent.parent
+sys.path.insert(0, str(etabs_api_path))
 
-from etabs_api import etabs_obj
+import etabs_obj
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -29,7 +29,7 @@ def shayesteh(edb="shayesteh.EDB"):
         ETABSObject.ApplicationStart()
         SapModel = ETABSObject.SapModel
         SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / edb))
+        SapModel.File.OpenFile(str(Path(__file__).parent / 'files' / edb))
         asli_file_path = Path(SapModel.GetModelFilename())
         dir_path = asli_file_path.parent.absolute()
         test_file_path = dir_path / "test.EDB"
@@ -94,4 +94,7 @@ def test_get_ex_ey_earthquake_name(shayesteh):
     assert ex == 'QX'
     assert ey == 'QY'
 
+def test_get_design_type(shayesteh):
+    type_ = shayesteh.load_patterns.get_design_type('DEAD')
+    assert type_ == 'Dead'
 
