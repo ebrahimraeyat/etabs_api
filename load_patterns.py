@@ -22,6 +22,8 @@ class LoadPatterns:
             'Wind' : 6,
             'Snow' : 7,
             'Other' : 8,
+            'EV' : 8,
+            'MASS' : 8,
             'ROOF Live' : 11,
             'Notional' : 12,
         }

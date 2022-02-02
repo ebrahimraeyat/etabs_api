@@ -7,6 +7,7 @@ import math
 
 from load_patterns import LoadPatterns
 from load_cases import LoadCases
+from load_combinations import LoadCombination
 from story import Story
 from frame_obj import FrameObj
 from analyze import Analyze
@@ -73,6 +74,7 @@ class EtabsModel:
             # self.SapModel.File.Save()
             self.load_patterns = LoadPatterns(None, self)
             self.load_cases = LoadCases(self)
+            self.load_combinations = LoadCombination(self)
             self.story = Story(None, self)
             self.frame_obj = FrameObj(self)
             self.analyze = Analyze(self.SapModel, None)
