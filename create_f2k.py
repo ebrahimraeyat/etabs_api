@@ -205,6 +205,7 @@ class CreateF2kFile(Safe):
         filt = df['Story'] == base_name
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
+        df['GlobalZ'] = f'{self.model_datum}'
         d = {'ElmName' : 'Point=', 'GlobalX': 'GlobalX=', 'GlobalY': 'GlobalY=', 'GlobalZ': 'GlobalZ=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "OBJECT GEOMETRY - POINT COORDINATES"
