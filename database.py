@@ -943,10 +943,11 @@ class DatabaseTables:
 
     def get_frame_points_xyz(self,
             frames : Union[list, None] = None,
+            frame_type : str = 'Beam',  # 'Column'
             ) -> 'pandas.DataFrame':
         if frames is None:
             frames = self.SapModel.SelectObj.GetSelected()[2]
-        df_frames = self.get_frame_connectivity()
+        df_frames = self.get_frame_connectivity(frame_type=frame_type)
         filt = df_frames['UniqueName'].isin(frames)
         df_frames = df_frames.loc[filt]
         df_points = self.get_points_connectivity()
