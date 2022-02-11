@@ -28,6 +28,9 @@ class FrameObj:
     
     def is_beam(self, name):
         return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 2
+    
+    def is_brace(self, name):
+        return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 3
 
     def is_frame_on_story(self, frame, story=None):
         if story is None:
