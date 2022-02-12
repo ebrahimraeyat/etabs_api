@@ -725,7 +725,7 @@ class DatabaseTables:
                     ):
         if not loadcases:
             loadcases = self.etabs.load_patterns.get_ex_ey_earthquake_name()
-        assert len(loadcases) == 2
+        # assert len(loadcases) == 2
         self.SapModel.SetPresentUnits_2(5, 6, 2)
         self.etabs.load_cases.select_load_cases(loadcases)
         TableKey = 'Story Forces'
