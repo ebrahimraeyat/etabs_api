@@ -1,15 +1,14 @@
-from os import closerange
-from unittest import mock
+# from unittest import mock
 import pytest
 from unittest.mock import Mock
 import comtypes.client
 from pathlib import Path
 import sys
 
-civil_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(civil_path))
+etabs_api_path = Path(__file__).parent.parent
+sys.path.insert(0, str(etabs_api_path))
 
-from etabs_api import etabs_obj
+import etabs_obj
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
