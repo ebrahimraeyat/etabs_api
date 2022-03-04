@@ -376,11 +376,16 @@ class EtabsModel:
         fields.append('Allowable Drift')
         return new_data, fields
 
-    def apply_cfactor_to_tabledata(self, TableData, FieldsKeysIncluded, building):
+    def apply_cfactor_to_tabledata(self, TableData, FieldsKeysIncluded, building,
+            bot_story : str = '',
+            top_story : str = '',
+            ):
         data = self.database.reshape_data(FieldsKeysIncluded, TableData)
         names_x, names_y = self.load_patterns.get_load_patterns_in_XYdirection()
         i_c = FieldsKeysIncluded.index('C')
         i_k = FieldsKeysIncluded.index('K')
+        i_top_story = FieldsKeysIncluded.index('TopStory')
+        i_bot_story = FieldsKeysIncluded.index('BotStory')
         cx, cy = str(building.results[1]), str(building.results[2])
         kx, ky = str(building.kx), str(building.ky)
         cx_drift, cy_drift = str(building.results_drift[1]), str(building.results_drift[2])
@@ -388,6 +393,10 @@ class EtabsModel:
         drift_load_pattern_names = self.load_patterns.get_drift_load_pattern_names()
         i_name = FieldsKeysIncluded.index("Name")
         for earthquake in data:
+            if bot_story:
+                earthquake[i_bot_story] = bot_story
+            if top_story:
+                earthquake[i_top_story] = top_story
             if not earthquake[i_c]:
                 continue
             name = earthquake[i_name]
@@ -410,6 +419,8 @@ class EtabsModel:
     def apply_cfactor_to_edb(
             self,
             building,
+            bot_story : str = '',
+            top_story : str = '',
             ):
         print("Applying cfactor to edb\n")
         self.SapModel.SetModelIsLocked(False)
@@ -418,7 +429,7 @@ class EtabsModel:
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
         # if is_auto_load_yes_in_seismic_load_patterns(TableData, FieldsKeysIncluded):
         #     return 1
-        TableData = self.apply_cfactor_to_tabledata(TableData, FieldsKeysIncluded, building)
+        TableData = self.apply_cfactor_to_tabledata(TableData, FieldsKeysIncluded, building, bot_story, top_story)
         NumFatalErrors, ret = self.database.write_seismic_user_coefficient(TableKey, FieldsKeysIncluded, TableData)
         print(f"NumFatalErrors, ret = {NumFatalErrors}, {ret}")
         return NumFatalErrors
