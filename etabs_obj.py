@@ -282,7 +282,8 @@ class EtabsModel:
                 modifiers = list(self.SapModel.AreaObj.GetModifiers(label)[0])
                 modifiers[:6] = 6 * [IMod_col_wall]
                 self.SapModel.AreaObj.SetModifiers(label, modifiers)
-
+        # for steel structure
+        self.SapModel.DesignSteel.SetCode('AISC ASD 89')
         # run model (this will create the analysis model)
         print("start running T file analysis")
         modal_case = self.load_cases.get_modal_loadcase_name()
