@@ -462,7 +462,8 @@ class EtabsModel:
         story_names = df['Story'].unique()
         story_diaphs = self.story.get_stories_diaphragms(story_names)
         df['Diaph'] = df['Story'].map(story_diaphs)
-        df['Diaph'] = df['Diaph'].str.join(',')
+        if not df.empty:
+            df['Diaph'] = df['Diaph'].str.join(',')
         return df
 
     def get_static_magnification_coeff_aj(self,
