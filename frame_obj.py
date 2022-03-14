@@ -50,11 +50,11 @@ class FrameObj:
         '''
         map_dict = {
             0 : 'auto',
-            1 : 'Steel',
-            2 : 'Concrete',
-            3 : 'Composite Beam',
+            1 : 'steel',
+            2 : 'concrete',
+            3 : 'composite beam',
             7 : 'No Design',
-            13 : 'Composite Column'
+            13 : 'composite column'
         }
         number = self.SapModel.FrameObj.GetDesignProcedure(name)
         type_ = map_dict.get(number, None)

@@ -738,10 +738,18 @@ class DatabaseTables:
         story_forces = list(result)
         return story_forces, loadcases, FieldsKeysIncluded
 
-    def select_design_load_combinations(self, type_):
-        load_combinations = self.get_design_load_combinations(type_)
+    def select_design_load_combinations(self,
+            types : list = ['concrete'],
+            ):
+        load_combinations = set()
+        type_combos = dict()
+        for type_ in types:
+            combinations = self.get_design_load_combinations(type_)
+            type_combos[type_] = combinations
+            load_combinations = load_combinations.union(combinations)
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
+        return type_combos
 
     def get_beams_forces(self,
                         load_combinations : list = None,
@@ -855,9 +863,11 @@ class DatabaseTables:
         return df
 
     def get_joint_design_reactions(self,
-        type_ : str = 'concrete',
+        types : list = ['concrete'],
+        select_combos : bool = True,
         ):
-        self.select_design_load_combinations(type_)
+        if select_combos:
+            self.select_design_load_combinations(types)
         table_key = 'Joint Design Reactions'
         df = self.read(table_key, to_dataframe=True)
         if 'StepType' in df.columns:
