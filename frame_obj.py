@@ -38,6 +38,28 @@ class FrameObj:
         st = self.SapModel.FrameObj.GetLabelFromName(frame)[1]
         return st == story
 
+    def get_design_procedure(self, name):
+        '''    
+        Program determined = 0
+        Steel Frame Design = 1
+        Concrete Frame Design = 2
+        Composite Beam Design = 3
+        Steel Joist Design = 4
+        No Design = 7
+        Composite Column Design = 13
+        '''
+        map_dict = {
+            0 : 'auto',
+            1 : 'Steel',
+            2 : 'Concrete',
+            3 : 'Composite Beam',
+            7 : 'No Design',
+            13 : 'Composite Column'
+        }
+        number = self.SapModel.FrameObj.GetDesignProcedure(name)
+        type_ = map_dict.get(number, None)
+        return type_
+
     def get_beams_columns(
             self,
             type_=2,
