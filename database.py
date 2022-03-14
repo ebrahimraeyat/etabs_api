@@ -738,8 +738,8 @@ class DatabaseTables:
         story_forces = list(result)
         return story_forces, loadcases, FieldsKeysIncluded
 
-    def select_design_load_combinations(self):
-        load_combinations = self.get_concrete_frame_design_load_combinations()
+    def select_design_load_combinations(self, type_):
+        load_combinations = self.get_design_load_combinations(type_)
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
 
@@ -854,8 +854,10 @@ class DatabaseTables:
                 ]
         return df
 
-    def get_joint_design_reactions(self):
-        self.select_design_load_combinations()
+    def get_joint_design_reactions(self,
+        type_ : str = 'concrete',
+        ):
+        self.select_design_load_combinations(type_)
         table_key = 'Joint Design Reactions'
         df = self.read(table_key, to_dataframe=True)
         if 'StepType' in df.columns:
