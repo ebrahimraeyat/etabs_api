@@ -56,7 +56,7 @@ class FrameObj:
             7 : 'No Design',
             13 : 'composite column'
         }
-        number = self.SapModel.FrameObj.GetDesignProcedure(name)
+        number = self.SapModel.FrameObj.GetDesignProcedure(name)[0]
         type_ = map_dict.get(number, None)
         return type_
 

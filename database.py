@@ -746,7 +746,8 @@ class DatabaseTables:
         for type_ in types:
             combinations = self.get_design_load_combinations(type_)
             type_combos[type_] = combinations
-            load_combinations = load_combinations.union(combinations)
+            if combinations:
+                load_combinations = load_combinations.union(combinations)
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
         return type_combos
