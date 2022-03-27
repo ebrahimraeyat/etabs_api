@@ -451,13 +451,13 @@ class EtabsModel:
         df = df.loc[filt]
         df['Ecc. Ratio'] = df['aj'] * .05
         conditions =[]
-        choises = []
+        choices = []
         for story, xy_lenght in story_length.items():
             conditions.append(df['Dir'].eq('Y') & df['Story'].eq(story))
             conditions.append(df['Dir'].eq('X') & df['Story'].eq(story))
-            choises.extend(xy_lenght)
+            choices.extend(xy_lenght)
         import numpy as np
-        df['Length (Cm)'] = np.select(conditions, choises)
+        df['Length (Cm)'] = np.select(conditions, choices)
         df['Ecc. Length (Cm)'] = df['Ecc. Ratio'] * df['Length (Cm)']
         story_names = df['Story'].unique()
         story_diaphs = self.story.get_stories_diaphragms(story_names)
