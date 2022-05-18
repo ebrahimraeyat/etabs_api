@@ -358,7 +358,7 @@ class CreateF2kFile(Safe):
         #     if load_combos_names is not None:
         #         design_load_combinations.update(load_combos_names)
         # filt = df['Name'].isin(design_load_combinations)
-        filt = df['Type'] == 'Linear Add'
+        filt = df['Type'].isin(('Envelope', 'Linear Add'))
         df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
 
