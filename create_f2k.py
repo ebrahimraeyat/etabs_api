@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Iterable, Union
 
 
 __all__ = ['Safe', 'CreateF2kFile']
@@ -142,6 +142,8 @@ class CreateF2kFile(Safe):
     '''
     load_cases : load cases that user wants to imported in f2k file
     case_types : load case types that user wants to import in f2k file
+    over_writes : if True, it create f2k file from scratch, if False,
+                it adds contents to current file
     '''
     def __init__(self,
             input_f2k,
@@ -149,8 +151,10 @@ class CreateF2kFile(Safe):
             load_cases : list = None,
             case_types : list = None,
             model_datum : float = None,
+            over_writes: bool = True,
             ):
-        input_f2k.touch()
+        if over_writes:
+            input_f2k.touch()
         super().__init__(input_f2k)
         if etabs is None:
             import etabs_obj
@@ -166,12 +170,15 @@ class CreateF2kFile(Safe):
         if case_types is None:
             case_types = ['LinStatic']
         self.case_types = case_types
-        self.initiate()
+        if over_writes:
+            self.tables_contents = dict()
+            self.initiate()
+        else:
+            self.get_tables_contents()
 
     def initiate(self):
         table_key = "PROGRAM CONTROL"
         content = f'ProgramName="SAFE 2014"   Version=14.0.0   ProgLevel="Post Tensioning"   CurrUnits="N, mm, C"  ModelDatum={self.model_datum}\n'
-        self.tables_contents = dict()
         self.tables_contents[table_key] =  content
 
     def add_grids(self):
@@ -346,7 +353,10 @@ class CreateF2kFile(Safe):
         self.add_content_to_table(table_key, content)
         return content
     
-    def add_load_combinations(self):
+    def add_load_combinations(
+                self,
+                types: Iterable = ('Envelope', 'Linear Add'),
+        ):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Load Combination Definitions"
         cols = ['Name', 'LoadName', 'Type', 'SF']
@@ -358,7 +368,7 @@ class CreateF2kFile(Safe):
         #     if load_combos_names is not None:
         #         design_load_combinations.update(load_combos_names)
         # filt = df['Name'].isin(design_load_combinations)
-        filt = df['Type'].isin(('Envelope', 'Linear Add'))
+        filt = df['Type'].isin(types)
         df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
 
