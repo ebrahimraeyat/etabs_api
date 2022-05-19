@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Tuple, Union
 import shutil
 import math
+import sys
 
 
 from load_patterns import LoadPatterns
@@ -33,9 +34,9 @@ class EtabsModel:
                 self,
                 attach_to_instance: bool = True,
                 backup : bool = True,
-                software : str = 'ETABS' # 'SAFE'
-                # model_path: Path = '',
-                # etabs_path: Path = '',
+                software : str = 'ETABS', # 'SAFE'
+                model_path: str = '',
+                software_exe_path: str = '',
                 ):
         self.software = software
         if attach_to_instance:
@@ -47,23 +48,26 @@ class EtabsModel:
                 self.success = False
                 # sys.exit(-1)
         else:
-            self.success = False
             # sys.exit(-1)
-            # helper = comtypes.client.CreateObject('ETABSv1.Helper')
-            # helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-            # if etabs_path:
-            #     try:
-            #         self.etabs = helper.CreateObject(etabs_path)
-            #     except (OSError, comtypes.COMError):
-            #         print(f"Cannot start a new instance of the program from {etabs_path}")
-            #         sys.exit(-1)
-            # else:
-            #     try:
-            #         self.etabs = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
-            #     except (OSError, comtypes.COMError):
-            #         print("Cannot start a new instance of the program.")
-            #         sys.exit(-1)
-            # self.etabs.ApplicationStart()
+            helper = comtypes.client.CreateObject('ETABSv1.Helper')
+            helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
+            if software_exe_path:
+                try:
+                    self.etabs = helper.CreateObject(software_exe_path)
+                except (OSError, comtypes.COMError):
+                    print(f"Cannot start a new instance of the program from {software_exe_path}")
+                    sys.exit(-1)
+            else:
+                try:
+                    self.etabs = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
+                except (OSError, comtypes.COMError):
+                    print("Cannot start a new instance of the program.")
+                    sys.exit(-1)
+            self.success = True
+            self.etabs.ApplicationStart()
+            if model_path:
+                self.etabs.SapModel.File.OpenFile(model_path)
+
         if self.success:
             self.SapModel = self.etabs.SapModel
             if backup:
@@ -806,6 +810,11 @@ class Build:
 
                 
 if __name__ == '__main__':
-    etabs = EtabsModel(backup=False)
+    etabs = EtabsModel(
+                attach_to_instance=False,
+                backup = False,
+                # model_path: Path = '',
+                software_exe_path=r'G:\program files\Computers and Structures\ETABS 20\ETABS.exe'
+    )
     SapModel = etabs.SapModel
     etabs.get_magnification_coeff_aj()
