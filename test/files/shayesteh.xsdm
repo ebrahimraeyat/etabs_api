@@ -1,0 +1,847 @@
+﻿<?xml version="1.0"?>
+<SAFEDetInformation>
+	<CSIDetAppActivation>
+		<ProgName>SAFE</ProgName>
+		<ProgVersion>16.0.2</ProgVersion>
+		<ADIFileStamp></ADIFileStamp>
+		<DateStamp></DateStamp>
+		<SourceFileName></SourceFileName>
+		<DataBaseUnits>9</DataBaseUnits>
+		<PresentUnits>9</PresentUnits>
+		<DesignCodes></DesignCodes>
+		<PreviousDetFile></PreviousDetFile>
+		<DesignUnits>Metric</DesignUnits>
+		<DetDesignCodeCap>ACI 318-14</DetDesignCodeCap>
+	</CSIDetAppActivation>
+	<DetSettings>
+		<DetRunOptions>
+			<PutOnTree>True</PutOnTree>
+			<MakePDF>False</MakePDF>
+			<MakeDWG>False</MakeDWG>
+			<PrintDrawings>False</PrintDrawings>
+			<MergeAreas>True</MergeAreas>
+			<AreaMergeTolerance>0.001</AreaMergeTolerance>
+			<GenAllBarsInPlan>True</GenAllBarsInPlan>
+			<GenRebarCage>True</GenRebarCage>
+		</DetRunOptions>
+		<UserPrefernces>
+			<General>
+				<DetViewPlaceOptsMain>
+					<Pref PlanKeepView="False" />
+					<Pref PlanScaleTOFit="True" />
+					<Pref TableKeepView="False" />
+					<Pref TableDivideToFit="True" />
+					<Pref TableScaleToFit="False" />
+					<Pref SectsKeepView="False" />
+					<Pref SectsDivideToFit="False" />
+					<Pref SectsScaleToFit="True" />
+				</DetViewPlaceOptsMain>
+				<DetDimensionUnitMain>
+					<Pref MainUnits="Metric" />
+					<Pref RebarSet="User" />
+					<Pref Length="Meter" />
+					<Pref Sections="Millimeter" />
+					<Pref BarSpacing="Millimeter" />
+					<Pref Force="KiloNewton" />
+					<Pref RebarMarkType="MK-01, MK02..." />
+					<Pref BarMarkNumbSep="- (Dash)" />
+					<Pref BarMarkMarkSep="- (Dash)" />
+					<Pref BarMarkSpacingSep="@ (At)" />
+					<Pref BarLength="Meter" />
+					<Pref SlabArea="Sq m" />
+					<Pref ConcVolume="Cu m" />
+					<Pref SteelWt="MTon" />
+				</DetDimensionUnitMain>
+				<DetDimUnitFormatCombined>
+					<Pref UseDecimal="False" />
+					<Pref DigitsFt="3" />
+					<Pref DigitsIn="3" />
+					<Pref UseFraction="True" />
+					<Pref InchFraction="8" />
+					<Pref MaxInch="12" />
+					<Pref Separator="-" />
+					<Pref ShowSymbol="True" />
+					<Pref FtSymbol="'" />
+					<Pref InSymbol="''" />
+					<Pref BarSpRound="1" />
+					<Pref DigitsM="3" />
+					<Pref DigitsCM="1" />
+					<Pref DigitsMM="0" />
+					<Pref ShowSymbolMetric="True" />
+					<Pref LCase="True" />
+					<Pref UCase="False" />
+					<Pref GroupByThousands="False" />
+					<Pref BarSpRoundMetric="25" />
+				</DetDimUnitFormatCombined>
+				<DetProjectInfo>
+					<Pref ProjectName="CSIDETAILER" />
+					<Pref ProjectNo="DETAILING-01" />
+					<Pref JobTitle="DETAILING OF SLABS AND BEAMS" />
+					<Pref Client="CSIDETAILER USER" />
+					<Pref ClientCode="CSIDETAILER USER" />
+					<Pref Consultant="COMPUTER AND STRUCTURES INC" />
+					<Pref Address1="UNIVERSITY AVE" />
+					<Pref Address2="BERKELEY. CA" />
+					<Pref DesignBy="NA" />
+					<Pref DrawnBy="NA" />
+					<Pref CheckedBy="AH" />
+					<Pref ApprovedBy="IS" />
+					<Pref Date="**/**/20**" />
+					<Pref NewDrawing="True" />
+					<Pref ExistingDrawing="False" />
+				</DetProjectInfo>
+			</General>
+			<MemberDetailing>
+				<DetPrefOptsMainSlab>
+					<Pref CurtUsingRules="True" />
+					<Pref CurtUsingArea="False" />
+					<Pref DetailAllBars="True" />
+					<Pref DetailAboveTypical="False" />
+					<Pref TopBarXDirSize="0.39448" />
+					<Pref TopBarXDirSp="230" />
+					<Pref BotBarXDirSize="0.31171" />
+					<Pref BotBarXDirSp="300" />
+					<Pref TopBarYDirSize="0.39448" />
+					<Pref TopBarYDirSp="230" />
+					<Pref BotBarYDirSize="0.31171" />
+					<Pref BotBarYDirSp="300" />
+					<Pref SectionNoFormat="A.B.C" />
+					<Pref SectEachDirection="1" />
+					<Pref ShowXSBarsInSection="False" />
+					<Pref AddOutlineForZOffset="True" />
+					<Pref IncludeBarNo="True" />
+					<Pref IncludeBarMark="False" />
+					<Pref IncludeShapePlace="True" />
+					<Pref IncludeBarDesignation="True" />
+					<Pref IncludeBarSp="False" />
+					<Pref IncludeBarIndication="False" />
+					<Pref ShowBarExtents="True" />
+					<Pref IncludeIndicativeBars="True" />
+					<Pref SlabPlan="1:50" />
+					<Pref SlabSection="1:25" />
+					<Pref SmallestBarSize="0.12168" />
+					<Pref LargestBarSize="0.7609" />
+					<Pref MinBarNo="2" />
+					<Pref MaxExcessArea="15" />
+					<Pref MinBarSp="50" />
+					<Pref MaxBarSp="450" />
+					<Pref SmallestBarLength="900" />
+					<Pref ColStripTop="0.39448" />
+					<Pref ColStripBot="0.31171" />
+					<Pref MidStripTop="0.31171" />
+					<Pref MidStripBot="0.17531" />
+					<Pref EnforceMinAst="False" />
+					<Pref ColStripTopPercent="0.18" />
+					<Pref ColStripBotPercent="0.18" />
+					<Pref MidStripTopPercent="0.18" />
+					<Pref MidStripBotPercent="0.18" />
+					<Pref WaffleTopSlabBarSize="0.12168" />
+					<Pref WaffleTopSlabBarSp="450" />
+					<Pref RibTopBarSize="0.12168" />
+					<Pref RibTopBarNo="2" />
+					<Pref RibBotBarSize="0.31171" />
+					<Pref RibBotBarNo="2" />
+					<Pref RibStirrupSize="0.12168" />
+					<Pref RibStirrupNo="300" />
+					<Pref OpeningsBarSize="0.17531" />
+					<Pref OpeningsEdgeBarNo="2" />
+					<Pref OpeningsBarExtension="600" />
+					<Pref RebarEndCode="Bend90" />
+					<Pref RebarCurtailCode="Cut" />
+					<Pref RebarLapCode="Joggle" />
+					<Pref RebarCutCode="Cut" />
+					<Pref ShowTwoLayersInXS="True" />
+				</DetPrefOptsMainSlab>
+				<DetPrefOptsMainBeam>
+					<Pref CurtUsingRules="True" />
+					<Pref CurtUsingArea="False" />
+					<Pref MinTopBarSize="0.17531" />
+					<Pref MinTopBarNo="2" />
+					<Pref MinBotBarSize="0.31171" />
+					<Pref MinBotBarNo="2" />
+					<Pref MemberIDPrefix="CB" />
+					<Pref SeqID="True" />
+					<Pref BeamElevation="1:50" />
+					<Pref BeamSection="1:25" />
+					<Pref SectEachSpan="1" />
+					<Pref SectionNoFormat="A.B.C" />
+					<Pref IncludeBarNo="True" />
+					<Pref IncludeBarMark="False" />
+					<Pref IncludeShapePlace="True" />
+					<Pref IncludeBarDesignation="True" />
+					<Pref IncludeBarSP="True" />
+					<Pref ShowEveryStirrup="False" />
+					<Pref SmallestBarSize="0.17531" />
+					<Pref LargestBarSize="1.24651" />
+					<Pref MaxExcessArea="15" />
+					<Pref SmallestBarLength="900" />
+					<Pref MinLapL="300" />
+					<Pref TopBarSize="0.7609" />
+					<Pref BotBarSize="0.39448" />
+					<Pref StirrupSize="0.12168" />
+					<Pref SmallestStirrupSize="0.12168" />
+					<Pref LargestStirrupSize="0.31171" />
+					<Pref MinStirrupSp="100" />
+					<Pref MaxStirrupSp="600" />
+					<Pref RebarStirrupCode="Rectangle135" />
+					<Pref EnforceMinAst="False" />
+					<Pref TopBarPercent="0.5" />
+					<Pref BotBarPercent="0.5" />
+					<Pref RebarEndCode="Bend90" />
+					<Pref RebarCurtailCode="Curtail" />
+					<Pref RebarLapCode="Curtail" />
+					<Pref RebarCutCode="Cut" />
+				</DetPrefOptsMainBeam>
+				<DetPrefOptsMainFooting>
+					<Pref DetailAllBars="True" />
+					<Pref DetailAboveTypical="False" />
+					<Pref TopBarXDirSize="0.7609" />
+					<Pref TopBarXDirSp="230" />
+					<Pref BotBarXDirSize="1.24651" />
+					<Pref BotBarXDirSp="300" />
+					<Pref TopBarYDirSize="0.7609" />
+					<Pref TopBarYDirSp="230" />
+					<Pref BotBarYDirSize="1.24651" />
+					<Pref BotBarYDirSp="300" />
+					<Pref MemberIDPrefix="F" />
+					<Pref SectionNoFormat="A.B.C" />
+					<Pref SeqID="True" />
+					<Pref Elevation="1:50" />
+					<Pref Section="1:25" />
+					<Pref SectEachDirection="1" />
+					<Pref IncludeBarNo="True" />
+					<Pref IncludeBarMark="True" />
+					<Pref IncludeBarDesignation="True" />
+					<Pref IncludeBarSp="False" />
+					<Pref IncludeBarIndication="False" />
+					<Pref ShowBarExtents="True" />
+					<Pref SmallestBarSize="0.12168" />
+					<Pref LargestBarSize="1.24651" />
+					<Pref MinBarNo="4" />
+					<Pref MaxExcessArea="15" />
+					<Pref MinBarSp="100" />
+					<Pref MaxBarSp="450" />
+					<Pref MaxBarLength="10000" />
+					<Pref SmallestBarLength="900" />
+					<Pref TopBarSize="0.17531" />
+					<Pref BotBarSize="0.39448" />
+					<Pref EnforceMinAst="False" />
+					<Pref TopBarPercent="0" />
+					<Pref BotBarPercent="0.2" />
+					<Pref OpeningsBarSize="0.7609" />
+					<Pref OpeningsEdgeBarNo="2" />
+					<Pref OpeningsBarExtension="900" />
+				</DetPrefOptsMainFooting>
+				<DetPrefOptsMainMat>
+					<Pref CurtUsingArea="True" />
+					<Pref DetailAllBars="True" />
+					<Pref TopBarXDirSize="0.7609" />
+					<Pref TopBarXDirSp="230" />
+					<Pref BotBarXDirSize="1.24651" />
+					<Pref BotBarXDirSp="300" />
+					<Pref TopBarYDirSize="1.24651" />
+					<Pref TopBarYDirSp="230" />
+					<Pref BotBarYDirSize="1.24651" />
+					<Pref SectionNoFormat="A.B.C" />
+					<Pref Elevation="1:40" />
+					<Pref Section="1:25" />
+					<Pref SectEachDirection="1" />
+					<Pref IncludeBarNo="False" />
+					<Pref IncludeBarMark="True" />
+					<Pref IcludeBarDesignation="True" />
+					<Pref IncludeBarSp="True" />
+					<Pref IncludeBarIndication="False" />
+					<Pref ShowBarExtents="True" />
+					<Pref SmallestBarSize="0.17531" />
+					<Pref LargestBarSize="1.24651" />
+					<Pref MinBarNo="4" />
+					<Pref MaxExcessArea="20" />
+					<Pref MinBarSp="100" />
+					<Pref MaxBarSp="450" />
+					<Pref MaxBarLength="900" />
+					<Pref SmallestBarLength="600" />
+					<Pref TopBarSize="1.24651" />
+					<Pref BotBarSize="0.39448" />
+					<Pref EnforceMinAst="False" />
+					<Pref TopBarPercent="0" />
+					<Pref BotBarPercent="0.2" />
+					<Pref OpeningsBarSize="0.7609" />
+					<Pref OpeningsEdgeBarNo="2" />
+					<Pref OpeningsBarExtension="900" />
+					<Pref RebarEndCode="Bend90" />
+					<Pref RebarCurtailCode="Cut" />
+					<Pref RebarLapCode="Joggle" />
+					<Pref RebarCutCode="Cut" />
+					<Pref ShowTwoLayersInXS="True" />
+					<Pref SlabWidthForXS="5000" />
+					<Pref SuppDistTolS="1200" />
+					<Pref MinQUadH="450" />
+					<Pref MinQUadW="1200" />
+					<Pref SuppDistTolB="1200" />
+				</DetPrefOptsMainMat>
+			</MemberDetailing>
+		</UserPrefernces>
+		<ViewOptions>
+			<IDName></IDName>
+			<Caption></Caption>
+			<OnlyEdited>True</OnlyEdited>
+		</ViewOptions>
+		<MainPrefOpts>
+			<DefDrawingSetup>
+				<DrgUnits>mm</DrgUnits>
+				<DrgSizeUnits>mm</DrgSizeUnits>
+				<DrgSizesID>2</DrgSizesID>
+				<DrgSizeID>4</DrgSizeID>
+				<ScaleFactor>100</ScaleFactor>
+				<DrgScalesID>2</DrgScalesID>
+				<DrgScaleID>6</DrgScaleID>
+				<TextH>0.11811</TextH>
+				<SymbH>0.05906</SymbH>
+				<LineTh>0.00984</LineTh>
+				<ShowBackground>True</ShowBackground>
+				<ShowBorder>True</ShowBorder>
+				<ShowTitle>True</ShowTitle>
+				<DrgNoPrefix>S-</DrgNoPrefix>
+				<TitleBlockHt>1.96850393700787</TitleBlockHt>
+				<TitleBlockWid>4.7244094488189</TitleBlockWid>
+				<TitleBlockStyle>DrawingTitleRightFull</TitleBlockStyle>
+				<LogoFile>Company Logo.jpg</LogoFile>
+				<Margins Top="0.7874" Left="0.7874" Bot="0.7874" Right="0.7874" Absolute="-1" />
+			</DefDrawingSetup>
+			<Memb>
+				<Slab>
+					<BarCurtail>
+						<Caption></Caption>
+						<BasedOn>ACI_315_05</BasedOn>
+						<ColTop>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</ColTop>
+						<ColBot>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</ColBot>
+						<MidTop>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</MidTop>
+						<MidBot>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.15</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.15</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</MidBot>
+						<ColTopWDP>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.33</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.33</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.33</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.33</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</ColTopWDP>
+						<ColBotWDP>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</ColBotWDP>
+						<MidTopWDP>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.22</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</MidTopWDP>
+						<MidBotWDP>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.15</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.15</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</MidBotWDP>
+					</BarCurtail>
+				</Slab>
+				<BeamRC>
+					<BarCurtail>
+						<Caption></Caption>
+						<BasedOn></BasedOn>
+						<TopBars>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.25</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.25</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.3</FracLen1>
+								<FracLen2>0.2</FracLen2>
+								<Percent1>50</Percent1>
+								<Percent2>50</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</TopBars>
+						<BotBars>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0</FracLen2>
+								<Percent1>100</Percent1>
+								<Percent2>0</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>75</Percent1>
+								<Percent2>25</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0</FracLen1>
+								<FracLen2>0.125</FracLen2>
+								<Percent1>75</Percent1>
+								<Percent2>25</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</BotBars>
+						<TopBarsPerim>
+							<UseLn>True</UseLn>
+							<ExtL>
+								<FracLen1>0.7</FracLen1>
+								<FracLen2>0.25</FracLen2>
+								<Percent1>16</Percent1>
+								<Percent2>84</Percent2>
+								<StartBend1>Bend90</StartBend1>
+								<StartBend2>Bend90</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtL>
+							<ExtR>
+								<FracLen1>0.7</FracLen1>
+								<FracLen2>0.25</FracLen2>
+								<Percent1>16</Percent1>
+								<Percent2>84</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Bend90</EndBend1>
+								<EndBend2>Bend90</EndBend2>
+								<MinLap>6</MinLap>
+							</ExtR>
+							<Int1>
+								<FracLen1>0.7</FracLen1>
+								<FracLen2>0.3</FracLen2>
+								<Percent1>16</Percent1>
+								<Percent2>84</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int1>
+							<Int2>
+								<FracLen1>0.7</FracLen1>
+								<FracLen2>0.3</FracLen2>
+								<Percent1>16</Percent1>
+								<Percent2>84</Percent2>
+								<StartBend1>Curtail</StartBend1>
+								<StartBend2>Curtail</StartBend2>
+								<EndBend1>Curtail</EndBend1>
+								<EndBend2>Curtail</EndBend2>
+								<MinLap>6</MinLap>
+							</Int2>
+						</TopBarsPerim>
+					</BarCurtail>
+				</BeamRC>
+			</Memb>
+		</MainPrefOpts>
+	</DetSettings>
+	<Drawings>
+		<DrawingCount>0</DrawingCount>
+	</Drawings>
+</SAFEDetInformation>

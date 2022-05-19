@@ -142,7 +142,7 @@ class CreateF2kFile(Safe):
     '''
     load_cases : load cases that user wants to imported in f2k file
     case_types : load case types that user wants to import in f2k file
-    over_writes : if True, it create f2k file from scratch, if False,
+    append : if False, it create f2k file from scratch, if True,
                 it adds contents to current file
     '''
     def __init__(self,
@@ -151,9 +151,9 @@ class CreateF2kFile(Safe):
             load_cases : list = None,
             case_types : list = None,
             model_datum : float = None,
-            over_writes: bool = True,
+            append: bool = False,
             ):
-        if over_writes:
+        if not append:
             input_f2k.touch()
         super().__init__(input_f2k)
         if etabs is None:
@@ -170,11 +170,11 @@ class CreateF2kFile(Safe):
         if case_types is None:
             case_types = ['LinStatic']
         self.case_types = case_types
-        if over_writes:
+        if append:
+            self.get_tables_contents()
+        else:
             self.tables_contents = dict()
             self.initiate()
-        else:
-            self.get_tables_contents()
 
     def initiate(self):
         table_key = "PROGRAM CONTROL"

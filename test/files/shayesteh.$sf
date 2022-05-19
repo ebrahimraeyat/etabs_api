@@ -1,0 +1,554 @@
+File C:\Users\ebi\AppData\Roaming\FreeCAD\Mod\etabs_api\test\files\shayesteh.$sf was saved on 5/1/17 at 0:00:54
+ 
+TABLE:  "ADVANCED MODELING OPTIONS"
+   2DOnly=No   RigDiaTop=No   NoOffsets=Yes
+ 
+TABLE:  "ADVANCED SAPFIRE OPTIONS"
+   SolverOpt=Advanced   ProcessOpt=Auto   Always32Bit=No
+ 
+TABLE:  "AUTOMATIC SLAB MESH OPTIONS"
+   MeshOpt=Rectangular   Localize=Yes   Merge=Yes   MaxSize=1.2
+ 
+TABLE:  "BEAM PROPERTIES 01 - GENERAL"
+   Beam=BEAM1   Type=Rectangular   Color=Cyan   GUID=a6bb554c-6ad7-4461-8b88-fd6941f1b0da
+ 
+TABLE:  "BEAM PROPERTIES 02 - RECTANGULAR BEAM"
+   Beam=BEAM1   MatProp=CSAC30   Depth=0.6   WidthTop=0.3   WidthBot=0.3
+ 
+TABLE:  "BEAM PROPERTIES 06 - DESIGN DATA"
+   Beam=BEAM1   MatRebarL=CSA-G30.18Gr400   MatRebarS=CSA-G30.18Gr400   FlngWOpt="Analysis Property"   CoverTop=0.075   CoverBot=0.075   NoDesign=No
+ 
+TABLE:  "COLUMN PROPERTIES 01 - GENERAL"
+   Column=COL1   Type=Rectangular   Color=Cyan   GUID=b43432d1-ebb4-4b2f-94d9-4c240c18b0ac
+ 
+TABLE:  "COLUMN PROPERTIES 02 - RECTANGULAR"
+   Column=COL1   MatProp=CSAC30   SecDim2=0.6   SecDim3=0.3   AutoRigid=No   AutoDrop=No   IncludeCap=No
+ 
+TABLE:  "COORDINATE SYSTEMS"
+   CoordSys=GLOBAL   Type=Cartesian   OriginGx=0   OriginGy=0   RotAngle=0
+ 
+TABLE:  "CRACKING ANALYSIS REINFORCEMENT"
+   ReinfOpt="FE Design"   MinReinfT=0.0018   MinReinfC=0
+ 
+TABLE:  "DESIGN PREFERENCES 01 - RESISTANCE FACTORS"
+   PhiTen=0.9   PhiComp=0.65   PhiShear=0.75
+ 
+TABLE:  "DESIGN PREFERENCES 02 - REBAR COVER - SLABS"
+   CoverTop=0.015   CoverBot=0.015   BarSize=18   InnerLayer=B   PTCGSTop=0.025   PTCGSBotExt=0.04   PTCGSBotInt=0.025   SlabType="Two Way"
+ 
+TABLE:  "DESIGN PREFERENCES 03 - REBAR COVER - BEAMS"
+   CoverTop=0.04   CoverBot=0.04   BarSizeF=28   BarSizeS=12   PTCGSTop=0.05   PTCGSBot=0.05
+ 
+TABLE:  "DESIGN PREFERENCES 04 - PRESTRESS DATA"
+   UserStress=No   InitConcRat=0.8   LLFraction=0.5
+ 
+TABLE:  "FUNCTION - RESPONSE SPECTRUM"
+   Func=FUNC1   Period=0   Accel=0.3   FuncDamp=0.05
+   Func=FUNC1   Period=0.02   Accel=0.39
+   Func=FUNC1   Period=0.04   Accel=0.48
+   Func=FUNC1   Period=0.06   Accel=0.57
+   Func=FUNC1   Period=0.08   Accel=0.66
+   Func=FUNC1   Period=0.1   Accel=0.75
+   Func=FUNC1   Period=0.12   Accel=0.75
+   Func=FUNC1   Period=0.14   Accel=0.75
+   Func=FUNC1   Period=0.16   Accel=0.75
+   Func=FUNC1   Period=0.18   Accel=0.75
+   Func=FUNC1   Period=0.2   Accel=0.75
+   Func=FUNC1   Period=0.22   Accel=0.75
+   Func=FUNC1   Period=0.24   Accel=0.75
+   Func=FUNC1   Period=0.26   Accel=0.75
+   Func=FUNC1   Period=0.28   Accel=0.75
+   Func=FUNC1   Period=0.3   Accel=0.75
+   Func=FUNC1   Period=0.32   Accel=0.75
+   Func=FUNC1   Period=0.34   Accel=0.75
+   Func=FUNC1   Period=0.36   Accel=0.75
+   Func=FUNC1   Period=0.38   Accel=0.75
+   Func=FUNC1   Period=0.4   Accel=0.75
+   Func=FUNC1   Period=0.42   Accel=0.75
+   Func=FUNC1   Period=0.44   Accel=0.75
+   Func=FUNC1   Period=0.46   Accel=0.75
+   Func=FUNC1   Period=0.48   Accel=0.75
+   Func=FUNC1   Period=0.5   Accel=0.75
+   Func=FUNC1   Period=0.52   Accel=0.724
+   Func=FUNC1   Period=0.54   Accel=0.7
+   Func=FUNC1   Period=0.56   Accel=0.6777
+   Func=FUNC1   Period=0.58   Accel=0.6569
+   Func=FUNC1   Period=0.6   Accel=0.6375
+   Func=FUNC1   Period=0.62   Accel=0.6194
+   Func=FUNC1   Period=0.64   Accel=0.6023
+   Func=FUNC1   Period=0.66   Accel=0.5864
+   Func=FUNC1   Period=0.68   Accel=0.5713
+   Func=FUNC1   Period=0.7   Accel=0.5571
+   Func=FUNC1   Period=0.72   Accel=0.5438
+   Func=FUNC1   Period=0.74   Accel=0.5311
+   Func=FUNC1   Period=0.76   Accel=0.5191
+   Func=FUNC1   Period=0.78   Accel=0.5077
+   Func=FUNC1   Period=0.8   Accel=0.4969
+   Func=FUNC1   Period=0.82   Accel=0.4866
+   Func=FUNC1   Period=0.84   Accel=0.4768
+   Func=FUNC1   Period=0.86   Accel=0.4674
+   Func=FUNC1   Period=0.88   Accel=0.4585
+   Func=FUNC1   Period=0.9   Accel=0.45
+   Func=FUNC1   Period=0.92   Accel=0.4418
+   Func=FUNC1   Period=0.94   Accel=0.434
+   Func=FUNC1   Period=0.96   Accel=0.4266
+   Func=FUNC1   Period=0.98   Accel=0.4194
+   Func=FUNC1   Period=1   Accel=0.4125
+   Func=FUNC1   Period=1.02   Accel=0.4059
+   Func=FUNC1   Period=1.04   Accel=0.3995
+   Func=FUNC1   Period=1.06   Accel=0.3934
+   Func=FUNC1   Period=1.08   Accel=0.3875
+   Func=FUNC1   Period=1.1   Accel=0.3818
+   Func=FUNC1   Period=1.12   Accel=0.3763
+   Func=FUNC1   Period=1.14   Accel=0.3711
+   Func=FUNC1   Period=1.16   Accel=0.3659
+   Func=FUNC1   Period=1.18   Accel=0.361
+   Func=FUNC1   Period=1.2   Accel=0.3562
+   Func=FUNC1   Period=1.22   Accel=0.3516
+   Func=FUNC1   Period=1.24   Accel=0.3472
+   Func=FUNC1   Period=1.26   Accel=0.3429
+   Func=FUNC1   Period=1.28   Accel=0.3387
+   Func=FUNC1   Period=1.3   Accel=0.3346
+   Func=FUNC1   Period=1.32   Accel=0.3307
+   Func=FUNC1   Period=1.34   Accel=0.3269
+   Func=FUNC1   Period=1.36   Accel=0.3232
+   Func=FUNC1   Period=1.38   Accel=0.3196
+   Func=FUNC1   Period=1.4   Accel=0.3161
+   Func=FUNC1   Period=1.42   Accel=0.3127
+   Func=FUNC1   Period=1.44   Accel=0.3094
+   Func=FUNC1   Period=1.46   Accel=0.3062
+   Func=FUNC1   Period=1.48   Accel=0.303
+   Func=FUNC1   Period=1.5   Accel=0.3
+   Func=FUNC1   Period=1.52   Accel=0.297
+   Func=FUNC1   Period=1.54   Accel=0.2942
+   Func=FUNC1   Period=1.56   Accel=0.2913
+   Func=FUNC1   Period=1.58   Accel=0.2886
+   Func=FUNC1   Period=1.6   Accel=0.2859
+   Func=FUNC1   Period=1.62   Accel=0.2833
+   Func=FUNC1   Period=1.64   Accel=0.2808
+   Func=FUNC1   Period=1.66   Accel=0.2783
+   Func=FUNC1   Period=1.68   Accel=0.2759
+   Func=FUNC1   Period=1.7   Accel=0.2735
+   Func=FUNC1   Period=1.72   Accel=0.2712
+   Func=FUNC1   Period=1.74   Accel=0.269
+   Func=FUNC1   Period=1.76   Accel=0.2668
+   Func=FUNC1   Period=1.78   Accel=0.2646
+   Func=FUNC1   Period=1.8   Accel=0.2625
+   Func=FUNC1   Period=1.82   Accel=0.2604
+   Func=FUNC1   Period=1.84   Accel=0.2584
+   Func=FUNC1   Period=1.86   Accel=0.2565
+   Func=FUNC1   Period=1.88   Accel=0.2545
+   Func=FUNC1   Period=1.9   Accel=0.2526
+   Func=FUNC1   Period=1.92   Accel=0.2508
+   Func=FUNC1   Period=1.94   Accel=0.249
+   Func=FUNC1   Period=1.96   Accel=0.2472
+   Func=FUNC1   Period=1.98   Accel=0.2455
+   Func=FUNC1   Period=2   Accel=0.2438
+   Func=FUNC1   Period=2.02   Accel=0.2421
+   Func=FUNC1   Period=2.04   Accel=0.2404
+   Func=FUNC1   Period=2.06   Accel=0.2388
+   Func=FUNC1   Period=2.08   Accel=0.2373
+   Func=FUNC1   Period=2.1   Accel=0.2357
+   Func=FUNC1   Period=2.12   Accel=0.2342
+   Func=FUNC1   Period=2.14   Accel=0.2327
+   Func=FUNC1   Period=2.16   Accel=0.2312
+   Func=FUNC1   Period=2.18   Accel=0.2298
+   Func=FUNC1   Period=2.2   Accel=0.2284
+   Func=FUNC1   Period=2.22   Accel=0.227
+   Func=FUNC1   Period=2.24   Accel=0.2257
+   Func=FUNC1   Period=2.26   Accel=0.2243
+   Func=FUNC1   Period=2.28   Accel=0.223
+   Func=FUNC1   Period=2.3   Accel=0.2217
+   Func=FUNC1   Period=2.32   Accel=0.2205
+   Func=FUNC1   Period=2.34   Accel=0.2192
+   Func=FUNC1   Period=2.36   Accel=0.218
+   Func=FUNC1   Period=2.38   Accel=0.2168
+   Func=FUNC1   Period=2.4   Accel=0.2156
+   Func=FUNC1   Period=2.42   Accel=0.2145
+   Func=FUNC1   Period=2.44   Accel=0.2133
+   Func=FUNC1   Period=2.46   Accel=0.2122
+   Func=FUNC1   Period=2.48   Accel=0.2111
+   Func=FUNC1   Period=2.5   Accel=0.21
+   Func=FUNC1   Period=2.52   Accel=0.2089
+   Func=FUNC1   Period=2.54   Accel=0.2079
+   Func=FUNC1   Period=2.56   Accel=0.2068
+   Func=FUNC1   Period=2.58   Accel=0.2058
+   Func=FUNC1   Period=2.6   Accel=0.2048
+   Func=FUNC1   Period=2.62   Accel=0.2038
+   Func=FUNC1   Period=2.64   Accel=0.2028
+   Func=FUNC1   Period=2.66   Accel=0.2019
+   Func=FUNC1   Period=2.68   Accel=0.2009
+   Func=FUNC1   Period=2.7   Accel=0.2
+   Func=FUNC1   Period=2.72   Accel=0.1991
+   Func=FUNC1   Period=2.74   Accel=0.1982
+   Func=FUNC1   Period=2.76   Accel=0.1973
+   Func=FUNC1   Period=2.78   Accel=0.1964
+   Func=FUNC1   Period=2.8   Accel=0.1955
+   Func=FUNC1   Period=2.82   Accel=0.1947
+   Func=FUNC1   Period=2.84   Accel=0.1938
+   Func=FUNC1   Period=2.86   Accel=0.193
+   Func=FUNC1   Period=2.88   Accel=0.1922
+   Func=FUNC1   Period=2.9   Accel=0.1914
+   Func=FUNC1   Period=2.92   Accel=0.1906
+   Func=FUNC1   Period=2.94   Accel=0.1898
+   Func=FUNC1   Period=2.96   Accel=0.189
+   Func=FUNC1   Period=2.98   Accel=0.1883
+   Func=FUNC1   Period=3   Accel=0.1875
+   Func=FUNC1   Period=3.02   Accel=0.1868
+   Func=FUNC1   Period=3.04   Accel=0.186
+   Func=FUNC1   Period=3.06   Accel=0.1853
+   Func=FUNC1   Period=3.08   Accel=0.1846
+   Func=FUNC1   Period=3.1   Accel=0.1839
+   Func=FUNC1   Period=3.12   Accel=0.1832
+   Func=FUNC1   Period=3.14   Accel=0.1825
+   Func=FUNC1   Period=3.16   Accel=0.1818
+   Func=FUNC1   Period=3.18   Accel=0.1811
+   Func=FUNC1   Period=3.2   Accel=0.1805
+   Func=FUNC1   Period=3.22   Accel=0.1798
+   Func=FUNC1   Period=3.24   Accel=0.1792
+   Func=FUNC1   Period=3.26   Accel=0.1785
+   Func=FUNC1   Period=3.28   Accel=0.1779
+   Func=FUNC1   Period=3.3   Accel=0.1773
+   Func=FUNC1   Period=3.32   Accel=0.1767
+   Func=FUNC1   Period=3.34   Accel=0.176
+   Func=FUNC1   Period=3.36   Accel=0.1754
+   Func=FUNC1   Period=3.38   Accel=0.1749
+   Func=FUNC1   Period=3.4   Accel=0.1743
+   Func=FUNC1   Period=3.42   Accel=0.1737
+   Func=FUNC1   Period=3.44   Accel=0.1731
+   Func=FUNC1   Period=3.46   Accel=0.1725
+   Func=FUNC1   Period=3.48   Accel=0.172
+   Func=FUNC1   Period=3.5   Accel=0.1714
+   Func=FUNC1   Period=3.52   Accel=0.1709
+   Func=FUNC1   Period=3.54   Accel=0.1703
+   Func=FUNC1   Period=3.56   Accel=0.1698
+   Func=FUNC1   Period=3.58   Accel=0.1693
+   Func=FUNC1   Period=3.6   Accel=0.1688
+   Func=FUNC1   Period=3.62   Accel=0.1682
+   Func=FUNC1   Period=3.64   Accel=0.1677
+   Func=FUNC1   Period=3.66   Accel=0.1672
+   Func=FUNC1   Period=3.68   Accel=0.1667
+   Func=FUNC1   Period=3.7   Accel=0.1662
+   Func=FUNC1   Period=3.72   Accel=0.1657
+   Func=FUNC1   Period=3.74   Accel=0.1652
+   Func=FUNC1   Period=3.76   Accel=0.1648
+   Func=FUNC1   Period=3.78   Accel=0.1643
+   Func=FUNC1   Period=3.8   Accel=0.1638
+   Func=FUNC1   Period=3.82   Accel=0.1634
+   Func=FUNC1   Period=3.84   Accel=0.1629
+   Func=FUNC1   Period=3.86   Accel=0.1624
+   Func=FUNC1   Period=3.88   Accel=0.162
+   Func=FUNC1   Period=3.9   Accel=0.1615
+   Func=FUNC1   Period=3.92   Accel=0.1611
+   Func=FUNC1   Period=3.94   Accel=0.1607
+   Func=FUNC1   Period=3.96   Accel=0.1602
+   Func=FUNC1   Period=3.98   Accel=0.1598
+   Func=FUNC1   Period=4   Accel=0.1594
+   Func=FUNC1   Period=4.02   Accel=0.1586
+   Func=FUNC1   Period=4.04   Accel=0.1578
+   Func=FUNC1   Period=4.06   Accel=0.157
+   Func=FUNC1   Period=4.08   Accel=0.1562
+   Func=FUNC1   Period=4.1   Accel=0.1555
+   Func=FUNC1   Period=4.12   Accel=0.1547
+   Func=FUNC1   Period=4.14   Accel=0.154
+   Func=FUNC1   Period=4.16   Accel=0.1532
+   Func=FUNC1   Period=4.18   Accel=0.1525
+   Func=FUNC1   Period=4.2   Accel=0.1518
+   Func=FUNC1   Period=4.22   Accel=0.1511
+   Func=FUNC1   Period=4.24   Accel=0.1504
+   Func=FUNC1   Period=4.26   Accel=0.1496
+   Func=FUNC1   Period=4.28   Accel=0.1489
+   Func=FUNC1   Period=4.3   Accel=0.1483
+   Func=FUNC1   Period=4.32   Accel=0.1476
+   Func=FUNC1   Period=4.34   Accel=0.1469
+   Func=FUNC1   Period=4.36   Accel=0.1462
+   Func=FUNC1   Period=4.38   Accel=0.1455
+   Func=FUNC1   Period=4.4   Accel=0.1449
+   Func=FUNC1   Period=4.42   Accel=0.1442
+   Func=FUNC1   Period=4.44   Accel=0.1436
+   Func=FUNC1   Period=4.46   Accel=0.1429
+   Func=FUNC1   Period=4.48   Accel=0.1423
+   Func=FUNC1   Period=4.5   Accel=0.1417
+   Func=FUNC1   Period=4.52   Accel=0.141
+   Func=FUNC1   Period=4.54   Accel=0.1404
+   Func=FUNC1   Period=4.56   Accel=0.1398
+   Func=FUNC1   Period=4.58   Accel=0.1392
+   Func=FUNC1   Period=4.6   Accel=0.1386
+   Func=FUNC1   Period=4.62   Accel=0.138
+   Func=FUNC1   Period=4.64   Accel=0.1374
+   Func=FUNC1   Period=4.66   Accel=0.1368
+   Func=FUNC1   Period=4.68   Accel=0.1362
+   Func=FUNC1   Period=4.7   Accel=0.1356
+   Func=FUNC1   Period=4.72   Accel=0.1351
+   Func=FUNC1   Period=4.74   Accel=0.1345
+   Func=FUNC1   Period=4.76   Accel=0.1339
+   Func=FUNC1   Period=4.78   Accel=0.1334
+   Func=FUNC1   Period=4.8   Accel=0.1328
+   Func=FUNC1   Period=4.82   Accel=0.1323
+   Func=FUNC1   Period=4.84   Accel=0.1317
+   Func=FUNC1   Period=4.86   Accel=0.1312
+   Func=FUNC1   Period=4.88   Accel=0.1306
+   Func=FUNC1   Period=4.9   Accel=0.1301
+   Func=FUNC1   Period=4.92   Accel=0.1296
+   Func=FUNC1   Period=4.94   Accel=0.129
+   Func=FUNC1   Period=4.96   Accel=0.1285
+   Func=FUNC1   Period=4.98   Accel=0.128
+   Func=FUNC1   Period=5   Accel=0.1275
+   Func=FUNC1   Period=5.02   Accel=0.127
+ 
+TABLE:  "GRID LINES"
+   CoordSys=GLOBAL   AxisDir=X   GridID=1   Ordinate=0   Visible=Yes   BubbleLoc=End   GridColor=10461087   BubbleSize=1.25   HideAll=No
+   CoordSys=GLOBAL   AxisDir=X   GridID=2   Ordinate=2.82   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=3   Ordinate=3.93   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=4   Ordinate=6.53   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=5   Ordinate=7.04   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=6   Ordinate=9.21   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=7   Ordinate=11.81   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=8   Ordinate=14.69   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=9   Ordinate=15.01   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=10   Ordinate=17.58   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=X   GridID=11   Ordinate=17.69   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=H   Ordinate=0   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=G   Ordinate=2.13   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=F   Ordinate=2.4   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=E   Ordinate=5   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=D   Ordinate=6.56   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=C   Ordinate=6.93   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=B   Ordinate=9.79   Visible=Yes   BubbleLoc=End
+   CoordSys=GLOBAL   AxisDir=Y   GridID=A   Ordinate=12.9   Visible=Yes   BubbleLoc=End
+ 
+TABLE:  "GROUP DEFINITIONS"
+   Group=ALL   Color=Red
+ 
+TABLE:  "LOAD ASSIGNMENTS - POINT LOADS"
+   Point=115   LoadPat=~TorsionSPX_ABOVE   Fx=364.6454   Fy=-412.5953   Fgrav=1448.028   Mx=1481.922   My=1066.036   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=~TorsionSPY_ABOVE   Fx=513.8829   Fy=-581.5683   Fgrav=2046.543   Mx=2088.34   My=1502.182   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=Modal_MODE1   Fx=85.64149   Fy=0.3610791   Fgrav=77.5099   Mx=1.293255   My=259.5327   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=Modal_MODE2   Fx=-310.4404   Fy=-487.8672   Fgrav=-3143.404   Mx=1847.932   My=-995.2294   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=Modal_MODE3   Fx=920.5875   Fy=-601.1211   Fgrav=-1376.814   Mx=2135.156   My=2741.178   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=Modal_MODE4   Fx=213.8006   Fy=-35.48437   Fgrav=-193.6829   Mx=127.7556   My=593.4186   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=115   LoadPat=Modal_MODE5   Fx=1175   Fy=1404.59   Fgrav=-2316.517   Mx=-4486.569   My=3388.733   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=~TorsionSPX_ABOVE   Fx=284.8019   Fy=-154.4857   Fgrav=1722.414   Mx=526.4033   My=931.5059   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=~TorsionSPY_ABOVE   Fx=401.3943   Fy=-217.6803   Fgrav=2472.691   Mx=741.7548   My=1312.648   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=Modal_MODE1   Fx=70.22284   Fy=-166.9237   Fgrav=-1919.636   Mx=631.7712   My=233.7319   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=Modal_MODE2   Fx=-255.7122   Fy=-409.1313   Fgrav=-2675.505   Mx=1567.81   My=-903.9638   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=Modal_MODE3   Fx=727.0063   Fy=-360.9293   Fgrav=-4698.044   Mx=1247.2   My=2415.565   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=Modal_MODE4   Fx=192.2674   Fy=-651.2974   Fgrav=2145.21   Mx=2038.523   My=558.0211   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=117   LoadPat=Modal_MODE5   Fx=998.2392   Fy=1253.846   Fgrav=-3478.046   Mx=-3988.263   My=3093.972   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=~TorsionSPX_ABOVE   Fx=271.0771   Fy=255.0368   Fgrav=-1783.016   Mx=-1118.557   My=911.1827   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=~TorsionSPY_ABOVE   Fx=382.1547   Fy=359.7184   Fgrav=-2537.01   Mx=-1576.46   My=1284.183   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=Modal_MODE1   Fx=141.6848   Fy=-403.2643   Fgrav=-983.7585   Mx=1665.848   My=358.1917   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=Modal_MODE2   Fx=-274.6387   Fy=-230.6742   Fgrav=-1825.051   Mx=990.8976   My=-940.1215   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=Modal_MODE3   Fx=801.1754   Fy=36.9851   Fgrav=2813.944   Mx=-312.1249   My=2552.759   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=Modal_MODE4   Fx=334.4402   Fy=-1522.408   Fgrav=1100.09   Mx=5097.149   My=805.8452   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=119   LoadPat=Modal_MODE5   Fx=1077.379   Fy=777.6415   Fgrav=-1269.541   Mx=-2718.974   My=3241.911   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=~TorsionSPX_ABOVE   Fx=272.6674   Fy=470.2961   Fgrav=554.9424   Mx=-1845.752   My=907.8403   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=~TorsionSPY_ABOVE   Fx=384.2153   Fy=662.9091   Fgrav=787.8255   Mx=-2600.813   My=1279.162   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=Modal_MODE1   Fx=62.09636   Fy=-530.5298   Fgrav=-1262.596   Mx=2115.014   My=219.0346   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=Modal_MODE2   Fx=-268.3294   Fy=-211.2545   Fgrav=1169.551   Mx=843.6409   My=-922.9296   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=Modal_MODE3   Fx=697.2747   Fy=271.4169   Fgrav=-3210.519   Mx=-1053.529   My=2357.136   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=Modal_MODE4   Fx=163.5126   Fy=-1964.304   Fgrav=893.4829   Mx=6424.403   My=506.9252   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=121   LoadPat=Modal_MODE5   Fx=1050.944   Fy=730.4758   Fgrav=983.4369   Mx=-2440.559   My=3175.813   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=~TorsionSPX_ABOVE   Fx=140.9806   Fy=-596.9507   Fgrav=-986.6143   Mx=2154.46   My=391.226   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=~TorsionSPY_ABOVE   Fx=198.6596   Fy=-841.4607   Fgrav=-1395.695   Mx=3036.109   My=551.2977   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=Modal_MODE1   Fx=148.5833   Fy=103.2415   Fgrav=727.4083   Mx=-405.6544   My=564.7386   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=Modal_MODE2   Fx=-220.7868   Fy=-557.5457   Fgrav=-835.8349   Mx=2080.229   My=-931.7112   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=Modal_MODE3   Fx=544.1946   Fy=-789.3395   Fgrav=3178.254   Mx=2794.981   My=1831.095   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=Modal_MODE4   Fx=493.7818   Fy=349.6874   Fgrav=-651.2992   Mx=-1105.473   My=1564.006   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=123   LoadPat=Modal_MODE5   Fx=964.193   Fy=1572.52   Fgrav=-1013.999   Mx=-4970.825   My=3186.277   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=~TorsionSPX_ABOVE   Fx=98.08644   Fy=-222.8815   Fgrav=-1054.227   Mx=711.0011   My=351.559   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=~TorsionSPY_ABOVE   Fx=138.2861   Fy=-314.0694   Fgrav=-1525.694   Mx=1001.874   My=495.5117   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=Modal_MODE1   Fx=174.8575   Fy=-194.6689   Fgrav=1185.093   Mx=642.3076   My=590.492   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=Modal_MODE2   Fx=-352.5424   Fy=-608.0428   Fgrav=3377.872   Mx=1941.067   My=-1154.155   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=Modal_MODE3   Fx=545.2679   Fy=-453.1084   Fgrav=2199.45   Mx=1473.382   My=1871.102   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=Modal_MODE4   Fx=523.9392   Fy=-686.9707   Fgrav=-1565.788   Mx=2009.344   My=1567.45   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=125   LoadPat=Modal_MODE5   Fx=1201.236   Fy=1624.34   Fgrav=3427.513   Mx=-4685.218   My=3592.879   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=~TorsionSPX_ABOVE   Fx=-115.5368   Fy=188.3582   Fgrav=170.7098   Mx=-653.9875   My=-373.2521   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=~TorsionSPY_ABOVE   Fx=-162.8415   Fy=265.413   Fgrav=251.0744   Mx=-921.3391   My=-525.9031   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=Modal_MODE1   Fx=347.2791   Fy=-444.1033   Fgrav=311.0041   Mx=1511.444   My=1127.784   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=Modal_MODE2   Fx=-377.256   Fy=-400.1216   Fgrav=175.4381   Mx=1396.083   My=-1305.156   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=Modal_MODE3   Fx=374.8062   Fy=-76.21114   Fgrav=4.903667   Mx=214.5876   My=1250.677   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=Modal_MODE4   Fx=1042.57   Fy=-1464.553   Fgrav=-671.363   Mx=4441.907   My=3058.01   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=127   LoadPat=Modal_MODE5   Fx=1265   Fy=1138.916   Fgrav=694.6917   Mx=-3538.266   My=3890.369   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=~TorsionSPX_ABOVE   Fx=-177.4294   Fy=601.1704   Fgrav=-103.8284   Mx=-2073.543   My=-670.0018   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=~TorsionSPY_ABOVE   Fx=-250.0229   Fy=847.2119   Fgrav=-147.4822   Mx=-2921.601   My=-943.9409   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=Modal_MODE1   Fx=312.8041   Fy=-687.8524   Fgrav=-387.7021   Mx=2395.37   My=1189.289   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=Modal_MODE2   Fx=-331.3762   Fy=-262.7929   Fgrav=1041.79   Mx=943.5927   My=-1274.644   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=Modal_MODE3   Fx=195.6303   Fy=336.2892   Fgrav=-739.9189   Mx=-1161.613   My=755.0897   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=Modal_MODE4   Fx=1057.606   Fy=-2299.373   Fgrav=372.3359   Mx=7030.137   My=3383.944   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=129   LoadPat=Modal_MODE5   Fx=1172.456   Fy=842.3683   Fgrav=807.4764   Mx=-2659.264   My=3804.026   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=~TorsionSPX_ABOVE   Fx=-237.2603   Fy=-381.8571   Fgrav=-880.434   Mx=1307.498   My=-821.0103   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=~TorsionSPY_ABOVE   Fx=-334.3727   Fy=-538.2791   Fgrav=-1246.132   Mx=1842.641   My=-1156.785   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=Modal_MODE1   Fx=330.3739   Fy=-16.64942   Fgrav=436.978   Mx=121.5936   My=1253.056   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=Modal_MODE2   Fx=-410.2189   Fy=-566.39   Fgrav=1305.23   Mx=1963.944   My=-1427.892   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=Modal_MODE3   Fx=134.2862   Fy=-536.2236   Fgrav=1733.863   Mx=1917.508   My=608.1795   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=Modal_MODE4   Fx=1117.959   Fy=-116.2947   Fgrav=-196.3521   Mx=494.3235   My=3571.648   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=131   LoadPat=Modal_MODE5   Fx=1359.701   Fy=1554.82   Fgrav=1110.506   Mx=-4724.99   My=4159.983   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=~TorsionSPX_ABOVE   Fx=-404.9331   Fy=-50.56463   Fgrav=521.6185   Mx=82.50919   My=-1463.629   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=~TorsionSPY_ABOVE   Fx=-570.6758   Fy=-71.32764   Fgrav=740.7659   Mx=116.4886   My=-2062.252   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=Modal_MODE1   Fx=461.6284   Fy=-201.353   Fgrav=1110.746   Mx=873.2568   My=1713.866   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=Modal_MODE2   Fx=-476.7115   Fy=-420.3745   Fgrav=364.4319   Mx=1520.128   My=-1645.626   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=Modal_MODE3   Fx=13.56161   Fy=-205.3546   Fgrav=327.4582   Mx=736.5932   My=69.99534   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=Modal_MODE4   Fx=1544.443   Fy=-803.5819   Fgrav=-722.1205   Mx=2755.528   My=4889.317   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=133   LoadPat=Modal_MODE5   Fx=1492.123   Fy=1213.204   Fgrav=386.7925   Mx=-3812.721   My=4560.83   Mz=-161.7236   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=~TorsionSPX_ABOVE   Fx=-497.0992   Fy=304.4735   Fgrav=390.4074   Mx=-1244.85   My=-2002.656   Mz=329.9204   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=~TorsionSPY_ABOVE   Fx=-700.6799   Fy=429.133   Fgrav=553.113   Mx=-1753.981   My=-2821.909   Mz=464.7898   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=Modal_MODE1   Fx=485.2158   Fy=-421.0232   Fgrav=704.9535   Mx=1724.734   My=2005.125   Mz=-218.9283   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=Modal_MODE2   Fx=-430.285   Fy=-267.5347   Fgrav=1045.48   Mx=1044.434   My=-1674.025   Mz=96.44278   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=Modal_MODE3   Fx=-145.0126   Fy=121.9417   Fgrav=-232.5772   Mx=-496.3034   My=-561.2191   Mz=307.832   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=Modal_MODE4   Fx=1763.685   Fy=-1583.859   Fgrav=-510.513   Mx=5274.036   My=5889.238   Mz=-542.9379   XDim=0.5   YDim=0.5
+   Point=135   LoadPat=Modal_MODE5   Fx=1413.24   Fy=862.187   Fgrav=667.6871   Mx=-2849.178   My=4603.848   Mz=-161.7236   XDim=0.5   YDim=0.5
+ 
+TABLE:  "LOAD CASES 01 - GENERAL"
+   LoadCase=~TorsionSPX   Type=LinStatic   DesignOpt=Auto   DesignType=OTHER
+   LoadCase=~TorsionSPY   Type=LinStatic   DesignOpt=Auto   DesignType=OTHER
+   LoadCase=Modal   Type=LinModal   DesignOpt=Auto   DesignType=OTHER
+   LoadCase=SX   Type=LinRespSpec   DesignOpt=Auto   DesignType=QUAKE
+   LoadCase=SY   Type=LinRespSpec   DesignOpt=Auto   DesignType=QUAKE
+   LoadCase=SPX   Type=LinRespSpec   DesignOpt=Auto   DesignType=QUAKE
+   LoadCase=SPY   Type=LinRespSpec   DesignOpt=Auto   DesignType=QUAKE
+ 
+TABLE:  "LOAD CASES 02 - STATIC"
+   LoadCase=~TorsionSPX   InitialCond=Zero   AType=Linear
+   LoadCase=~TorsionSPY   InitialCond=Zero   AType=Linear
+ 
+TABLE:  "LOAD CASES 04 - MODAL"
+   LoadCase=Modal   InitialCond=Zero   ModeType=External   MaxModes=5   MinModes=5
+ 
+TABLE:  "LOAD CASES 06 - LOADS APPLIED"
+   LoadCase=~TorsionSPX   LoadPat=~TorsionSPX_ABOVE   SF=1
+   LoadCase=~TorsionSPY   LoadPat=~TorsionSPY_ABOVE   SF=1
+   LoadCase=Modal   LoadPat=Modal_MODE1   SF=1
+   LoadCase=Modal   LoadPat=Modal_MODE2   SF=1
+   LoadCase=Modal   LoadPat=Modal_MODE3   SF=1
+   LoadCase=Modal   LoadPat=Modal_MODE4   SF=1
+   LoadCase=Modal   LoadPat=Modal_MODE5   SF=1
+ 
+TABLE:  "LOAD CASES 07 - RESPONSE SPECTRUM - GENERAL"
+   LoadCase=SX   ModalCase=Modal   ModalComb=CQC   DirComb=SRSS   ConstDamp=0.05   EccenCase=None
+   LoadCase=SY   ModalCase=Modal   ModalComb=CQC   DirComb=SRSS   ConstDamp=0.05   EccenCase=None
+   LoadCase=SPX   ModalCase=Modal   ModalComb=CQC   DirComb=SRSS   ConstDamp=0.05   EccenCase=~TorsionSPX
+   LoadCase=SPY   ModalCase=Modal   ModalComb=CQC   DirComb=SRSS   ConstDamp=0.05   EccenCase=~TorsionSPY
+ 
+TABLE:  "LOAD CASES 08 - RESPONSE SPECTRUM - LOADS APPLIED"
+   LoadCase=SX   LoadName="U1 Accel"   Function=FUNC1   Angle=0   TransAccSF=3.5198
+   LoadCase=SY   LoadName="U2 Accel"   Function=FUNC1   Angle=0   TransAccSF=3.5198
+   LoadCase=SPX   LoadName="U1 Accel"   Function=FUNC1   Angle=0   TransAccSF=3.5198
+   LoadCase=SPY   LoadName="U2 Accel"   Function=FUNC1   Angle=0   TransAccSF=3.5198
+ 
+TABLE:  "LOAD CASES 09 - EXTERNAL MODE DATA"
+   LoadCase=Modal   DampElm=0   DampCModal=0   MissMass=No   ModalMass=1   ModalStiff=19.79654   PFUX=-132.3659   PFUY=149.6608   PFUZ=0   PFRX=-309.6166   PFRY=-237.7015   PFRZ=1033.939   SRUX=0.3488711   SRUY=0.4081485   SRUZ=0 _
+        SRRX=0.3325462   SRRY=0.221439   SRRZ=0.4627382   DRUX=0.2396369   DRUY=0.3063495   DRUZ=0   DRRX=0.08207549   DRRY=0.04837587   DRRZ=0.2921288
+   LoadCase=Modal   DampElm=0   DampCModal=0   MissMass=No   ModalMass=1   ModalStiff=23.70462   PFUX=156.4378   PFUY=186.5345   PFUZ=0   PFRX=-361.4407   PFRY=292.794   PFRZ=-375.6658   SRUX=0.4069605   SRUY=0.5295136   SRUZ=0 _
+        SRRX=0.3784722   SRRY=0.2805892   SRRZ=0.05101585   DRUX=0.3347222   DRUY=0.4759044   DRUZ=0   DRRX=0.1118508   DRRY=0.07339886   DRRZ=0.03856452
+   LoadCase=Modal   DampElm=0   DampCModal=0   MissMass=No   ModalMass=1   ModalStiff=34.22549   PFUX=-140.5028   PFUY=65.90571   PFUZ=0   PFRX=-108.4122   PFRY=-306.0645   PFRZ=-1368.983   SRUX=0.2273645   SRUY=0.04578129   SRUZ=0 _
+        SRRX=0.02358303   SRRY=0.2123517   SRRZ=0.469225   DRUX=0.2700048   DRUY=0.05940833   DRUZ=0   DRRX=0.01006286   DRRY=0.08020303   DRRZ=0.5121304
+   LoadCase=Modal   DampElm=0   DampCModal=0   MissMass=No   ModalMass=1   ModalStiff=181.0584   PFUX=-46.65899   PFUY=59.53016   PFUZ=0   PFRX=530.2206   PFRY=439.0239   PFRZ=394.4678   SRUX=0.004739733   SRUY=0.007060688   SRUZ=0 _
+        SRRX=0.1066319   SRRY=0.08259186   SRRZ=0.00736443   DRUX=0.02977639   DRUY=0.04847027   DRUZ=0   DRRX=0.2407012   DRRY=0.1650218   DRRZ=0.04252141
+   LoadCase=Modal   DampElm=0   DampCModal=0   MissMass=No   ModalMass=1   ModalStiff=207.2418   PFUX=-63.5466   PFUY=-62.60759   PFUZ=0   PFRX=-602.6321   PFRY=597.2422   PFRZ=76.95452   SRUX=0.007680853   SRUY=0.00682289   SRUZ=0 _
+        SRRX=0.1203428   SRRY=0.1335375   SRRZ=0.0002448645   DRUX=0.0552314   DRUY=0.05361117   DRUZ=0   DRRX=0.310935   DRRY=0.3053979   DRRZ=0.001618277
+ 
+TABLE:  "LOAD PATTERNS"
+   LoadPat=~SPXECC   Type=OTHER   SelfWtMult=0   GUID=7d1375ae-f97d-43f3-8a12-4743cfede680
+   LoadPat=~SPYECC   Type=OTHER   SelfWtMult=0   GUID=7afe48ea-e722-43bc-905e-c767b02d8860
+   LoadPat=~TorsionSPX_ABOVE   Type=OTHER   SelfWtMult=0   GUID=3d490dd9-8f14-41a0-a0e5-c82538a22868
+   LoadPat=~TorsionSPY_ABOVE   Type=OTHER   SelfWtMult=0   GUID=b1a3c2ec-d968-4cac-98b2-c7158e0c5ced
+   LoadPat=Modal_MODE1   Type=OTHER   SelfWtMult=0   GUID=1dd17e3b-33fb-4903-aecf-a6472ecaa35d
+   LoadPat=Modal_MODE2   Type=OTHER   SelfWtMult=0   GUID=64cc562c-3dc7-4cea-8c0b-0176e401b971
+   LoadPat=Modal_MODE3   Type=OTHER   SelfWtMult=0   GUID=2c18cd0e-7df5-4e25-ab51-a73a382bc449
+   LoadPat=Modal_MODE4   Type=OTHER   SelfWtMult=0   GUID=6b23ba87-e522-4331-b3a9-376b86a82fe9
+   LoadPat=Modal_MODE5   Type=OTHER   SelfWtMult=0   GUID=b50762b0-072b-459c-a3b8-afbbc2e1ebd5
+ 
+TABLE:  "MATERIAL PROPERTIES 01 - GENERAL"
+   Material=A416MGr186   Type=Tendon   Color=Magenta   Notes="ASTM A416 Metric Grade 186 added 5/1/2017 12:00:40 AM"
+   Material=CSA-G30.18Gr400   Type=Rebar   Color=Cyan   Notes="CSA-G30.18 Grade 400 added 5/1/2017 12:00:40 AM"
+   Material=CSAC30   Type=Concrete   Color=Blue   Notes="Normalweight C30 added 5/1/2017 12:00:40 AM"
+ 
+TABLE:  "MATERIAL PROPERTIES 03 - CONCRETE"
+   Material=CSAC30   E=2719309019.4041   U=0.2   A=9.9E-06   UnitWt=2402.76966501002   Fc=3059148.57666726   LtWtConc=No   UserModRup=No
+ 
+TABLE:  "MATERIAL PROPERTIES 04 - REBAR"
+   Material=CSA-G30.18Gr400   E=20394323844.4484   UnitWt=7849.04757236607   Fy=40788647.6888968   Fu=50985809.611121
+ 
+TABLE:  "MATERIAL PROPERTIES 05 - TENDON"
+   Material=A416MGr186   E=20037484344.9687   UnitWt=7849.04757236607   Fy=172332036.485589   Fu=189667211.75337
+ 
+TABLE:  "OBJECT GEOMETRY - POINT COORDINATES"
+   Point=115   GlobalX=2.82   GlobalY=0   GlobalZ=0   SpecialPt=Yes
+   Point=117   GlobalX=7.04   GlobalY=0   GlobalZ=0   SpecialPt=Yes
+   Point=119   GlobalX=14.69   GlobalY=0   GlobalZ=0   SpecialPt=Yes
+   Point=121   GlobalX=17.69   GlobalY=0   GlobalZ=0   SpecialPt=Yes
+   Point=123   GlobalX=0   GlobalY=2.4   GlobalZ=0   SpecialPt=Yes
+   Point=125   GlobalX=6.53   GlobalY=2.13   GlobalZ=0   SpecialPt=Yes
+   Point=127   GlobalX=11.81   GlobalY=5   GlobalZ=0   SpecialPt=Yes
+   Point=129   GlobalX=17.58   GlobalY=6.56   GlobalZ=0   SpecialPt=Yes
+   Point=131   GlobalX=3.93   GlobalY=6.93   GlobalZ=0   SpecialPt=Yes
+   Point=133   GlobalX=9.21   GlobalY=9.79   GlobalZ=0   SpecialPt=Yes
+   Point=135   GlobalX=15.01   GlobalY=12.9   GlobalZ=0   SpecialPt=Yes
+ 
+TABLE:  "PROGRAM CONTROL"
+   ProgramName="SAFE 2016"   Version=16.0.2   CurrUnits="Kgf, m, C"   MergeTol=0.0025   ModelDatum=0   StHtAbove=0   StHtBelow=3000   ConcCode="ACI 318-14"
+ 
+TABLE:  "PROJECT INFORMATION"
+   Item="Client Name"
+   Item="Project Name"   Data=rasulsurii3-Soil(II)_V13
+   Item="Project Number"
+   Item="Company Name"
+   Item=Engineer
+   Item=Checker
+   Item=Supervisor
+   Item="Model Name"
+   Item="Model Description"
+   Item="Revision Number"
+   Item="Issue Number"
+ 
+TABLE:  "PUNCHING SHEAR DESIGN OVERWRITES 01 - GENERAL"
+   Point=115   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=117   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=119   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=121   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=123   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=125   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=127   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=129   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=131   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=133   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+   Point=135   Check="Program Determined"   LocType=Auto   Perimeter=Auto   EffDepth=Auto   Openings=Auto   ReinfType=None
+ 
+TABLE:  "REINFORCING BAR SIZES"
+   RebarID=6   Area=2.82999992370605E-05   Diameter=0.006
+   RebarID=8   Area=5.02999992370605E-05   Diameter=0.008
+   RebarID=10   Area=7.85E-05   Diameter=0.01
+   RebarID=12   Area=0.000113099998474121   Diameter=0.012
+   RebarID=14   Area=0.000153899993896484   Diameter=0.014
+   RebarID=16   Area=0.000201100006103516   Diameter=0.016
+   RebarID=18   Area=0.0002545   Diameter=0.018
+   RebarID=20   Area=0.000314200012207031   Diameter=0.02
+   RebarID=22   Area=0.000380100006103516   Diameter=0.022
+   RebarID=25   Area=0.000490899993896484   Diameter=0.025
+   RebarID=26   Area=0.000530900024414063   Diameter=0.026
+   RebarID=28   Area=0.000615799987792969   Diameter=0.028
+   RebarID=32   Area=0.000804200012207031   Diameter=0.032
+   RebarID=36   Area=0.00101790002441406   Diameter=0.036
+   RebarID=40   Area=0.00125659997558594   Diameter=0.04
+   RebarID=50   Area=0.0019635   Diameter=0.05
+ 
+TABLE:  "SLAB PROPERTIES 01 - GENERAL"
+   Slab=SLAB1   Type=Slab   ThickPlate=Yes   Color=Blue   GUID=99eb7a24-576e-4f17-872a-ff5f51e05117
+ 
+TABLE:  "SLAB PROPERTIES 02 - SOLID SLABS"
+   Slab=SLAB1   Type=Slab   MatProp=CSAC30   Thickness=0.2   Ortho=No
+ 
+TABLE:  "SOIL PROPERTIES"
+   Soil=SOIL1   Subgrade=2039432.38444484   NonlinOpt="Compression Only"   Color=Cyan
+ 
+TABLE:  "SPRING PROPERTIES - LINE"
+   Spring=LSPR1   VertStiff=1   RotStiff=1   NonlinOpt="None (Linear)"   Color=Yellow
+ 
+TABLE:  "SPRING PROPERTIES - POINT"
+   Spring=PSPR1   Ux=0   Uy=0   Uz=1   Rx=0   Ry=0   Rz=0   NonlinOpt="None (Linear)"   Color=Blue
+ 
+TABLE:  "WALL PROPERTIES"
+   Wall=WALL1   MatProp=CSAC30   Thickness=0.3   AutoRigid=No   OutOfPlane=Yes   Color=Magenta   GUID=51df44ff-df98-409d-9c03-c46d0e50fddf
+ 
+END TABLE DATA

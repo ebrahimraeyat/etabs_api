@@ -35,7 +35,7 @@ class EtabsModel:
                 attach_to_instance: bool = True,
                 backup : bool = True,
                 software : str = 'ETABS', # 'SAFE'
-                model_path: str = '',
+                model_path: Union[str, Path] = '',
                 software_exe_path: str = '',
                 ):
         self.software = software
@@ -66,7 +66,7 @@ class EtabsModel:
             self.success = True
             self.etabs.ApplicationStart()
             if model_path:
-                self.etabs.SapModel.File.OpenFile(model_path)
+                self.etabs.SapModel.File.OpenFile(str(model_path))
 
         if self.success:
             self.SapModel = self.etabs.SapModel
