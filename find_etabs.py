@@ -70,7 +70,7 @@ def find_etabs(
         hasattr(etabs, 'SapModel')
         ):
         try:
-            name = FreeCAD.Base.etabs.SapModel.GetModelFilename()
+            name = etabs.SapModel.GetModelFilename()
             if name.upper().endswith('.EDB'):
                 filename = name
         except:
@@ -93,8 +93,12 @@ Do you want to specify ETABS.exe path?''',
         filename = open_browse()
     if filename is None:
         QMessageBox.warning(None, 'ETABS', 'Please Open ETABS Model and Run this command again.')
-    elif hasattr(etabs, 'success') and etabs.success:
-        etabs.SapModel.File.OpenFile(str(filename))
+    elif (
+        hasattr(etabs, 'success') and
+        etabs.success and
+        filename != etabs.SapModel.GetModelFilename()
+        ):
+            etabs.SapModel.File.OpenFile(str(filename))
     if (
         run and
         etabs is not None and
