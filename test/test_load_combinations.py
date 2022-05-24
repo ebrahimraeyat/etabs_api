@@ -5,6 +5,7 @@ import sys
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
+from load_combinations import generate_concrete_load_combinations
 
 import etabs_obj
 
@@ -38,27 +39,27 @@ def shayesteh(edb="shayesteh.EDB"):
         return etabs
 
 @pytest.mark.getmethod
-def test_generate_concrete_load_combinations(shayesteh):
+def test_generate_concrete_load_combinations():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
-    data = shayesteh.load_combinations.generate_concrete_load_combinations(equal_loads)
+    data = generate_concrete_load_combinations(equal_loads)
     assert data
 
 @pytest.mark.getmethod
-def test_generate_concrete_load_combinations_asd(shayesteh):
+def test_generate_concrete_load_combinations_asd():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
-    data = shayesteh.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
+    data = generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
     assert data
 
 if __name__ == '__main__':
-    from pathlib import Path
-    etabs_api = Path(__file__).parent.parent
-    import sys
-    sys.path.insert(0, str(etabs_api))
-    from etabs_obj import EtabsModel
-    etabs = EtabsModel(attach_to_instance=False, backup=False)
-    SapModel = etabs.SapModel
-    test_generate_concrete_load_combinations_asd(etabs)
+    # from pathlib import Path
+    # etabs_api = Path(__file__).parent.parent
+    # import sys
+    # sys.path.insert(0, str(etabs_api))
+    # from etabs_obj import EtabsModel
+    # etabs = EtabsModel(backup=False)
+    # SapModel = etabs.SapModel
+    test_generate_concrete_load_combinations_asd()
