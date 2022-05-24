@@ -7,6 +7,25 @@ class LoadCombination:
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
+    def add_load_combination(
+        self,
+        combo_name: str,
+        load_case_names: list = [],
+        scale_factor: float = 1,
+        type_: int = 0, # envelop: 1
+        ):
+        '''
+        Add Envelop Load combination
+        '''
+        self.etabs.SapModel.RespCombo.add(combo_name, type_)
+        for case_name in load_case_names:
+            self.etabs.SapModel.RespCombo.SetCaseList(
+                combo_name,
+                type_, # loadcase=0, loadcombo=1
+                case_name,    # cname
+                scale_factor,    # sf
+                )
+
 def get_mabhas6_load_combinations(
     way='LRFD', # 'ASD'
     ):

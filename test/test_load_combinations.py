@@ -54,6 +54,21 @@ def test_generate_concrete_load_combinations_asd():
     data = generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
     assert data
 
+@pytest.mark.setmethod
+def test_add_load_combination(shayesteh):
+    load_combinations = []
+    for i in range(1, 5):
+        name = f'test{i}'
+        load_combinations.append(name)
+        shayesteh.load_combinations.add_load_combination(name)
+    shayesteh.load_combinations.add_load_combination(
+        combo_name='PUSH_Grav',
+        load_case_names=load_combinations,
+        scale_factor=1.2,
+        type_=1,
+    )
+    assert True
+
 if __name__ == '__main__':
     # from pathlib import Path
     # etabs_api = Path(__file__).parent.parent
