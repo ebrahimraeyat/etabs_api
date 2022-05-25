@@ -2,10 +2,14 @@ import pytest
 import comtypes.client
 from pathlib import Path
 import sys
+import shutil
+import tempfile
 
-civil_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(civil_path))
-from etabs_api import etabs_obj
+etabs_api_path = Path(__file__).parent.parent
+sys.path.insert(0, str(etabs_api_path))
+
+import etabs_obj
+
 
 @pytest.fixture
 def shayesteh(edb="shayesteh.EDB"):
@@ -20,18 +24,15 @@ def shayesteh(edb="shayesteh.EDB"):
         else:
             raise FileNotFoundError
     except FileNotFoundError:
-        helper = comtypes.client.CreateObject('ETABSv1.Helper') 
-        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-        ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
-        ETABSObject.ApplicationStart()
-        SapModel = ETABSObject.SapModel
-        SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / edb))
-        asli_file_path = Path(SapModel.GetModelFilename())
-        dir_path = asli_file_path.parent.absolute()
-        test_file_path = dir_path / "test.EDB"
-        SapModel.File.Save(str(test_file_path))
-        etabs = etabs_obj.EtabsModel(backup=False)
+        etabs = etabs_obj.EtabsModel(
+                attach_to_instance=False,
+                backup = False,
+                model_path = Path(__file__).parent / 'files' / edb,
+                software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
+            )
+        temp_path = Path(tempfile.gettempdir())
+        test_file_path = temp_path / "test.EDB"
+        etabs.SapModel.File.Save(str(test_file_path))
         return etabs
 
 @pytest.mark.getmethod
@@ -88,4 +89,13 @@ def test_get_response_spectrum_xy_loadcases_names(shayesteh):
     x_names, y_names = shayesteh.load_cases.get_response_spectrum_xy_loadcases_names()
     assert set(x_names) == set(['SX', 'SPX'])
     assert set(y_names) == set(['SY', 'SPY'])
+
+@pytest.mark.getmethod
+def test_get_seismic_load_cases(shayesteh):
+    seismic_load_cases = shayesteh.load_cases.get_seismic_load_cases()
+    assert True
+    # assert set(x_names) == set(['SX', 'SPX'])
+    # assert set(y_names) == set(['SY', 'SPY'])
+
+
 

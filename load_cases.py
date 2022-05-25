@@ -148,6 +148,26 @@ class LoadCases:
             ret[3] = scales
             self.SapModel.LoadCases.ResponseSpectrum.SetLoads(name, *ret[:-1])
         return None
+
+    def get_seismic_load_cases(
+        self,
+        ):
+        '''
+        Search for Response spectrum load case and load cases that have at least one seismic load pattern
+        '''
+        seismic_load_cases = []
+        for lc in self.get_load_cases():
+            load_case_type = self.SapModel.LoadCases.GetTypeOAPI(lc)[0]
+            if load_case_type == 1:  # Static Linear
+                for lp in self.SapModel.LoadCases.StaticLinear.GetLoads(lc)[2]:
+                    if self.SapModel.LoadPatterns.GetLoadType(lp)[0] == 5:  # seismic load pattern
+                        seismic_load_cases.append(lc)
+                        break
+            elif load_case_type == 4: # Adding Response Spectrum load cases
+                seismic_load_cases.append(lc)
+        return seismic_load_cases
+        
+        
         
         
         

@@ -1,7 +1,7 @@
+import sys
+from pathlib import Path
 import pytest
 import comtypes.client
-from pathlib import Path
-import sys
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
@@ -69,12 +69,21 @@ def test_add_load_combination(shayesteh):
     )
     assert True
 
+@pytest.mark.setmethod
+def test_get_load_combinations_of_type(shayesteh):
+    load_combos = shayesteh.load_combinations.get_load_combinations_of_type(type_='ALL')
+    assert len(load_combos) == 59
+    load_combos = shayesteh.load_combinations.get_load_combinations_of_type(type_='SEISMIC')
+    assert len(load_combos) == 48
+    load_combos = shayesteh.load_combinations.get_load_combinations_of_type(type_='GRAVITY')
+    assert len(load_combos) == 11
+
 if __name__ == '__main__':
-    # from pathlib import Path
-    # etabs_api = Path(__file__).parent.parent
-    # import sys
-    # sys.path.insert(0, str(etabs_api))
-    # from etabs_obj import EtabsModel
-    # etabs = EtabsModel(backup=False)
-    # SapModel = etabs.SapModel
-    test_generate_concrete_load_combinations_asd()
+    from pathlib import Path
+    etabs_api = Path(__file__).parent.parent
+    import sys
+    sys.path.insert(0, str(etabs_api))
+    from etabs_obj import EtabsModel
+    etabs = EtabsModel(backup=False)
+    SapModel = etabs.SapModel
+    test_add_load_combination(etabs)

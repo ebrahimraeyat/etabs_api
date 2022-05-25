@@ -1,4 +1,7 @@
 
+from typing import Union
+
+
 class LoadCombination:
     def __init__(
                 self,
@@ -25,6 +28,45 @@ class LoadCombination:
                 case_name,    # cname
                 scale_factor,    # sf
                 )
+
+    def get_load_combinations_of_type(
+        self,
+        type_: str = 'ALL', # 'GRAVITY' , 'SEISMIC
+        all_load_combos: Union[list, bool] = None,
+        ):
+        '''
+        return load combinations with respect to type_
+        '''
+        if all_load_combos is None:
+            all_load_combos = self.SapModel.RespCombo.GetNameList()[1]
+        if type_ == 'ALL':
+            return all_load_combos
+        seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
+        seismic_load_combos = []
+        for combo in all_load_combos:
+            if self.is_seismic(
+                        combo,
+                        seismic_load_cases=seismic_load_cases,
+                        ):
+                seismic_load_combos.append(combo)
+        if type_ == 'SEISMIC':
+            return seismic_load_combos
+        elif type_ == "GRAVITY":
+            return set(all_load_combos).difference(seismic_load_combos)
+        
+    def is_seismic(
+        self,
+        combo: str,
+        seismic_load_cases: Union[list, bool] = None,
+        ):
+        if seismic_load_cases is None:
+            seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
+        load_cases = self.SapModel.RespCombo.GetCaseList(combo)[2]
+        for lc in load_cases:
+            if lc in seismic_load_cases:
+                return True
+        return False
+
 
 def get_mabhas6_load_combinations(
     way='LRFD', # 'ASD'
