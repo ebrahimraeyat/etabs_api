@@ -69,7 +69,7 @@ def test_add_load_combination(shayesteh):
     )
     assert True
 
-@pytest.mark.setmethod
+@pytest.mark.getmethod
 def test_get_load_combinations_of_type(shayesteh):
     load_combos = shayesteh.load_combinations.get_load_combinations_of_type(type_='ALL')
     assert len(load_combos) == 59

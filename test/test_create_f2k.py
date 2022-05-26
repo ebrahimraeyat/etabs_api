@@ -61,4 +61,10 @@ def test_add_load_combinations_envelope(shayesteh):
     assert False
 
 if __name__ == '__main__':
-    test_add_load_combinations_envelope(shayesteh)
+    from pathlib import Path
+    etabs_api = Path(__file__).parent.parent
+    import sys
+    sys.path.insert(0, str(etabs_api))
+    from etabs_obj import EtabsModel
+    etabs = EtabsModel(backup=False)
+    test_add_load_combinations_envelope(etabs)

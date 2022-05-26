@@ -356,6 +356,7 @@ class CreateF2kFile(Safe):
     def add_load_combinations(
                 self,
                 types: Iterable = ('Envelope', 'Linear Add'),
+                load_combinations: Union[list, bool] = None,
         ):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Load Combination Definitions"
@@ -370,6 +371,9 @@ class CreateF2kFile(Safe):
         # filt = df['Name'].isin(design_load_combinations)
         filt = df['Type'].isin(types)
         df = df.loc[filt]
+        if load_combinations is not None:
+            filt = df['Name'].isin(tuple(load_combinations))
+            df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
 
         d = {
