@@ -22,6 +22,7 @@ from select_obj import SelectObj
 from material import Material
 from area import Area
 from design import Design
+from prop_frame import PropFrame
 
 __all__ = ['EtabsModel']
 
@@ -92,6 +93,7 @@ class EtabsModel:
             self.material = Material(self)
             self.area = Area(self)
             self.design = Design(self)
+            self.prop_frame = PropFrame(self)
     
     def close_etabs(self):
         self.SapModel.SetModelIsLocked(False)
