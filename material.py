@@ -20,6 +20,7 @@ class Material:
         type_ can be: 
             1: Steel
             2: Concrete
+            6: Rebar
         '''
         mats = [mat for mat in self.all_material() if self.material_type(mat) == type_]
         return mats
