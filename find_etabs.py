@@ -3,6 +3,8 @@ from pathlib import Path
 from PySide2.QtWidgets import QMessageBox
 
 import FreeCAD
+if FreeCAD.GuiUp:
+    import FreeCADGui as Gui
 
 import etabs_obj
 
@@ -130,3 +132,24 @@ Do you want to specify ETABS.exe path?''',
         return FreeCAD.Base.etabs, filename
     else:
         return etabs, filename
+
+def get_mdiarea():
+    """ Return FreeCAD MdiArea. """
+    import PySide2
+    mw = Gui.getMainWindow()
+    if not mw:
+        return None
+    childs = mw.children()
+    for c in childs:
+        if isinstance(c, PySide2.QtWidgets.QMdiArea):
+            return c
+    return None
+
+def show_win(win):
+    mdi = get_mdiarea()
+    if mdi is None:
+        Gui.Control.showDialog(win)
+    else:
+        mdi.addSubWindow(win.form)
+        win.form.exec_()
+
