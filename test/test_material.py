@@ -13,6 +13,20 @@ def test_get_material_of_type(shayesteh):
     rebars = shayesteh.material.get_material_of_type(6)
     assert len(rebars) == 3
 
+@pytest.mark.getmethod
+def test_get_S340_S400_rebars(shayesteh):
+    s340, s400 = shayesteh.material.get_S340_S400_rebars()
+    assert len(s340) == 0
+    assert len(s400) == 1
+
+@pytest.mark.getmethod
+def test_get_rebar_sizes(shayesteh):
+    rebars = shayesteh.material.get_rebar_sizes()
+    assert len(rebars) == 12
+
+
+QAbstractItemView.ExtendedSelection
+
 
 if __name__ == '__main__':
     from pathlib import Path
