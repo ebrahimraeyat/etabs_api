@@ -24,8 +24,11 @@ def test_get_rebar_sizes(shayesteh):
     rebars = shayesteh.material.get_rebar_sizes()
     assert len(rebars) == 12
 
-
-QAbstractItemView.ExtendedSelection
+@pytest.mark.getmethod
+def test_get_tie_main_rebars(shayesteh):
+    ties, mains = shayesteh.material.get_tie_main_rebars()
+    assert len(ties) == 2
+    assert len(mains) == 7
 
 
 if __name__ == '__main__':

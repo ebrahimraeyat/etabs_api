@@ -52,4 +52,16 @@ class Material:
         d_rebars = [rebar for rebar in rebars if rebar.endswith('d')]
         return sorted(d_rebars)
 
+    def get_tie_main_rebars(self):
+        rebars = self.get_rebar_sizes()
+        tie_rebars = []
+        main_rebars = []
+        for rebar in rebars:
+            size = int(rebar.rstrip('d'))
+            if  size in [10, 12]:
+                tie_rebars.append(rebar)
+            elif size in [14, 16, 18, 20, 22, 25, 28, 30]:
+                main_rebars.append(rebar)
+        return tie_rebars, main_rebars
+
         
