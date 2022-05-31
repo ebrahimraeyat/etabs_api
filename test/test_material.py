@@ -30,6 +30,11 @@ def test_get_tie_main_rebars(shayesteh):
     assert len(ties) == 2
     assert len(mains) == 7
 
+@pytest.mark.getmethod
+def test_get_fc(shayesteh):
+    fc = shayesteh.material.get_fc('CONC')
+    assert fc == 25
+
 
 if __name__ == '__main__':
     from pathlib import Path

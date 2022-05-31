@@ -64,4 +64,9 @@ class Material:
                 main_rebars.append(rebar)
         return tie_rebars, main_rebars
 
+    def get_fc(self, conc):
+        self.etabs.set_current_unit('N', 'mm')
+        return self.SapModel.PropMaterial.GetOConcrete(conc)[0]
+
+
         
