@@ -38,7 +38,10 @@ def find_etabs(
     etabs = None
     com_error = False
     import _ctypes
+    param = FreeCAD.ParamGet(f"User parameter:BaseApp/Preferences/Mod/{software}")
+    use_etabs = param.GetBool('use_etabs', False)
     if (
+        use_etabs and
         hasattr(FreeCAD.Base, 'etabs') and
         hasattr(FreeCAD.Base.etabs, 'SapModel')
         # FreeCAD.Base.etabs.success
@@ -55,7 +58,6 @@ def find_etabs(
     if etabs is None and not com_error:
         etabs = etabs_obj.EtabsModel(backup=False)
         if not etabs.success:
-            param = FreeCAD.ParamGet(f"User parameter:BaseApp/Preferences/Mod/{software}")
             etabs_exe = param.GetString('etabs_exe_path', '')
             if Path(etabs_exe).exists():
                 etabs = etabs_obj.EtabsModel(
@@ -124,4 +126,7 @@ Do you want to specify ETABS.exe path?''',
             FreeCAD.Base.etabs.backup_model()
     if isinstance(filename, str) and Path(filename).exists():
         filename = Path(filename)
-    return FreeCAD.Base.etabs, filename
+    if use_etabs:
+        return FreeCAD.Base.etabs, filename
+    else:
+        return etabs, filename
