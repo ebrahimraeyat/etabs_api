@@ -14,7 +14,7 @@ from frame_obj import FrameObj
 from analyze import Analyze
 from view import View
 from database import DatabaseTables
-from sections.sections import Sections
+# from sections.sections import Sections
 from results import Results
 from points import Points
 from group import Group
@@ -85,7 +85,7 @@ class EtabsModel:
             self.analyze = Analyze(self.SapModel, None)
             self.view = View(self.SapModel, None)
             self.database = DatabaseTables(None, self)
-            self.sections = Sections(self.SapModel, None)
+            # self.sections = Sections(self.SapModel, None)
             self.results = Results(None, self)
             self.points = Points(None, self)
             self.group = Group(self)
