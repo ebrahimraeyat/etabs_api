@@ -4,18 +4,18 @@ import FreeCAD
 import Part
 
 def rectangle_face(
-    center: FreeCAD.Vector,
     bx: Union[float, int],
     by: Union[float, int],
+    center: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0),
     ):
 
-    v1, v2, v3, v4 = rectangle_vertexes(center, bx, by)
+    v1, v2, v3, v4 = rectangle_vertexes(bx, by, center)
     return Part.Face(Part.makePolygon([v1, v2, v3, v4, v1]))
 
 def rectangle_vertexes(
-                       center: FreeCAD.Vector,
                        bx: Union[float, int],
                        by: Union[float, int],
+                       center: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0),
                        ):
     dx = bx / 2
     dy = by / 2
@@ -35,7 +35,7 @@ def column_shape(
     cover: int = 40,
     center: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0),
 ):
-    rect = rectangle_face(center, width, height)
+    rect = rectangle_face(width, height, center)
     c = cover + tie_diameter + main_diameter / 2
     b = width - 2 * (cover + tie_diameter) - main_diameter
     dx = b / (N - 1)
