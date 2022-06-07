@@ -145,11 +145,21 @@ def get_mdiarea():
             return c
     return None
 
-def show_win(win):
+def get3dview():
+    from PySide2 import QtWidgets
+    mw = Gui.getMainWindow()
+    childs=mw.findChildren(QtWidgets.QMainWindow)
+    for i in childs:
+        if i.metaObject().className() == "Gui::View3DInventor":
+            return i
+    return None
+
+def show_win(win, in_mdi=True):
     mdi = get_mdiarea()
     if mdi is None:
         Gui.Control.showDialog(win)
     else:
-        mdi.addSubWindow(win.form)
+        if in_mdi:
+            mdi.addSubWindow(win.form)
         win.form.exec_()
 

@@ -40,7 +40,7 @@ class Material:
             fy, _ = self.get_rebar_fy_fu(rebar)
             if 390 < fy < 410:
                 S400.append(rebar)
-            elif 330 < fy < 350:
+            elif 290 < fy < 350:
                 S340.append(rebar)
         return S340, S400
 
@@ -68,5 +68,31 @@ class Material:
         self.etabs.set_current_unit('N', 'mm')
         return self.SapModel.PropMaterial.GetOConcrete(conc)[0]
 
+    def add_material(
+        self,
+        name: str,
+        type_: int,
+        ):
+        '''
+        type_ can be: 
+            1: Steel
+            2: Concrete
+            6: Rebar
+        '''
+        self.SapModel.PropMaterial.SetMaterial(name, type_)
+
+    def add_AIII_rebar(
+        self,
+        name: str = 'AIII',
+        ):
+        self.add_material(name, 6)
+        self.SapModel.PropMaterial.SetORebar(name, 400, 600, 500, 750, 1, 1, 0.01, 0.09, False, 0)
+    
+    def add_AII_rebar(
+        self,
+        name: str = 'AII',
+        ):
+        self.add_material(name, 6)
+        self.SapModel.PropMaterial.SetORebar(name, 300, 500, 375, 625, 1, 1, 0.01, 0.09, False, 0)
 
         
