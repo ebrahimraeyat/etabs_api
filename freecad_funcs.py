@@ -1,6 +1,8 @@
 from typing import Union
+from pathlib import Path
 
 import FreeCAD
+import FreeCADGui
 import Part
 
 def rectangle_face(
@@ -58,4 +60,40 @@ def column_shape(
             circles.append(circle)
     return Part.makeCompound([rect] + circles)
 
+def findWidget(
+        name: str,
+        mw=None,
+        ):
 
+    "finds the manager widget, if present"
+
+    import FreeCADGui
+    from PySide import QtGui
+    if mw is None:
+        mw = FreeCADGui.getMainWindow()
+    vm = mw.findChild(QtGui.QDockWidget, name)
+    if vm:
+        return vm
+    return None
+
+def add_dock_widget(
+        widget,
+        name: str,
+        title: str,
+        ):
+    mw = FreeCADGui.getMainWindow()
+    vm = findWidget(name, mw)
+    if vm:
+        if not vm.isVisible():
+            vm.show()
+    else:
+        from PySide2 import QtCore, QtWidgets
+        vm = QtWidgets.QDockWidget()
+
+        # create the dialog
+        # dialog = FreeCADGui.PySideUic.loadUi(ui)
+        vm.setWidget(widget)
+        # widget.form.show()
+        vm.setObjectName(name)
+        vm.setWindowTitle("civilTools")
+        mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, vm)
