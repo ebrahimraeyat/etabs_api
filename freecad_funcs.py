@@ -97,3 +97,11 @@ def add_dock_widget(
         vm.setObjectName(name)
         vm.setWindowTitle("civilTools")
         mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, vm)
+
+def show_status_message(
+    text: str,
+    time: int = 5000,
+    ):
+    mw = FreeCADGui.getMainWindow()
+    sb = mw.statusBar()
+    sb.showMessage(text, time)
