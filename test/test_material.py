@@ -19,17 +19,18 @@ def test_get_S340_S400_rebars(shayesteh):
     assert len(s340) == 1
     assert len(s400) == 1
 
-@pytest.mark.getmethod
-def test_get_standard_rebar_size(shayesteh):
-    shayesteh.set_current_unit('N', 'mm')
-    rebars = shayesteh.material.get_standard_rebar_size()
-    assert len(rebars) == 11
+# @pytest.mark.getmethod
+# def test_get_standard_rebar_size(shayesteh):
+#     shayesteh.set_current_unit('N', 'mm')
+#     rebars = shayesteh.material.get_standard_rebar_size()
+#     assert len(rebars) == 10
 
 @pytest.mark.getmethod
-def test_get_tie_main_rebars(shayesteh):
-    ties, mains = shayesteh.material.get_tie_main_rebars()
+def test_get_tie_main_rebar_all_sizes(shayesteh):
+    ties, mains, _all = shayesteh.material.get_tie_main_rebar_all_sizes()
     assert len(ties) == 2
-    assert len(mains) == 8
+    assert len(mains) == 7
+    assert len(_all) == 9
 
 @pytest.mark.getmethod
 def test_get_fc(shayesteh):
