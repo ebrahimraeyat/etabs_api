@@ -16,19 +16,20 @@ def test_get_material_of_type(shayesteh):
 @pytest.mark.getmethod
 def test_get_S340_S400_rebars(shayesteh):
     s340, s400 = shayesteh.material.get_S340_S400_rebars()
-    assert len(s340) == 0
+    assert len(s340) == 1
     assert len(s400) == 1
 
 @pytest.mark.getmethod
-def test_get_rebar_sizes(shayesteh):
-    rebars = shayesteh.material.get_rebar_sizes()
-    assert len(rebars) == 12
+def test_get_standard_rebar_size(shayesteh):
+    shayesteh.set_current_unit('N', 'mm')
+    rebars = shayesteh.material.get_standard_rebar_size()
+    assert len(rebars) == 11
 
 @pytest.mark.getmethod
 def test_get_tie_main_rebars(shayesteh):
     ties, mains = shayesteh.material.get_tie_main_rebars()
     assert len(ties) == 2
-    assert len(mains) == 7
+    assert len(mains) == 8
 
 @pytest.mark.getmethod
 def test_get_fc(shayesteh):
@@ -44,4 +45,4 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    test_add_load_combination(etabs)
+    test_get_rebar_sizes(etabs)

@@ -44,24 +44,30 @@ class Material:
                 S340.append(rebar)
         return S340, S400
 
-    def get_rebar_sizes(self):
+    def get_standard_rebar_size(
+            self,
+            standard_size = (8, 10, 12, 14, 16, 18, 20, 22, 25, 28, 30),
+            ):
         '''
-        Return Rebars that name ends with 'd' like '16d'
+        Return Rebars that diameters is in standard_size'
         '''
-        rebars = self.SapModel.PropRebar.GetNameList()[1]
-        d_rebars = [rebar for rebar in rebars if rebar.endswith('d')]
-        return sorted(d_rebars)
+        rebars = self.SapModel.PropRebar.GetNameListWithData()
+        names = []
+        for name, size in zip(rebars[1], rebars[3]):
+            if int(size) == size and size in standard_size:
+                names.append(name)
+        return sorted(names)
 
     def get_tie_main_rebars(self):
-        rebars = self.get_rebar_sizes()
         tie_rebars = []
         main_rebars = []
-        for rebar in rebars:
-            size = int(rebar.rstrip('d'))
-            if  size in [10, 12]:
-                tie_rebars.append(rebar)
-            elif size in [14, 16, 18, 20, 22, 25, 28, 30]:
-                main_rebars.append(rebar)
+        rebars = self.SapModel.PropRebar.GetNameListWithData()
+        for name, size in zip(rebars[1], rebars[3]):
+            if int(size) == size:
+                if  size in [10, 12]:
+                    tie_rebars.append(name)
+                elif size in [14, 16, 18, 20, 22, 25, 28, 30]:
+                    main_rebars.append(name)
         return tie_rebars, main_rebars
 
     def get_fc(self, conc):
