@@ -506,7 +506,7 @@ class DatabaseTables:
         return new_df
 
     def get_story_mass(self):
-        self.SapModel.SetPresentUnits_2(5, 6, 2)
+        self.etabs.set_current_unit('kgf', 'm')
         self.etabs.run_analysis()
         TableKey = 'Centers Of Mass And Rigidity'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)
@@ -630,7 +630,7 @@ class DatabaseTables:
 
     def get_center_of_rigidity(self):
         self.etabs.run_analysis()
-        self.SapModel.SetPresentUnits_2(5,6,2)
+        self.etabs.set_current_unit('kgf', 'm')
         TableKey = 'Centers Of Mass And Rigidity'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)
         data = self.reshape_data(FieldsKeysIncluded, TableData)
@@ -726,7 +726,7 @@ class DatabaseTables:
         if not loadcases:
             loadcases = self.etabs.load_patterns.get_ex_ey_earthquake_name()
         # assert len(loadcases) == 2
-        self.SapModel.SetPresentUnits_2(5, 6, 2)
+        self.etabs.set_current_unit('kgf', 'm')
         self.etabs.load_cases.select_load_cases(loadcases)
         TableKey = 'Story Forces'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)

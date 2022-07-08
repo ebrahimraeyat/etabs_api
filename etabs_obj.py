@@ -30,6 +30,20 @@ __all__ = ['EtabsModel']
 class EtabsModel:
     force_units = dict(N=3, kN=4, KN=4, kgf=5, Kgf=5, tonf=6, Tonf=6)
     length_units = dict(mm=4, cm=5, m=6)
+    enum_units = {
+            'kn_mm' : 5,
+            'kn_m' : 6,
+            'kgf_mm' : 7,
+            'kgf_m' : 8,
+            'n_mm' : 9,
+            'n_m' : 10,
+            'ton_mm' : 11,
+            'ton_m' : 12,
+            'kn_cm' : 13,
+            'kgf_cm' : 14,
+            'n_cm' : 15,
+            'ton_cm' : 16,
+    }
 
     def __init__(
                 self,
@@ -163,9 +177,12 @@ class EtabsModel:
             self.SapModel.analyze.RunAnalysis()
 
     def set_current_unit(self, force, length):
-        force_enum = EtabsModel.force_units[force]
-        len_enum = EtabsModel.length_units[length]
-        self.SapModel.SetPresentUnits_2(force_enum, len_enum, 2)
+        # force_enum = EtabsModel.force_units[force]
+        # len_enum = EtabsModel.length_units[length]
+        number = self.enum_units.get(f"{force}_{length}".lower(), None)
+        if number is None:
+            raise KeyError
+        self.SapModel.SetPresentUnits(number)
     
     def get_current_unit(self):
         force_enum, len_enum, *argv = self.SapModel.GetPresentUnits_2()
@@ -616,7 +633,7 @@ class EtabsModel:
         assert len(loadcases) == 2
         EX, EY = loadcases
         self.run_analysis()
-        self.SapModel.SetPresentUnits_2(5, 6, 2)
+        self.set_current_unit('kgf', 'm')
         self.load_cases.select_load_cases(loadcases)
         TableKey = 'Story Stiffness'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)

@@ -45,7 +45,7 @@ class Results:
             directions: Union[list, bool] = None,
             absolute : bool = False,
             ) -> list:
-        # self.SapModel.SetPresentUnits_2(5, 6, 2)
+        # self.etabs.set_current_unit('kgf', 'm')
         if loadcases is None:
             loadcases = self.etabs.load_patterns.get_ex_ey_earthquake_name()
         if directions is None:

@@ -92,7 +92,7 @@ class FrameObj:
         if not self.SapModel.DesignConcrete.GetResultsAvailable():
             print('Start Design ...')
             self.SapModel.DesignConcrete.StartDesign()
-        self.SapModel.SetPresentUnits_2(5, 5, 2)
+        self.etabs.set_current_unit('kgf', 'cm')
         beams, columns = self.get_beams_columns()
         beams = set(frame_names).intersection(beams)
         columns = set(frame_names).intersection(columns)

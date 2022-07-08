@@ -32,7 +32,7 @@ class Story:
                         top_story_y='',
                         auto_story=True,
                         ):
-        self.SapModel.setPresentUnits_2(5, 6, 2)
+        self.etabs.set_current_unit('kgf', 'm')
         if auto_story and not all([bot_story_x, top_story_x, bot_story_y, top_story_y]):
             bot_story_x, top_story_x, bot_story_y, top_story_y = self.get_top_bot_stories()
         bot_level_x = self.SapModel.Story.GetElevation(bot_story_x)[0]    
@@ -62,7 +62,7 @@ class Story:
                         bot_level_y = None,
                         top_level_y = None,
                         ):
-        self.SapModel.setPresentUnits_2(5, 6, 2)
+        self.etabs.set_current_unit('kgf', 'm')
         if bot_level_x is None:
             bot_level_x, top_level_x, bot_level_y, top_level_y = self.get_top_bot_levels()
         levels = self.SapModel.Story.GetStories()[2]
@@ -79,7 +79,7 @@ class Story:
         return name, level
 
     def get_story_boundbox(self, story_name) -> tuple:
-        self.SapModel.SetPresentUnits_2(5, 5, 2)
+        self.etabs.set_current_unit('kgf', 'cm')
         points = self.SapModel.PointObj.GetNameListOnStory(story_name)[1]
         xs = []
         ys = []
