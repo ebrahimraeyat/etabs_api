@@ -38,12 +38,12 @@ class EtabsModel:
             'kgf_m' : 8,
             'n_mm' : 9,
             'n_m' : 10,
-            'ton_mm' : 11,
-            'ton_m' : 12,
+            'tonf_mm' : 11,
+            'tonf_m' : 12,
             'kn_cm' : 13,
             'kgf_cm' : 14,
             'n_cm' : 15,
-            'ton_cm' : 16,
+            'tonf_cm' : 16,
     }
 
     def __init__(
