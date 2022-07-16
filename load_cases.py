@@ -166,6 +166,47 @@ class LoadCases:
             elif load_case_type == 4: # Adding Response Spectrum load cases
                 seismic_load_cases.append(lc)
         return seismic_load_cases
+    
+    def get_seismic_drift_load_cases(
+        self,
+        ):
+        '''
+        Search for  load cases that have at least one seismic drift load pattern
+        '''
+        seismic_drift_load_cases = []
+        for lc in self.get_load_cases():
+            load_case_type = self.SapModel.LoadCases.GetTypeOAPI(lc)[0]
+            if load_case_type == 1:  # Static Linear
+                for lp in self.SapModel.LoadCases.StaticLinear.GetLoads(lc)[2]:
+                    if self.SapModel.LoadPatterns.GetLoadType(lp)[0] == 37:  # seismic load pattern
+                        seismic_drift_load_cases.append(lc)
+                        break
+        return seismic_drift_load_cases
+    
+    def get_xy_seismic_load_cases(
+        self,
+        ):
+        '''
+        Search for  load cases that all load patterns are in x or y direction
+        '''
+        x_seismic_load_cases = []
+        y_seismic_load_cases = []
+        x_names, y_names = self.etabs.load_patterns.get_load_patterns_in_XYdirection()
+        for lc in self.get_load_cases():
+            load_case_type = self.SapModel.LoadCases.GetTypeOAPI(lc)[0]
+            if load_case_type == 1:  # Static Linear
+                dir_set = set()
+                for lp in self.SapModel.LoadCases.StaticLinear.GetLoads(lc)[2]:
+                    if lp in x_names:
+                        dir_set.add('x')
+                    elif lp in y_names:
+                        dir_set.add('y')
+                if dir_set == {'x'}:
+                    x_seismic_load_cases.append(lc)
+                elif dir_set == {'y'}:
+                    y_seismic_load_cases.append(lc)
+
+        return x_seismic_load_cases, y_seismic_load_cases
         
         
         

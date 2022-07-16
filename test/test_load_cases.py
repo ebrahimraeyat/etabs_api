@@ -94,8 +94,16 @@ def test_get_response_spectrum_xy_loadcases_names(shayesteh):
 def test_get_seismic_load_cases(shayesteh):
     seismic_load_cases = shayesteh.load_cases.get_seismic_load_cases()
     assert True
-    # assert set(x_names) == set(['SX', 'SPX'])
-    # assert set(y_names) == set(['SY', 'SPY'])
 
+@pytest.mark.getmethod
+def test_get_seismic_drift_load_cases(shayesteh):
+    seismic_drift_load_cases = shayesteh.load_cases.get_seismic_drift_load_cases()
+    assert len(seismic_drift_load_cases) == 6
+
+@pytest.mark.getmethod
+def test_get_xy_seismic_load_cases(shayesteh):
+    x_seismic_load_cases, y_seismic_load_cases = shayesteh.load_cases.get_xy_seismic_load_cases()
+    assert len(x_seismic_load_cases) == 6
+    assert len(y_seismic_load_cases) == 6
 
 

@@ -385,11 +385,9 @@ class EtabsModel:
     def get_drifts(self, no_story, cdx, cdy, loadcases=None):
         self.run_analysis()
         if loadcases is None:
-            drift_load_pattern_names = self.load_patterns.get_drift_load_pattern_names()
-            all_load_case_names = self.load_cases.get_load_cases()
-            loadcases = [i for i in drift_load_pattern_names if i in all_load_case_names]
+            loadcases = self.etabs.load_cases.get_seismic_drift_load_cases()
         print(loadcases)
-        x_names, y_names = self.load_patterns.get_load_patterns_in_XYdirection()
+        x_names, y_names = self.load_cases.get_xy_seismic_load_cases()
         self.load_cases.select_load_cases(loadcases)
         TableKey = 'Diaphragm Max Over Avg Drifts'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
