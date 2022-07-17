@@ -105,3 +105,15 @@ def show_status_message(
     mw = FreeCADGui.getMainWindow()
     sb = mw.statusBar()
     sb.showMessage(text, time)
+
+def ask_to_unlock(etabs):
+    if etabs.SapModel.GetModelIsLocked():
+        from PySide2.QtWidgets import QMessageBox
+        if QMessageBox.question(
+            None,
+            'Unlock',
+            'Model is lock, do you want to unlock the model?',
+            ) == QMessageBox.No:
+            return 'NO'
+        else:
+            etabs.unlock_model()
