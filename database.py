@@ -120,7 +120,7 @@ class DatabaseTables:
     def write_seismic_user_coefficient(self, TableKey, FieldsKeysIncluded, TableData):
         FieldsKeysIncluded1 = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
                             'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
-                            'Ecc Ratio', 'Top Story', 'Bot Story',
+                            'Ecc Ratio', 'Top Story', 'Bottom Story',
                             ]
         if len(FieldsKeysIncluded) == len(FieldsKeysIncluded1) + 2:
             FieldsKeysIncluded1.extend(['C', 'K'])
