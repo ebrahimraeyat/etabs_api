@@ -72,6 +72,9 @@ class Story:
 
     def get_story_names(self):
         return self.SapModel.Story.GetNameList()[1]
+    
+    def get_level_names(self):
+        return self.SapModel.Story.GetStories()[1]
 
     def get_base_name_and_level(self):
         name = self.SapModel.Story.GetStories()[1][0]
