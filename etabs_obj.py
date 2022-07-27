@@ -316,12 +316,13 @@ class EtabsModel:
         IMod_col_wall = 1
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
             if self.SapModel.FrameObj.GetDesignProcedure(label)[0] == 2:  # concrete
+                modifiers = list(self.SapModel.FrameObj.GetModifiers(label)[0])
                 if self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 1: # Column
                     IMod = IMod_col_wall
+                    modifiers[:6] = 6 * [IMod]
                 elif self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 2:   # Beam
                     IMod = IMod_beam
-                modifiers = list(self.SapModel.FrameObj.GetModifiers(label)[0])
-                modifiers[4:6] = [IMod, IMod]
+                    modifiers[4:6] = [IMod, IMod]
                 self.SapModel.FrameObj.SetModifiers(label, modifiers)
         for label in self.SapModel.AreaObj.GetLabelNameList()[1]:
             if self.SapModel.AreaObj.GetDesignOrientation(label)[0] == 1: # Wall
