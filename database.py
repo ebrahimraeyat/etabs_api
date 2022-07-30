@@ -39,15 +39,21 @@ class DatabaseTables:
             df = df[cols]
         return df
 
+    def table_exist(self, table_key):
+        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
+        if table_key in all_table:
+            return True
+        return False
+
     def read(self,
                 table_key : str,
                 to_dataframe : bool = False,
                 cols : list = None,
                 ):
-        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
-        if table_key not in all_table:
+        ret = self.read_table(table_key)
+        if not ret:
             return None
-        _, _, fields, _, data, _ = self.read_table(table_key)
+        _, _, fields, _, data, _ = ret
         if fields[0] is None:
             return None
         if to_dataframe:
@@ -107,6 +113,8 @@ class DatabaseTables:
         FieldsKeysIncluded = []
         NumberRecords = 0
         TableData = []
+        if not self.table_exist(table_key):
+            return None
         return self.SapModel.DatabaseTables.GetTableForDisplayArray(table_key, FieldKeyList, GroupName, TableVersion, FieldsKeysIncluded, NumberRecords, TableData)
 
     @staticmethod

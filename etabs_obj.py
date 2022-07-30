@@ -391,7 +391,10 @@ class EtabsModel:
         x_names, y_names = self.load_cases.get_xy_seismic_load_cases()
         self.load_cases.select_load_cases(loadcases)
         TableKey = 'Diaphragm Max Over Avg Drifts'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
+        ret = self.database.read_table(TableKey)
+        if ret is None:
+            return None
+        _, _, FieldsKeysIncluded, _, TableData, _ = ret
         data = self.database.reshape_data(FieldsKeysIncluded, TableData)
         try:
             item_index = FieldsKeysIncluded.index("Item")
