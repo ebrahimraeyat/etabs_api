@@ -19,12 +19,14 @@ class CheckWorker(QtCore.QThread):
         try:
             import git
         except ImportError:
+            print('git did not installed')
             return
         FreeCAD.Console.PrintLog(f"Checking for available updates of the {self.software} workbench\n")
         software_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / f"{self.software}"
         etabs_api_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / "etabs_api"
         updates = []
         for directory in (software_dir, etabs_api_dir):
+            print(directory)
             if directory.exists() and (directory / '.git').exists():
                 gitrepo = git.Git(str(directory))
                 try:
@@ -34,6 +36,8 @@ class CheckWorker(QtCore.QThread):
                 except:
                     # can fail for any number of reasons, ex. not being online
                     pass
+        
+        print(updates)
         self.updateAvailable.emit(updates)
 
 def check_updates(software='civilTools'):
