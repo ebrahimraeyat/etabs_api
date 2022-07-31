@@ -110,7 +110,7 @@ class LoadCases:
         return None
 
     def get_spectral_with_angles(self,
-                angles : Iterable,
+                angles : Union[Iterable, bool] = None,
                 specs : Iterable = None,
                 ) -> dict:
         '''
@@ -122,7 +122,8 @@ class LoadCases:
         df.dropna(inplace=True)
         df['Angle'] = df['Angle'].astype(int16)
         df.drop_duplicates(['Name'], keep=False, inplace=True)
-        df = df[df['Angle'].isin(angles)]
+        if angles is not None:
+            df = df[df['Angle'].isin(angles)]
         if specs is not None:
             df = df[df['Name'].isin(specs)]
         # df.drop_duplicates(['Angle'], keep='first', inplace=True)

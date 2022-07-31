@@ -383,12 +383,20 @@ class EtabsModel:
         df = df.astype({'Max Drift': float, 'Avg Drift': float, 'Ratio': float})
         return df
 
-    def get_drifts(self, no_story, cdx, cdy, loadcases=None):
+    def get_drifts(self,
+            no_story,
+            cdx,
+            cdy,
+            loadcases=None,
+            x_loadcases=None,
+            y_loadcases=None,
+            ):
         self.run_analysis()
         if loadcases is None:
             loadcases = self.etabs.load_cases.get_seismic_drift_load_cases()
         print(loadcases)
-        x_names, y_names = self.load_cases.get_xy_seismic_load_cases()
+        if not x_loadcases:
+            x_loadcases, y_loadcases = self.load_cases.get_xy_seismic_load_cases()
         self.load_cases.select_load_cases(loadcases)
         TableKey = 'Diaphragm Max Over Avg Drifts'
         ret = self.database.read_table(TableKey)
@@ -410,11 +418,11 @@ class EtabsModel:
         for row in data:
             name = row[case_name_index]
             if row[item_index].endswith("X"):
-                if not name in x_names:
+                if not name in x_loadcases:
                     continue
                 cd = cdx
             elif row[item_index].endswith("Y"):
-                if not name in y_names:
+                if not name in y_loadcases:
                     continue
                 cd = cdy
             allowable_drift = limit / cd
