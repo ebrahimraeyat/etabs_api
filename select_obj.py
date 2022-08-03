@@ -24,11 +24,11 @@ class SelectObj:
         try:
             selected = self.etabs.SapModel.SelectObj.GetSelected()
         except IndexError:
-            return
+            return []
         types = selected[1]
         all_names = selected[2]
         names = []
-        for type, name in zip(types, all_names):
-            if type == n:
+        for type_, name in zip(types, all_names):
+            if type_ == n:
                 names.append(name)
         return names
