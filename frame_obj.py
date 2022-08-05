@@ -803,6 +803,38 @@ class FrameObj:
         df['Result'] = np.where(df['Ratio'] < .2 , True, False)
         return df
 
+    def assign_ev(
+        self,
+        frames : list,
+        load_patterns : list,
+        acc : float,
+        ev : str,
+        importance_factor : float = 1,
+        replace : bool  = True,
+    ):
+        table_key = 'Frame Loads Assignments - Distributed'
+        df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
+        del df['GUID']
+        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+        df = df[filt]
+        for i, row in df.iterrows():
+            val1 = math.ceil(float(row['ForceA']) * 0.6 * acc * importance_factor)
+            val2 = math.ceil(float(row['ForceB']) * 0.6 * acc * importance_factor)
+            self.assign_gravity_load(
+                name = row['UniqueName'],
+                loadpat = ev,
+                val1 = val1,
+                val2 = val2,
+                dist1 = float(row['RelDistA']),
+                dist2 = float(row['RelDistB']),
+                load_type = 1 if row['LoadType'] == 'Force' else 2,
+                replace = replace,
+            )
+
+
+        
+
+
 
 
 
