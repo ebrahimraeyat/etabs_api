@@ -47,11 +47,27 @@ def test_generate_concrete_load_combinations():
     assert data
 
 @pytest.mark.getmethod
+def test_generate_concrete_load_combinations_separate_direction():
+    equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
+                    'L' : ['Live', 'L-RED'],
+                    }
+    data = generate_concrete_load_combinations(equal_loads, separate_direction=True)
+    assert data
+
+@pytest.mark.getmethod
 def test_generate_concrete_load_combinations_asd():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
     data = generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
+    assert data
+
+@pytest.mark.getmethod
+def test_generate_concrete_load_combinations_separate_direction_asd():
+    equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
+                    'L' : ['Live', 'L-RED'],
+                    }
+    data = generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD", separate_direction=True)
     assert data
 
 @pytest.mark.setmethod
