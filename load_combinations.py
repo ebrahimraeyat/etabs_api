@@ -79,8 +79,8 @@ def get_mabhas6_load_combinations(
         if way == "LRFD":
             return {
                 '11'   : {'Dead':1.4},
-                '21'   : {'Dead':1.2 , 'L':1.6, 'RoofLive':0.5},
-                '22'   : {'Dead':1.2 , 'L':1.6, 'Snow':0.5},
+                '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
+                '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5},
                 '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6},
                 '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6},
                 '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5},
@@ -151,8 +151,8 @@ def get_mabhas6_load_combinations(
         if way == "LRFD":
             return {
                 '11'   : {'Dead':1.4},
-                '21'   : {'Dead':1.2 , 'L':1.6, 'RoofLive':0.5},
-                '22'   : {'Dead':1.2 , 'L':1.6, 'Snow':0.5},
+                '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
+                '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5},
                 '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6},
                 '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6},
                 '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5},
