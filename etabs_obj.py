@@ -304,6 +304,7 @@ class EtabsModel:
         beams to 0.5 and column and wall to 1.0. Then it runs the analysis and get the x and y period of structure.
         '''
         print(10 * '-' + "Get drift periods" + 10 * '-' + '\n')
+        self.SapModel.File.Save()
         asli_file_path = Path(self.SapModel.GetModelFilename())
         if asli_file_path.suffix.lower() != '.edb':
             asli_file_path = asli_file_path.with_suffix(".EDB")
