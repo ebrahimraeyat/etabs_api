@@ -282,6 +282,7 @@ def generate_concrete_load_combinations(
     type_ : str = 'Linear Add',
     design_type: str = 'LRFD',
     separate_direction: bool = False,
+    ev_negative: bool = True,
     ):
     data = []
     for number, combos in get_mabhas6_load_combinations(design_type, separate_direction).items():
@@ -290,6 +291,8 @@ def generate_concrete_load_combinations(
                 sf *= rho_x
             elif lname in ('EY', 'EPY', 'ENY'):
                 sf *= rho_y
+            elif lname == 'EV' and not ev_negative and sf < 0:
+                continue
             equal_names = equivalent_loads.get(lname, [])
             for name in equal_names:
                 combo_name = f'{prefix}{number}{suffix}'
