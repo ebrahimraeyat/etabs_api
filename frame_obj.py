@@ -85,11 +85,12 @@ class FrameObj:
         return beams, columns
 
     def get_columns_pmm_and_beams_rebars(self, frame_names):
-        self.SapModel.SelectObj.ClearSelection()
-        self.etabs.analyze.set_load_cases_to_analyze()
-        self.etabs.run_analysis()
-        self.set_frame_obj_selected(frame_names)
+        if not self.SapModel.GetModelIsLocked():
+            self.etabs.analyze.set_load_cases_to_analyze()
+            self.etabs.run_analysis()
         if not self.SapModel.DesignConcrete.GetResultsAvailable():
+            self.set_frame_obj_selected(frame_names)
+            self.SapModel.SelectObj.ClearSelection()
             print('Start Design ...')
             self.SapModel.DesignConcrete.StartDesign()
         self.etabs.set_current_unit('kgf', 'cm')
@@ -171,20 +172,21 @@ class FrameObj:
                 name = self.SapModel.SelectObj.GetSelected()[2][0]
             except IndexError:
                 return None
+        self.SapModel.File.Save()
         story = self.SapModel.FrameObj.GetLabelFromName(name)[1]
         story_frames = list(self.SapModel.FrameObj.GetNameListOnStory(story)[1])
         story_frames.remove(name)
         print('get columns pmm and beams rebars')
         columns_pmm, beams_rebars = self.get_columns_pmm_and_beams_rebars(story_frames)
-        self.etabs.unlock_model()
-        self.etabs.lock_and_unlock_model()
+        # self.etabs.unlock_model()
+        # self.etabs.lock_and_unlock_model()
         asli_file_path = Path(self.SapModel.GetModelFilename())
         if isinstance(weakness_filename, Path) and weakness_filename.exists():
             self.SapModel.File.OpenFile(str(weakness_filename))
         else:
             print(f"Saving file as {weakness_filename}\n")
-            if asli_file_path.suffix.lower() != '.edb':
-                asli_file_path = asli_file_path.with_suffix(".EDB")
+            # if asli_file_path.suffix.lower() != '.edb':
+            #     asli_file_path = asli_file_path.with_suffix(".EDB")
             dir_path = asli_file_path.parent.absolute()
             weakness_file_path = dir_path / weakness_filename
             self.SapModel.File.Save(str(weakness_file_path))
