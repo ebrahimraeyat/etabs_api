@@ -762,8 +762,8 @@ class EtabsModel:
         ):
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=x_specs+y_specs)
+        self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
         for i in range(num_iteration):
-            self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
             vex, vey = self.results.get_base_react(
                     loadcases=[ex_name, ey_name],
                     directions=['x', 'y'],
