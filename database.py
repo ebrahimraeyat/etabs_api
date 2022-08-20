@@ -833,7 +833,7 @@ class DatabaseTables:
             prefix : str = 'SEC',
             angles : list = range(0, 180, 15),
             ):
-        fields = ('Name', 'DefinedBy', 'Group', 'ResultType', 'ResultLoc', 'RotAboutZ', 'RotAboutY', 'RotAboutX')
+        fields = ('Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y', 'Rotation About X')
         data = []
         for angle in angles:
             name = f'{prefix}{angle}'
