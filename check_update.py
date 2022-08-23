@@ -111,6 +111,7 @@ def update(repos_path: list):
         msg = 'Update failed.'
         QMessageBox.warning(None, "Failed", msg)
 
+
 def restart_freecad():
     # return
     """Shuts down and restarts FreeCAD"""
