@@ -19,7 +19,7 @@ def shayesteh(edb="shayesteh.EDB"):
             if 'test.' in filepath.name:
                 return etabs
             else:
-                raise NameError
+                return create_test_file(etabs)
         else:
             raise FileNotFoundError
     except FileNotFoundError:
@@ -29,7 +29,11 @@ def shayesteh(edb="shayesteh.EDB"):
                 model_path = Path(__file__).parent / 'files' / edb,
                 software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
             )
-        temp_path = Path(tempfile.gettempdir())
-        test_file_path = temp_path / "test.EDB"
-        etabs.SapModel.File.Save(str(test_file_path))
-        return etabs
+        return create_test_file(etabs)
+        
+
+def create_test_file(etabs):
+    temp_path = Path(tempfile.gettempdir())
+    test_file_path = temp_path / "test.EDB"
+    etabs.SapModel.File.Save(str(test_file_path))
+    return etabs

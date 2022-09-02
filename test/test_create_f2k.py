@@ -1,41 +1,35 @@
 import pytest
-import comtypes.client
-from pathlib import Path
-import sys
 import shutil
 import tempfile
-
+from pathlib import Path
+import sys
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-import etabs_obj
+from shayesteh import shayesteh
+
 import create_f2k
 
 
-@pytest.fixture
-def shayesteh(edb="shayesteh.EDB"):
-    try:
-        etabs = etabs_obj.EtabsModel(backup=False)
-        if etabs.success:
-            filepath = Path(etabs.SapModel.GetModelFilename())
-            if 'test.' in filepath.name:
-                return etabs
-            else:
-                raise NameError
-        else:
-            raise FileNotFoundError
-    except FileNotFoundError:
-        etabs = etabs_obj.EtabsModel(
-                attach_to_instance=False,
-                backup = False,
-                model_path = Path(__file__).parent / 'files' / edb,
-                software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
-            )
-        temp_path = Path(tempfile.gettempdir())
-        test_file_path = temp_path / "test.EDB"
-        etabs.SapModel.File.Save(str(test_file_path))
-        return etabs
+@pytest.mark.setmethod
+def test_add_point_coordinates(shayesteh):
+    f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
+    temp_f2k = Path(tempfile.gettempdir()) / f2k.name
+    shutil.copy(f2k, temp_f2k)
+    writer = create_f2k.CreateF2kFile(
+        input_f2k=temp_f2k,
+        etabs=shayesteh,
+        load_cases=[],
+        case_types=[],
+        model_datum=0,
+        append=False,
+        )
+    shayesteh.run_analysis()
+    writer.add_point_coordinates()
+    writer.write()
+    points = writer.get_points_coordinates()
+    assert len(points) == 11
 
 @pytest.mark.setmethod
 def test_add_load_combinations_envelope(shayesteh):
@@ -61,7 +55,8 @@ def test_add_load_combinations_envelope(shayesteh):
     assert False
 
 if __name__ == '__main__':
-    from pathlib import Path
+    # from pathlib import Path
+    import etabs_obj
     etabs_api = Path(__file__).parent.parent
     import sys
     sys.path.insert(0, str(etabs_api))

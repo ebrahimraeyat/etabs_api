@@ -205,11 +205,17 @@ class CreateF2kFile(Safe):
         return content
 
     def add_point_coordinates(self):
-        base_name = self.etabs.story.get_base_name_and_level()[0]
+        # base_name = self.etabs.story.get_base_name_and_level()[0]
         table_key = 'Objects and Elements - Joints'
         cols = ['ElmName', 'GlobalX', 'GlobalY', 'GlobalZ', 'Story']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        filt = df['Story'] == base_name
+        # get reaction joints
+        self.etabs.load_cases.select_all_load_cases()
+        table_key2 = "Joint Design Reactions"
+        cols = ['UniqueName']
+        df2 = self.etabs.database.read(table_key2, to_dataframe=True, cols=cols)
+        joint_names = df2['UniqueName'].unique()
+        filt = df['ElmName'].isin(joint_names)
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
         df['GlobalZ'] = f'{self.model_datum}'
