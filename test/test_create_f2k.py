@@ -32,6 +32,28 @@ def test_add_point_coordinates(shayesteh):
     assert len(points) == 11
 
 @pytest.mark.setmethod
+def test_add_load_combinations(shayesteh):
+    f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
+    temp_f2k = Path(tempfile.gettempdir()) / f2k.name
+    shutil.copy(f2k, temp_f2k)
+    writer = create_f2k.CreateF2kFile(
+        input_f2k=temp_f2k,
+        etabs=shayesteh,
+        load_cases=[],
+        case_types=[],
+        model_datum=0,
+        append=False,
+        )
+    writer.add_load_combinations(ignore_dynamics=True)
+    writer.write()
+    with open(temp_f2k, 'r') as f:
+        for line in f.readlines():
+            for case in ('SX', 'SY', 'SPX', 'SPY'):
+                if case in line:
+                    assert False
+    assert True
+
+@pytest.mark.setmethod
 def test_add_load_combinations_envelope(shayesteh):
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name

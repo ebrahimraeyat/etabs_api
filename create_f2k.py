@@ -363,12 +363,21 @@ class CreateF2kFile(Safe):
                 self,
                 types: Iterable = ('Envelope', 'Linear Add'),
                 load_combinations: Union[list, bool] = None,
+                ignore_dynamics : bool = True,
         ):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Load Combination Definitions"
         cols = ['Name', 'LoadName', 'Type', 'SF']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         df.fillna(method='ffill', inplace=True)
+        # remove dynamic load combinations
+        if ignore_dynamics:
+            response_spectrum_loadcases = self.etabs.load_cases.get_loadcase_withtype(4)
+            if response_spectrum_loadcases:
+                filt = df['LoadName'].isin(response_spectrum_loadcases)
+                load_combinations_with_dynamic = df['Name'].loc[filt].unique()
+                filt = df['Name'].isin(load_combinations_with_dynamic)
+                df = df.loc[~filt]
         # design_load_combinations = set()
         # for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
         #     load_combos_names = self.etabs.database.get_design_load_combinations(type_)
