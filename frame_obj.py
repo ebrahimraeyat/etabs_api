@@ -814,6 +814,7 @@ class FrameObj:
         importance_factor : float = 1,
         replace : bool  = True,
         ):
+        self.etabs.unlock_model()
         self.etabs.set_current_unit('kgf', 'm')
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
