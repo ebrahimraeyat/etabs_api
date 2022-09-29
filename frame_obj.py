@@ -553,6 +553,30 @@ class FrameObj:
             item_type,
             )
         return None
+    
+    def assign_point_load(self,
+            name: str,
+            loadpat : str,
+            val : float,
+            dist : float = 0,
+            load_type : int = 1, # 1: Force per len , 2: Moment per len
+            relative : bool = True,
+            replace : bool = True,
+            item_type : int = 0, # 0: object, 2: selected_obj
+            ):
+        self.SapModel.FrameObj.SetLoadPoint(
+            name,
+            loadpat,
+            load_type,
+            6,
+            dist,
+            -val,
+            'Global',
+            relative,
+            replace,
+            item_type,
+            )
+        return None
 
     def assign_gravity_load_from_wall(self,
             name: str,
@@ -816,6 +840,7 @@ class FrameObj:
         ):
         self.etabs.unlock_model()
         self.etabs.set_current_unit('kgf', 'm')
+        # Distributed loads
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
         del df['GUID']
@@ -831,6 +856,22 @@ class FrameObj:
                 val2 = val2,
                 dist1 = float(row['RelDistA']),
                 dist2 = float(row['RelDistB']),
+                load_type = 1 if row['LoadType'] == 'Force' else 2,
+                replace = replace,
+            )
+        # point load
+        table_key = 'Frame Loads Assignments - Point'
+        df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
+        del df['GUID']
+        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+        df = df[filt]
+        for i, row in df.iterrows():
+            val = math.ceil(float(row['Force']) * 0.6 * acc * importance_factor)
+            self.assign_point_load(
+                name = row['UniqueName'],
+                loadpat = ev,
+                val = val,
+                dist = float(row['RelDist']),
                 load_type = 1 if row['LoadType'] == 'Force' else 2,
                 replace = replace,
             )
