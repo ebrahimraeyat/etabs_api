@@ -36,7 +36,8 @@ class CheckWorker(QtCore.QThread):
                 try:
                     gitrepo.fetch()
                     status = gitrepo.status()
-                    if "git push" in status:
+                    if "git add" in status:
+                        # pass
                         restart_freecad()
                     elif "git pull" in status:
                         updates.append(directory)
@@ -115,9 +116,9 @@ def update(repos_path: list):
 def restart_freecad():
     # return
     """Shuts down and restarts FreeCAD"""
-    args = QtWidgets.QApplication.arguments()[1:]
-    if FreeCADGui.getMainWindow().close():
-        QtCore.QProcess.startDetached(
-            QtWidgets.QApplication.applicationFilePath(), args
-        )
+    # args = QtWidgets.QApplication.arguments()[1:]
+    FreeCADGui.getMainWindow().deleteLater()
+        # QtCore.QProcess.startDetached(
+            # QtWidgets.QApplication.applicationFilePath(), args
+        # )
             
