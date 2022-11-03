@@ -60,7 +60,7 @@ class PropFrame:
         table_key = "Frame Section Property Definitions - Concrete Rectangular"
         df = self.etabs.database.read(table_key, to_dataframe=True)
         filt = df.DesignType == type_
-        return (df[filt].Name)
+        return df[filt].Name
 
     def convert_columns_design_types(self,
         design : bool = True,

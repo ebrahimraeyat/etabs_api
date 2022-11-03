@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from collections import Iterable
 import pytest
 import comtypes.client
 
@@ -40,18 +41,21 @@ def shayesteh(edb="shayesteh.EDB"):
 
 @pytest.mark.setmethod
 def test_create_concrete_beam(shayesteh):
-    ret = shayesteh.prop_frame.create_concrete_beam('B20X20', 'C25', 200, 200, 'S400', 'S340', 400)
+    ret = shayesteh.prop_frame.create_concrete_beam('B20X20', 'CONC', 200, 200, 'RMAT', 'RMAT-1', 400)
     assert ret
+    shayesteh.SapModel.PropFrame.Delete('B20X20')
 
 @pytest.mark.setmethod
 def test_create_concrete_column(shayesteh):
-    ret = shayesteh.prop_frame.create_concrete_column('C50X80', 'C25', 800, 500, 'S400', 'S340', 75, 3, 6, '20', '10')
+    ret = shayesteh.prop_frame.create_concrete_column('C50X80', 'CONC', 800, 500, 'RMAT', 'RMAT-1', 75, 3, 6, '20d', '10d')
     assert ret
+    shayesteh.SapModel.PropFrame.Delete('C50X80')
 
 @pytest.mark.getmethod
 def test_get_concrete_rectangular_of_type(shayesteh):
     ret = shayesteh.prop_frame.get_concrete_rectangular_of_type()
     assert len(ret) == 112
+    assert isinstance(ret, Iterable)
 
 @pytest.mark.setmethod
 def test_convert_columns_design_types(shayesteh):
