@@ -53,3 +53,31 @@ class PropFrame:
         if ret == 0:
             return True
         return False
+
+    def get_concrete_rectangular_of_type(self,
+        type_ : str = 'Column',
+        ):
+        table_key = "Frame Section Property Definitions - Concrete Rectangular"
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        filt = df.DesignType == type_
+        return (df[filt].Name)
+
+    def convert_columns_design_types(self,
+        design : bool = True,
+        columns : list = [],
+        sections : list = [],
+        ):
+        '''
+        columns : unique name for columns that their section design type must be changed
+        sections : sections that their design type must be changed
+        '''
+        if columns:
+            col_sections = [self.SapModel.FrameObj.GetSection(col)[0] for col in columns]
+        else:
+            col_sections = self.get_concrete_rectangular_of_type(type_='Column')
+        for sec in col_sections:
+            ret = self.SapModel.PropFrame.GetRebarColumn(sec)
+            ret[-2] = design
+            self.SapModel.PropFrame.SetRebarColumn(sec, *ret[:-1])
+
+

@@ -48,6 +48,23 @@ def test_create_concrete_column(shayesteh):
     ret = shayesteh.prop_frame.create_concrete_column('C50X80', 'C25', 800, 500, 'S400', 'S340', 75, 3, 6, '20', '10')
     assert ret
 
+@pytest.mark.getmethod
+def test_get_concrete_rectangular_of_type(shayesteh):
+    ret = shayesteh.prop_frame.get_concrete_rectangular_of_type()
+    assert len(ret) == 112
+
+@pytest.mark.setmethod
+def test_convert_columns_design_types(shayesteh):
+    shayesteh.prop_frame.convert_columns_design_types()
+    ret = shayesteh.SapModel.PropFrame.GetRebarColumn("C5016F20")
+    assert ret[-2]
+    shayesteh.prop_frame.convert_columns_design_types(design=False)
+    shayesteh.prop_frame.convert_columns_design_types(columns=['107'])
+    ret = shayesteh.SapModel.PropFrame.GetRebarColumn("C5016F20")
+    assert ret[-2]
+    ret = shayesteh.SapModel.PropFrame.GetRebarColumn("C4512F18")
+    assert not ret[-2]
+
 
 if __name__ == '__main__':
     from pathlib import Path
@@ -57,4 +74,3 @@ if __name__ == '__main__':
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
-    test_add_load_combination(etabs)
