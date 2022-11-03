@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling", "comtypes", "pandas", "psutil", "numpy"]
+build-backend = "hatchling.build"
+
+[project]
+name = "etabs_api"
+version = "1.0"
+authors = [
+  { name="Raeyat Roknabadi Ebrahim", email="ebe79442114@yahoo.com" },
+]
+description = "API for CSI ETABS 2018 and Higher"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: Microsoft :: Windows",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ebrahimraeyat/etabs_api"
