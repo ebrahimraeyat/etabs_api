@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling", "comtypes", "pandas", "psutil", "numpy"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "etabs_api"
-version = "1.0"
+version = "1.2"
 authors = [
   { name="Raeyat Roknabadi Ebrahim", email="ebe79442114@yahoo.com" },
 ]
@@ -16,6 +16,13 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Operating System :: Microsoft :: Windows",
 ]
+
+dependencies = [
+    "comtypes",
+    "pandas",
+    "psutil",
+    "numpy",
+    ]
 
 [project.urls]
 "Homepage" = "https://github.com/ebrahimraeyat/etabs_api"
