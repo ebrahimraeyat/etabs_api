@@ -25,8 +25,7 @@ def open_browse(
 def find_etabs(
     run=False,
     backup=False,
-    software: str = 'civilTools', # 'OSAFE'
-    filename=None,
+    filename=None
     ):
     '''
     try to find etabs in this manner:
@@ -36,46 +35,29 @@ def find_etabs(
     run : if True it runs the model
     backup: if True it backup from the main file
     '''
-    param = FreeCAD.ParamGet(f"User parameter:BaseApp/Preferences/Mod/{software}")
-    use_etabs = param.GetBool('use_etabs', False)
 
     # try to connect to opening etabs software
     etabs = etabs_obj.EtabsModel(backup=backup)
 
-    if not etabs.success and use_etabs:
-        # try open etabs
-        etabs_exe = param.GetString('etabs_exe_path', '')
-        if Path(etabs_exe).exists():
-            etabs = etabs_obj.EtabsModel(
-                attach_to_instance=False,
-                backup = backup,
-                model_path = None,
-                software_exe_path=etabs_exe,
-                )
+    # if not etabs.success:
+    #     pass
     if etabs.success:
         filename_path = etabs.get_filename()
         if filename_path.exists():
             filename = str(filename_path)
-    elif (QMessageBox.question(
+    else:
+        QMessageBox.warning(
         None,
         'ETABS',
-        f'''Please Open ETABS Software.
-If ETABS is now open, close it and run this command again. 
-You must specify the ETABS.exe path from "Edit / Preferences / {software} / General Tab".
-Do you want to specify ETABS.exe path?''',
-        QMessageBox.Yes | QMessageBox.No,
-        QMessageBox.Yes,
-        ) == QMessageBox.Yes
-        ):
-        import FreeCADGui
-        FreeCADGui.showPreferences(f"{software}", 0)
+        'Please Open ETABS Software. If ETABS is now open, try register etabs first.'
+        )
     if (
         filename is None and
-        etabs and
+        etabs.success and
         hasattr(etabs, 'SapModel')
         ):
         filename = open_browse()
-    if filename is None:
+    if filename is None and etabs.success:
         QMessageBox.warning(None, 'ETABS', 'Please Open ETABS Model and Run this command again.')
     elif (
         hasattr(etabs, 'success') and
@@ -86,7 +68,7 @@ Do you want to specify ETABS.exe path?''',
     # run etabs
     if (
         run and
-        etabs is not None and
+        etabs.success and
         filename is not None and
         hasattr(etabs, 'SapModel') and
         not etabs.SapModel.GetModelIsLocked()

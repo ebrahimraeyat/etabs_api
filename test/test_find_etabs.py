@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
+FREECADPATH = 'H:\\program files\\FreeCAD 0.19\\bin'
 sys.path.append(FREECADPATH)
 
 etabs_api_path = Path(__file__).parent.parent
