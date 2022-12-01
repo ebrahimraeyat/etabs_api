@@ -98,3 +98,12 @@ def test_get_design_type(shayesteh):
     type_ = shayesteh.load_patterns.get_design_type('DEAD')
     assert type_ == 'Dead'
 
+@pytest.mark.getmethod
+def test_get_seismic_load_patterns(shayesteh):
+    names = shayesteh.load_patterns.get_seismic_load_patterns()
+    assert names[0] == {'QX'}
+    assert names[1] == {'QXN'}
+    assert names[2] == {'QXP'}
+    assert names[3] == {'QY'}
+    assert names[4] == {'QYN'}
+    assert names[5] == {'QYP'}
