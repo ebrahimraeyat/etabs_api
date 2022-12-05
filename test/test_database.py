@@ -16,7 +16,7 @@ sys.path.insert(0, str(etabs_api_path))
 
 import etabs_obj
 
-from shayesteh import shayesteh
+from shayesteh import shayesteh, two_earthquakes, khiabani
 
 
 @pytest.fixture
@@ -46,32 +46,6 @@ def shayesteh_safe(edb="shayesteh.FDB"):
         etabs = etabs_obj.EtabsModel(backup=False)
         return etabs
 
-@pytest.fixture
-def khiabany(edb="khiabany.EDB"):
-    try:
-        etabs = etabs_obj.EtabsModel(backup=False)
-        if etabs.success:
-            filepath = Path(etabs.SapModel.GetModelFilename())
-            if 'test.' in filepath.name:
-                return etabs
-            else:
-                raise NameError
-        else:
-            raise FileNotFoundError
-    except FileNotFoundError:
-        helper = comtypes.client.CreateObject('ETABSv1.Helper') 
-        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-        ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
-        ETABSObject.ApplicationStart()
-        SapModel = ETABSObject.SapModel
-        SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / 'files' / edb))
-        asli_file_path = Path(SapModel.GetModelFilename())
-        dir_path = asli_file_path.parent.absolute()
-        test_file_path = dir_path / "test.EDB"
-        SapModel.File.Save(str(test_file_path))
-        etabs = etabs_obj.EtabsModel(backup=False)
-        return etabs
 
 def test_get_story_mass(shayesteh):
     story_mass = shayesteh.database.get_story_mass()
@@ -164,11 +138,11 @@ def test_get_section_cuts_angle(shayesteh):
     assert len(d) == 13
 
 @pytest.mark.getmethod
-def test_expand_seismic_load_patterns(khiabany):
-    df, loads = khiabany.database.expand_seismic_load_patterns()
+def test_expand_seismic_load_patterns(khiabani):
+    df, loads = khiabani.database.expand_seismic_load_patterns()
     assert len(loads) == 4
     assert len(df) == 12
-    assert set(df.Name) == {'EY', 'EX', 'EY_DRIFT', 'ENY_DRIFT', 'EPY_DRIFT', 'EPX', 'ENY', 'ENX', 'ENX_DRIFT', 'EPX_DRIFT', 'EX_DRIFT', 'EPY'}
+    assert set(df.Name) == {'EY', 'EX', 'EY_DRIFT', 'EYN_DRIFT', 'EYP_DRIFT', 'EXP', 'EYN', 'EXN', 'EXN_DRIFT', 'EXP_DRIFT', 'EX_DRIFT', 'EYP'}
     assert set(loads.keys()) == {'EYDRIFT', 'EXALL', 'EYALL', 'EXDRIFT'}
 
 @pytest.mark.getmethod
