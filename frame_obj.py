@@ -826,7 +826,7 @@ class FrameObj:
             filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
             df = df.loc[filt, :]
         import numpy as np
-        df['Result'] = np.where(df['Ratio'] < .2 , True, False)
+        df['Result'] = df['Ratio'] < .2
         return df
 
     def assign_ev(
@@ -875,15 +875,6 @@ class FrameObj:
                 load_type = 1 if row['LoadType'] == 'Force' else 2,
                 replace = replace,
             )
-
-
-        
-
-
-
-
-
-
 
 if __name__ == '__main__':
     from pathlib import Path
