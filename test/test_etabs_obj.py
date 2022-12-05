@@ -1,68 +1,14 @@
-# from unittest import mock
+import sys
+from pathlib import Path
 import pytest
 from unittest.mock import Mock
-import comtypes.client
-from pathlib import Path
-import sys
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-import etabs_obj
+from shayesteh import shayesteh
 
 Tx_drift, Ty_drift = 1.085, 1.085
-
-@pytest.fixture
-def shayesteh(edb="shayesteh.EDB"):
-    try:
-        etabs = etabs_obj.EtabsModel(backup=False)
-        if etabs.success:
-            filepath = Path(etabs.SapModel.GetModelFilename())
-            if 'test.' in filepath.name:
-                return etabs
-            else:
-                raise NameError
-        else:
-            raise FileNotFoundError
-    except FileNotFoundError:
-        helper = comtypes.client.CreateObject('ETABSv1.Helper') 
-        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-        ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
-        ETABSObject.ApplicationStart()
-        SapModel = ETABSObject.SapModel
-        SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / edb))
-        asli_file_path = Path(SapModel.GetModelFilename())
-        dir_path = asli_file_path.parent.absolute()
-        test_file_path = dir_path / "test.EDB"
-        SapModel.File.Save(str(test_file_path))
-        etabs = etabs_obj.EtabsModel(backup=False)
-        return etabs
-
-@pytest.fixture
-def nazari(edb="nazari.EDB"):
-    try:
-        ETABSObject = comtypes.client.GetActiveObject("CSI.ETABS.API.ETABSObject")
-        SapModel = ETABSObject.SapModel
-        filepath = Path(SapModel.GetModelFilename())
-        if 'test.' in filepath.name:
-            return ETABSObject
-        else:
-            raise NameError
-        
-    except:
-        helper = comtypes.client.CreateObject('ETABSv1.Helper') 
-        helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-        ETABSObject = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
-        ETABSObject.ApplicationStart()
-        SapModel = ETABSObject.SapModel
-        SapModel.InitializeNewModel()
-        SapModel.File.OpenFile(str(Path(__file__).parent / edb))
-        asli_file_path = Path(SapModel.GetModelFilename())
-        dir_path = asli_file_path.parent.absolute()
-        test_file_path = dir_path / "test.EDB"
-        SapModel.File.Save(str(test_file_path))
-        return ETABSObject
 
 # def close_etabs(ETABS):
 #     SapModel = ETABS.SapModel

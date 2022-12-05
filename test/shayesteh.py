@@ -1,14 +1,8 @@
 import pytest
 from pathlib import Path
-# import sys
 import tempfile
 
-
-# etabs_api_path = Path(__file__).parent.parent
-# sys.path.insert(0, str(etabs_api_path))
-
 import etabs_obj
-
 
 @pytest.fixture
 def shayesteh(edb="shayesteh.EDB"):
@@ -30,6 +24,27 @@ def shayesteh(edb="shayesteh.EDB"):
                 software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
             )
         return create_test_file(etabs)
+
+@pytest.fixture
+def shayesteh_safe(edb="shayesteh.FDB"):
+    try:
+        safe = etabs_obj.EtabsModel(backup=False, software='SAFE')
+        if safe.success:
+            filepath = Path(safe.SapModel.GetModelFilename())
+            if 'test.' in filepath.name:
+                return safe
+            else:
+                return create_test_file(safe, suffix='FDB')
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
+        safe = etabs_obj.EtabsModel(
+                attach_to_instance=False,
+                backup = False,
+                model_path = Path(__file__).parent / 'files' / edb,
+                software_exe_path=r'G:\program files\Computers and Structures\SAFE 20\SAFE.exe'
+            )
+        return create_test_file(safe, suffix='FDB')
 
 
 @pytest.fixture
@@ -75,8 +90,8 @@ def khiabani(edb="khiabani.EDB"):
         return create_test_file(etabs)
         
 
-def create_test_file(etabs):
+def create_test_file(etabs, suffix='EDB'):
     temp_path = Path(tempfile.gettempdir())
-    test_file_path = temp_path / "test.EDB"
+    test_file_path = temp_path / f"test.{suffix}"
     etabs.SapModel.File.Save(str(test_file_path))
     return etabs
