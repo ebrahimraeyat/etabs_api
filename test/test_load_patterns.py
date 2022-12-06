@@ -5,7 +5,7 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
+from shayesteh import shayesteh, khiabani, two_earthquakes
 
 @pytest.mark.getmethod
 def test_get_load_patterns_in_XYdirection(shayesteh):
@@ -77,3 +77,17 @@ def test_get_seismic_load_patterns(shayesteh):
     assert names[3] == {'QY'}
     assert names[4] == {'QYN'}
     assert names[5] == {'QYP'}
+
+@pytest.mark.getmethod
+def test_get_expanded_seismic_load_patterns(two_earthquakes):
+    df, loads = two_earthquakes.load_patterns.get_expanded_seismic_load_patterns()
+    assert len(df) == 17
+    assert len(loads) == 6
+    assert set(df.Name) == {'EX1', 'EX1P','EX1N', 'EY1', 'EY1P','EY1N', 'EX2', 'EX2P','EX2N', 'EY2', 'EY2P','EY2N', 'EDRIFTY', 'EDRIFTX'}
+    assert set(loads.keys()) == {'EDRIFTX', 'EX1', 'EY1' , 'EX2', 'EY2', 'EDRIFTY'}
+
+
+if __name__ == '__main__':
+    import etabs_obj
+    two_earthquakes = etabs_obj.EtabsModel(backup=True)
+    ret = test_get_expanded_seismic_load_patterns(two_earthquakes)

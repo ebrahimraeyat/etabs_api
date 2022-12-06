@@ -1,3 +1,7 @@
+import pandas as pd
+pd.options.mode.chained_assignment = None
+
+
 class LoadPatterns:
 
     map_number_to_pattern = {
@@ -247,6 +251,65 @@ class LoadPatterns:
                 y_name = name
                 break
         return x_name, y_name
+
+    def get_expanded_seismic_load_patterns(self) -> tuple:
+        '''
+        get all seismic loads that have multiple eccentricity in definitions like EXALL, EYALL
+        it returns names of earthquake as key and directions (x, +x, -x, y, +y, -y) as keys
+        '''
+        self.etabs.unlock_model()
+        self.etabs.lock_and_unlock_model()
+        self.etabs.load_patterns.select_all_load_patterns()
+        drift_load_names = self.etabs.load_patterns.get_drift_load_pattern_names()
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        d = {'Yes' : 1, 'No' : 0}
+        cols = {
+            'XDir' : '',
+            'XDirPlusE' : 'P',
+            'XDirMinusE' : 'N',
+            'YDir' : '',
+            'YDirPlusE' : 'P',
+            'YDirMinusE' : 'N',
+            }
+        for col in cols:
+            df[col] = df[col].map(d)
+        filt_multi = (df[cols.keys()].sum(axis=1) > 1)
+        if not True in filt_multi.values:
+            return {}
+        # multi_load_names = df.loc[filt_multi]['Name']
+        converted_loads = dict.fromkeys(df['Name'].unique())
+        import copy
+        new_rows = []
+        for _, row in df.iterrows():
+            name = row['Name']
+            load_type = 37 if name in drift_load_names else 5
+            if row['XDir'] in (0, 1):
+                row_dirs=row[cols.keys()]
+            
+            for col, prefix in cols.items():
+                if row_dirs[col] == 1:
+                    load_name = f'{name}{prefix}'
+                    new_row = copy.deepcopy(row)
+                    new_row[cols.keys()] = 0
+                    new_row[col] = 1
+                    new_row['Name'] = load_name
+                    new_rows.append(new_row)
+                    if converted_loads[name] is None:
+                        converted_loads[name] = [(load_name, load_type)]
+                    else:
+                        converted_loads[name].append((load_name, load_type))
+                    # self.SapModel.LoadPatterns.Add(load_name, load_type, 0, False)
+
+        new_df = pd.DataFrame.from_records(new_rows, columns=df.columns)
+        d = {1: 'Yes', 0: 'No'}
+        for col in cols:
+            new_df[col] = new_df[col].map(d)
+        return new_df, converted_loads
+
+
+        
+
 
     def get_xy_seismic_load_patterns(self, only_ecc=False):
         x_names, y_names = self.get_load_patterns_in_XYdirection(only_ecc)
