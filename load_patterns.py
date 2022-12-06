@@ -280,6 +280,7 @@ class LoadPatterns:
         if not True in filt_multi.values:
             return None
         converted_loads = dict.fromkeys(df['Name'].unique())
+        converted_loads_type = dict()
         import copy
         new_rows = []
         for _, row in df.iterrows():
@@ -300,11 +301,12 @@ class LoadPatterns:
                         converted_loads[name] = [(load_name, load_type)]
                     else:
                         converted_loads[name].append((load_name, load_type))
+                    converted_loads_type[load_name] = load_type
         new_df = pd.DataFrame.from_records(new_rows, columns=df.columns)
         d = {1: 'Yes', 0: 'No'}
         for col in cols:
             new_df[col] = new_df[col].map(d)
-        return new_df, converted_loads
+        return new_df, converted_loads, converted_loads_type
 
     def get_xy_seismic_load_patterns(self, only_ecc=False):
         x_names, y_names = self.get_load_patterns_in_XYdirection(only_ecc)
