@@ -90,6 +90,25 @@ def test_write_aj_user_coefficient(shayesteh):
     ret = shayesteh.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 
+def test_write_seismic_user_coefficient_df(two_earthquakes):
+    import pandas as pd
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
+    df = pd.read_pickle(filename)
+    two_earthquakes.database.write_seismic_user_coefficient_df(df)
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = two_earthquakes.database.read(table_key, to_dataframe=True)
+    assert len(df) == 14
+
+def test_write_seismic_user_coefficient_df_overwrite(two_earthquakes):
+    import pandas as pd
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'
+    df = pd.read_pickle(filename)
+    two_earthquakes.database.write_seismic_user_coefficient_df(df)
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = two_earthquakes.database.read(table_key, to_dataframe=True)
+    assert len(df) == 19
+    
+
 def test_get_beams_forces(shayesteh):
     df = shayesteh.database.get_beams_forces()
     assert len(df) == 37625
