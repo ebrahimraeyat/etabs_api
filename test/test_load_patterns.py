@@ -81,13 +81,19 @@ def test_get_seismic_load_patterns(shayesteh):
 @pytest.mark.getmethod
 def test_get_expanded_seismic_load_patterns(two_earthquakes):
     df, loads = two_earthquakes.load_patterns.get_expanded_seismic_load_patterns()
-    assert len(df) == 17
+    assert len(df) == 19
     assert len(loads) == 6
-    assert set(df.Name) == {'EX1', 'EX1P','EX1N', 'EY1', 'EY1P','EY1N', 'EX2', 'EX2P','EX2N', 'EY2', 'EY2P','EY2N', 'EDRIFTY', 'EDRIFTX'}
+    assert set(df.Name) == {'EX1', 'EX1P','EX1N', 'EY1', 'EY1P','EY1N', 'EX2', 'EX2P','EX2N', 'EY2', 'EY2P','EY2N', 'EDRIFTY', 'EDRIFTYN', 'EDRIFTYP', 'EDRIFTX'}
     assert set(loads.keys()) == {'EDRIFTX', 'EX1', 'EY1' , 'EX2', 'EY2', 'EDRIFTY'}
 
+
+@pytest.mark.setmethod
+def test_get_expanded_seismic_load_patterns_apply(two_earthquakes):
+    df, _ = two_earthquakes.load_patterns.get_expanded_seismic_load_patterns()
+    two_earthquakes.database.write_seismic_user_coefficient_df(df)
 
 if __name__ == '__main__':
     import etabs_obj
     two_earthquakes = etabs_obj.EtabsModel(backup=True)
     ret = test_get_expanded_seismic_load_patterns(two_earthquakes)
+    print('wow')

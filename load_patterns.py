@@ -255,7 +255,9 @@ class LoadPatterns:
     def get_expanded_seismic_load_patterns(self) -> tuple:
         '''
         get all seismic loads that have multiple eccentricity in definitions like EXALL, EYALL
-        it returns names of earthquake as key and directions (x, +x, -x, y, +y, -y) as keys
+        and returns new dataframe for apply in  Auto Seismic - User Coefficient table and
+        a dictionary that keys corresponds all seismic user loads and values are converted
+        load and type
         '''
         self.etabs.unlock_model()
         self.etabs.lock_and_unlock_model()
@@ -276,8 +278,7 @@ class LoadPatterns:
             df[col] = df[col].map(d)
         filt_multi = (df[cols.keys()].sum(axis=1) > 1)
         if not True in filt_multi.values:
-            return {}
-        # multi_load_names = df.loc[filt_multi]['Name']
+            return None
         converted_loads = dict.fromkeys(df['Name'].unique())
         import copy
         new_rows = []
@@ -299,17 +300,11 @@ class LoadPatterns:
                         converted_loads[name] = [(load_name, load_type)]
                     else:
                         converted_loads[name].append((load_name, load_type))
-                    # self.SapModel.LoadPatterns.Add(load_name, load_type, 0, False)
-
         new_df = pd.DataFrame.from_records(new_rows, columns=df.columns)
         d = {1: 'Yes', 0: 'No'}
         for col in cols:
             new_df[col] = new_df[col].map(d)
         return new_df, converted_loads
-
-
-        
-
 
     def get_xy_seismic_load_patterns(self, only_ecc=False):
         x_names, y_names = self.get_load_patterns_in_XYdirection(only_ecc)
