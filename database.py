@@ -140,7 +140,10 @@ class DatabaseTables:
         NumFatalErrors, ret = self.apply_table()
         return NumFatalErrors, ret
     
-    def write_seismic_user_coefficient_df(self, df):
+    def write_seismic_user_coefficient_df(self, 
+            df,
+            loads_type : dict = {},
+            ):
         new_columns = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
                             'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
                             'Ecc Ratio', 'Top Story', 'Bottom Story',
@@ -154,9 +157,9 @@ class DatabaseTables:
         # create new load patterns
         x, y = self.etabs.load_patterns.get_load_patterns_in_XYdirection()
         current_names = x.union(y)
-        load_type = 5
         for name in df['Name']:
             if name not in current_names:
+                load_type = loads_type.get(name, 5)
                 self.SapModel.LoadPatterns.Add(name, load_type, 0, True)
                 current_names.add(name)
         df.columns = new_columns

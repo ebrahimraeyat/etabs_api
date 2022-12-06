@@ -103,10 +103,31 @@ def test_write_seismic_user_coefficient_df_overwrite(two_earthquakes):
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'
     df = pd.read_pickle(filename)
-    two_earthquakes.database.write_seismic_user_coefficient_df(df)
+    loads_type = {
+        'EX1' : 5,
+        'EX1P' : 5,
+        'EX1N' : 5,
+        'EY1' : 5,
+        'EY1P' : 5,
+        'EY1N' : 5,
+        'EX2' : 5,
+        'EX2P' : 5,
+        'EX2N' : 5,
+        'EY2' : 5,
+        'EY2P' : 5,
+        'EY2N' : 5,
+        'EDRIFTY' : 37,
+        'EDRIFTYN' : 37,
+        'EDRIFTYP' : 37,
+        'EDRIFTX' : 37,
+        }
+    two_earthquakes.database.write_seismic_user_coefficient_df(df, loads_type)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
     df = two_earthquakes.database.read(table_key, to_dataframe=True)
     assert len(df) == 19
+    for lp, n in loads_type.items():
+        assert two_earthquakes.SapModel.LoadPatterns.GetLoadType(lp)[0] == n
+    
     
 
 def test_get_beams_forces(shayesteh):
