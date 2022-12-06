@@ -157,7 +157,7 @@ class DatabaseTables:
         load_type = 5
         for name in df['Name']:
             if name not in current_names:
-                self.SapModel.LoadPatterns.Add(name, load_type, 0, False)
+                self.SapModel.LoadPatterns.Add(name, load_type, 0, True)
                 current_names.add(name)
         df.columns = new_columns
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
