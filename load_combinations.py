@@ -67,6 +67,77 @@ class LoadCombination:
                 return True
         return False
 
+    def get_type_of_combo(self,
+        name : str,
+        ):
+        map_dict = {
+        0 : 'Linear',
+        1 : 'Envelope',
+        2 : 'Absolute',
+        3 : 'SRSS',
+        4 : 'Range',
+        }
+        type_ = self.etabs.SapModel.RespCombo.GetTypeCombo(name)[0]
+        return map_dict[type_]
+        
+    def expand_load_combinations(self,
+        expanded_loads : dict,
+        ):
+        combo_names = self.etabs.SapModel.RespCombo.GetNameList()[1]
+        seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
+        new_combos = []
+        EX, EXN, EXP, EY, EYN, EYP = self.etabs.load_patterns.get_seismic_load_patterns()
+        for combo in combo_names:
+            type_ = self.get_type_of_combo(combo)
+            if type_ == 'Linear':
+                number_items, cases, scale_factores = self.etabs.SapModel.RespCombo.GetCaseList(combo)[1:4]
+                max_sf = 0
+                # for models that has
+                max_sf_cases = []
+                for case, sf in zip(cases, scale_factores):
+                    if case in seismic_load_cases and abs(sf) > max_sf:
+                        max_sf = abs(sf)
+                if max_sf == 0:
+                    continue
+                for case, sf in zip(cases, scale_factores):
+                    if case in seismic_load_cases and abs(sf) == max_sf:
+                        max_sf_cases.append(case)
+
+                equal_cases = expanded_loads[max_sf_cases[0]]
+                # don't get existance load case, only load case that generated with expand 
+                # load pattern or expand load case
+                index = cases.index(max_sf_cases[0])
+                load_pats = [i[0] for i in equal_cases if i[0] != max_sf_cases[0]]
+                n = len(load_pats)
+                for i, load in enumerate(load_pats, start=1):
+                    name = f'{combo}({i}/{n}'
+                    new_cases = list(cases)
+                    new_cases[index] = load
+                    # search for other compact load pattern in case of multi earthquake
+                    # applied to structure for example EX1 and EX2
+                    if len(max_sf_cases) > 1:
+                        dir_ = None
+                        for e in (EX, EXN, EXP, EY, EYN, EYP):
+                            if load in e:
+                                dir_ = e
+                        for case in max_sf_cases:
+                            equal_cases = expanded_loads[case]
+                            index = cases.index(case)
+                            load_pats = [pats[0] for pats in equal_cases if pats[0] != case]
+                            for load in load_pats:
+                                if load in dir_:
+                                    new_cases[index] = load
+                    new_combos.append(
+                        (name, number_items, new_cases, scale_factores)
+                    )
+            # elif type_ == 'Envelope':
+            #     pass
+        return new_combos
+
+
+
+
+
 
 def get_mabhas6_load_combinations(
     way='LRFD', # 'ASD'
