@@ -88,8 +88,21 @@ def test_expand_linear_load_combinations(two_earthquakes):
     assert load_combos[1][2][8] == 'EX2N'
     # assert load_combos == []
 
+@pytest.mark.setmethod
+def test_apply_linear_load_combinations(two_earthquakes):
+    new_combos = [
+        ('New comb 1', (0, 0, 0), ('DL', 'LL', 'EX1'), (1.4, -.3, 0.6)),
+        ('New comb 2', (0, 0, 0), ('DL', 'LL', 'EY1'), (1.2, 0.5, 1)),
+    ]
+    two_earthquakes.load_combinations.apply_linear_load_combinations(
+        new_combos,
+    )
+    ret = two_earthquakes.etabs.SapModel.RespCombo.GetCaseList('New comb 1')
+    assert ret[1:-1] == [(0, 0, 0), ('DL', 'LL', 'EX1'), (1.4, -.3, 0.6)]
+    
+
 if __name__ == '__main__':
     import etabs_obj
     two_earthquakes = etabs_obj.EtabsModel(backup=True)
-    ret = test_expand_load_combinations(two_earthquakes)
+    ret = test_expand_linear_load_combinations(two_earthquakes)
     print('wow')

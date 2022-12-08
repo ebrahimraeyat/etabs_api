@@ -134,6 +134,22 @@ class LoadCombination:
             #     pass
         return new_combos
 
+    def apply_linear_load_combinations(self,
+        new_combos : list,
+        ):
+        for combo in new_combos:
+            name = combo[0]
+            self.etabs.SapModel.RespCombo.Add(name, 0)
+            for number_item, case, scale_factore in zip(*combo[1:]):
+                self.etabs.SapModel.RespCombo.SetCaseList(
+                    name,
+                    number_item,
+                    case,
+                    scale_factore,
+                )
+        return True
+
+
 
 
 
