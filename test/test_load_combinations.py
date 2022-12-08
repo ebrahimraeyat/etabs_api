@@ -67,7 +67,7 @@ def test_get_load_combinations_of_type(shayesteh):
     assert len(load_combos) == 11
 
 @pytest.mark.getmethod
-def test_expand_load_combinations(two_earthquakes):
+def test_expand_linear_load_combinations(two_earthquakes):
     ret = two_earthquakes.load_patterns.get_expanded_seismic_load_patterns()
     two_earthquakes.database.write_seismic_user_coefficient_df(ret[0], ret[2])
     # ex_loads = {
@@ -78,7 +78,7 @@ def test_expand_load_combinations(two_earthquakes):
     #     'EY2' : (('EY2', 5), ('EY2N', 5), ('EY2P', 5)),
     #     'EDRIFTY' : (('EDRIFTY', 37), ('EDRIFTYN', 37), ('EDRIFTYP', 37)),
     #     }
-    load_combos = two_earthquakes.load_combinations.expand_load_combinations(
+    load_combos = two_earthquakes.load_combinations.get_expand_linear_load_combinations(
         expanded_loads = ret[1],
     )
     assert len(load_combos) == 32

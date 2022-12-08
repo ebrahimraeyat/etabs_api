@@ -80,7 +80,7 @@ class LoadCombination:
         type_ = self.etabs.SapModel.RespCombo.GetTypeCombo(name)[0]
         return map_dict[type_]
         
-    def expand_load_combinations(self,
+    def get_expand_linear_load_combinations(self,
         expanded_loads : dict,
         ):
         combo_names = self.etabs.SapModel.RespCombo.GetNameList()[1]
