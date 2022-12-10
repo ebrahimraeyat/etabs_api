@@ -753,15 +753,15 @@ class FrameObj:
             ):
         # create new file and open it
         asli_file_path = Path(self.SapModel.GetModelFilename())
-        if type_ == 'Concrete':
-            if isinstance(file_name, Path):
-                new_file_path = file_name
-            else:
-                new_file_path = self.etabs.backup_model(name=file_name)
-            print(f"Saving file as {new_file_path}\n")
-            self.SapModel.File.Save(str(new_file_path))
-        elif type_ == 'Steel':
-            pass
+        # if type_ == 'Concrete':
+        if isinstance(file_name, Path):
+            new_file_path = file_name
+        else:
+            new_file_path = self.etabs.backup_model(name=file_name)
+        print(f"Saving file as {new_file_path}\n")
+        self.SapModel.File.Save(str(new_file_path))
+        # elif type_ == 'Steel':
+        #     pass
             # self.SapModel.File.Open(str(file_name))
         if ex is None:
             ex, ey = self.etabs.load_patterns.get_EX_EY_load_pattern()
@@ -807,8 +807,6 @@ class FrameObj:
             df['P'] = df['P'].astype(float)
             filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
             df = df.loc[filt, :]
-            # import numpy as np
-            # df['Result'] = np.where(df['Ratio'] < .2 , True, False)
         elif type_ == 'Steel':
             table_key = f'Steel Frame Design Summary - {code}'
             cols = ['Story', 'Label', 'UniqueName', 'DesignType', 'DesignSect', 
@@ -825,7 +823,6 @@ class FrameObj:
                 del df[col]
             filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
             df = df.loc[filt, :]
-        import numpy as np
         df['Result'] = df['Ratio'] < .2
         return df
 
