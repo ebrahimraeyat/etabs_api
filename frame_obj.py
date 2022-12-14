@@ -824,6 +824,8 @@ class FrameObj:
             filt = df.groupby(['UniqueName'])['Ratio'].idxmax()
             df = df.loc[filt, :]
         df['Result'] = df['Ratio'] < .2
+        self.SapModel.File.OpenFile(str(asli_file_path))
+        self.SapModel.File.Save(str(asli_file_path))
         return df
 
     def assign_ev(
