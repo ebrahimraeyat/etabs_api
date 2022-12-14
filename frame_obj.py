@@ -753,6 +753,8 @@ class FrameObj:
             ):
         # create new file and open it
         asli_file_path = Path(self.SapModel.GetModelFilename())
+        asli_file_path = asli_file_path.with_suffix(".EDB")
+        print(asli_file_path)
         # if type_ == 'Concrete':
         if isinstance(file_name, Path):
             new_file_path = file_name
@@ -825,7 +827,7 @@ class FrameObj:
             df = df.loc[filt, :]
         df['Result'] = df['Ratio'] < .2
         self.SapModel.File.OpenFile(str(asli_file_path))
-        self.SapModel.File.Save(str(asli_file_path))
+        # self.SapModel.File.Save(str(asli_file_path))
         return df
 
     def assign_ev(
