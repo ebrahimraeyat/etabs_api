@@ -754,6 +754,7 @@ class FrameObj:
         # create new file and open it
         asli_file_path = Path(self.SapModel.GetModelFilename())
         asli_file_path = asli_file_path.with_suffix(".EDB")
+        self.SapModel.File.Save(str(asli_file_path))
         print(asli_file_path)
         # if type_ == 'Concrete':
         if isinstance(file_name, Path):
