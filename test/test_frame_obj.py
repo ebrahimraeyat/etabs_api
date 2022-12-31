@@ -123,6 +123,20 @@ def test_require_100_30(shayesteh):
     df = shayesteh.frame_obj.require_100_30()
     assert len(df) == 48
 
+@pytest.mark.setmethod
+def test_assign_ev(shayesteh):
+    shayesteh.frame_obj.assign_ev(
+        frames=['129', '267'],
+        load_patterns=['DEAD'],
+        acc = 0.3,
+        ev = 'QZ',
+        self_weight=True,
+    )
+    self_multiple = shayesteh.SapModel.LoadPatterns.GetSelfWTMultiplier('QZ')[0]
+    assert self_multiple == 0.18
+    ret = shayesteh.SapModel.FrameObj.GetLoadDistributed('129')[10:12]
+    assert ret[0][1] == ret[1][1] == -121
+
 
 
 

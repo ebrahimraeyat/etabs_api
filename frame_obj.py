@@ -838,44 +838,51 @@ class FrameObj:
         ev : str,
         importance_factor : float = 1,
         replace : bool  = True,
+        self_weight : bool = False,
         ):
         self.etabs.unlock_model()
         self.etabs.set_current_unit('kgf', 'm')
         # Distributed loads
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
-        del df['GUID']
-        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
-        df = df[filt]
-        for i, row in df.iterrows():
-            val1 = math.ceil(float(row['ForceA']) * 0.6 * acc * importance_factor)
-            val2 = math.ceil(float(row['ForceB']) * 0.6 * acc * importance_factor)
-            self.assign_gravity_load(
-                name = row['UniqueName'],
-                loadpat = ev,
-                val1 = val1,
-                val2 = val2,
-                dist1 = float(row['RelDistA']),
-                dist2 = float(row['RelDistB']),
-                load_type = 1 if row['LoadType'] == 'Force' else 2,
-                replace = replace,
-            )
+        if df is not None:
+            del df['GUID']
+            filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+            df = df[filt]
+            ev_value = 0.6 * acc * importance_factor
+            for i, row in df.iterrows():
+                val1 = math.ceil(float(row['ForceA']) * ev_value)
+                val2 = math.ceil(float(row['ForceB']) * ev_value)
+                self.assign_gravity_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val1 = val1,
+                    val2 = val2,
+                    dist1 = float(row['RelDistA']),
+                    dist2 = float(row['RelDistB']),
+                    load_type = 1 if row['LoadType'] == 'Force' else 2,
+                    replace = replace,
+                )
         # point load
         table_key = 'Frame Loads Assignments - Point'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
-        del df['GUID']
-        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
-        df = df[filt]
-        for i, row in df.iterrows():
-            val = math.ceil(float(row['Force']) * 0.6 * acc * importance_factor)
-            self.assign_point_load(
-                name = row['UniqueName'],
-                loadpat = ev,
-                val = val,
-                dist = float(row['RelDist']),
-                load_type = 1 if row['LoadType'] == 'Force' else 2,
-                replace = replace,
-            )
+        if df is not None:
+            del df['GUID']
+            filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+            df = df[filt]
+            for i, row in df.iterrows():
+                val = math.ceil(float(row['Force']) * ev_value)
+                self.assign_point_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val = val,
+                    dist = float(row['RelDist']),
+                    load_type = 1 if row['LoadType'] == 'Force' else 2,
+                    replace = replace,
+                )
+        # self weight load apply in load patterns
+        if self_weight:
+            self.SapModel.LoadPatterns.SetSelfWTMultiplier(ev, ev_value)
 
 if __name__ == '__main__':
     from pathlib import Path
