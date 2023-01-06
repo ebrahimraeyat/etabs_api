@@ -32,6 +32,22 @@ class FrameObj:
     def is_brace(self, name):
         return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 3
 
+    def get_section_name(self, frame_name):
+        return self.SapModel.FrameObj.GetSection(frame_name)[0]
+    
+    def set_section_name(self,
+        frame_name : str,
+        name : str,
+        ):
+        self.SapModel.FrameObj.SetSection(frame_name, name)
+
+    def set_sections_name(self,
+        frame_names : list,
+        name : str,
+        ):
+        for frame in frame_names:
+            self.set_section_name(frame, name)
+
     def is_frame_on_story(self, frame, story=None):
         if story is None:
             return True
