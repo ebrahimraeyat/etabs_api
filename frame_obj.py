@@ -644,7 +644,7 @@ class FrameObj:
             names = []
             types, all_names = self.SapModel.SelectObj.GetSelected()[1:3]
             for t, name in zip(types, all_names):
-                if t == 2 and not self.is_column(name):
+                if t == 2 and self.is_beam(name):
                     names.append(name)
         if stories is None:
             stories = self.SapModel.Story.GetNameList()[1]
