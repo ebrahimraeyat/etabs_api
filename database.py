@@ -916,6 +916,26 @@ class DatabaseTables:
             df = df[cols]
         df.dropna(inplace=True)
         return df
+    
+    def get_all_joint_design_reactions(self,
+        select_combos : bool = True,
+        ):
+        if select_combos:
+            self.etabs.load_combinations.select_load_combinations()
+        table_key = 'Joint Design Reactions'
+        df = self.read(table_key, to_dataframe=True)
+        if 'StepType' in df.columns:
+            cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
+            df = df[cols]
+            df['StepType'].fillna('Max', inplace=True)
+            # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
+            # df.drop(columns=['StepType'], inplace=True)
+        else:
+            cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
+            df = df[cols]
+            df['StepType'] = 'Max'
+        df.dropna(inplace=True)
+        return df
 
     def get_frame_assignment_summary(self,
             frames : list = None):

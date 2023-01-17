@@ -10,6 +10,19 @@ class LoadCombination:
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
+    def select_load_combinations(self,
+        load_combinations : Union[bool, list] = None,
+        deselect_load_cases : bool = True,
+        ) -> None:
+        if load_combinations is None:
+            load_combinations = self.get_load_combination_names()
+        if deselect_load_cases:
+            self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
+        self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
+    
+    def get_load_combination_names(self):
+        return self.SapModel.RespCombo.GetNameList()[1]
+
     def add_load_combination(
         self,
         combo_name: str,
