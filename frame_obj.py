@@ -950,7 +950,7 @@ class FrameObj:
         if self_weight:
             df = self.get_unit_weight_of_beams(frames)
             for i, row in df.iterrows():
-                val = row['unit_weight']
+                val = row['unit_weight'] * ev_value
                 self.assign_gravity_load(
                     name = row['UniqueName'],
                     loadpat = ev,
