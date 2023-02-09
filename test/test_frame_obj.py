@@ -123,6 +123,11 @@ def test_require_100_30(shayesteh):
     df = shayesteh.frame_obj.require_100_30()
     assert len(df) == 48
 
+@pytest.mark.getmethod
+def test_get_unit_weight_of_beams(shayesteh):
+    df = shayesteh.frame_obj.get_unit_weight_of_beams()
+    assert len(df) == 92
+
 @pytest.mark.setmethod
 def test_assign_ev(shayesteh):
     shayesteh.frame_obj.assign_ev(

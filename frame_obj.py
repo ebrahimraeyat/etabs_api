@@ -79,6 +79,7 @@ class FrameObj:
     def get_beams_columns(
             self,
             type_=2,
+            types : list =[],
             story : Union[str, bool] = None,
             ):
         '''
@@ -87,9 +88,10 @@ class FrameObj:
         beams = []
         columns = []
         others = []
+        types = set(types).union(set([type_]))
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
             if (
-                self.SapModel.FrameObj.GetDesignProcedure(label)[0] == type_ and
+                self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types and
                 self.is_frame_on_story(label, story)
                 ): 
                 if self.is_column(label):
@@ -276,6 +278,54 @@ class FrameObj:
             t_crack = phi * .33 * math.sqrt(fc) * A ** 2 / p 
             sec_t[sec_name] = t_crack / 1000000 / 9.81
         return sec_t
+
+    def get_unit_weight_of_materials(self) -> dict:
+        '''
+        Return the unit weight of each material as pair of key, value of dictionary
+        '''
+        table_key = "Material Properties - Basic Mechanical Properties"
+        cols = ['Material', 'UnitWeight']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = df.set_index('Material')
+        return df.to_dict()['UnitWeight']
+        
+    
+    def get_unit_weight_of_beams(self,
+                    beams_names = None,
+                    ) -> dict:
+        import math
+        if beams_names is None:
+            beams_names, _ = self.get_beams_columns(types=[1,2,3])
+        table_key = "Frame Assignments - Property Modifiers"
+        cols = ['Story', 'Label', 'UniqueName', 'AMod', 'WMod']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        filt = df['UniqueName'].isin(beams_names)
+        df = df.loc[filt]
+        df.columns = ['Story', 'Label', 'UniqueName', 'AMod_Beam', 'WMod_Beam']
+        beam_names = df.UniqueName.unique()
+        beams_sections  = self.get_beams_sections(beam_names)
+        df['Section'] = df['UniqueName'].map(beams_sections)
+
+        table_key = "Frame Section Property Definitions - Summary"
+        cols = ['Name', 'Material', 'Area', 'AMod', 'WMod']
+        df_sec = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = df.merge(df_sec, left_on='Section', right_on='Name')
+        del df['Name']
+        unit_weights = self.get_unit_weight_of_materials()
+        df['mat_unit_weight'] = df['Material'].map(unit_weights)
+        df.dropna(inplace=True)
+        convert_type = {
+                    'Area' : float,
+                    'AMod_Beam' : float,
+                    'AMod' : float,
+                    'mat_unit_weight' : float,
+                    'WMod_Beam' : float,
+                    'WMod' : float,
+                    }
+        df = df.astype(convert_type)
+        df['unit_weight'] = df['Area'] * df['AMod_Beam'] * df['AMod'] * df['mat_unit_weight'] * df['WMod_Beam'] * df['WMod']
+        return df
+
 
     def get_beams_sections(self,
             beams_names : Iterable[str] = None,
@@ -898,7 +948,19 @@ class FrameObj:
                 )
         # self weight load apply in load patterns
         if self_weight:
-            self.SapModel.LoadPatterns.SetSelfWTMultiplier(ev, ev_value)
+            df = self.get_unit_weight_of_beams(frames)
+            for i, row in df.iterrows():
+                val = row['unit_weight']
+                self.assign_gravity_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val1 = val,
+                    val2 = val,
+                    dist1 = 0,
+                    dist2 = 1,
+                    load_type = 1,
+                    replace = False,
+                )
 
 if __name__ == '__main__':
     from pathlib import Path
