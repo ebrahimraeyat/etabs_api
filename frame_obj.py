@@ -299,9 +299,16 @@ class FrameObj:
         table_key = "Frame Assignments - Property Modifiers"
         cols = ['Story', 'Label', 'UniqueName', 'AMod', 'WMod']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        filt = df['UniqueName'].isin(beams_names)
-        df = df.loc[filt]
-        df.columns = ['Story', 'Label', 'UniqueName', 'AMod_Beam', 'WMod_Beam']
+        if df is not None:
+            filt = df['UniqueName'].isin(beams_names)
+            df = df.loc[filt]
+            cols = {'AMod':'AMod_Beam', 'WMod':'WMod_Beam'}
+            df.rename(columns=cols, inplace=True)
+        else:
+            import pandas as pd
+            df = pd.DataFrame(beams_names, columns=['UniqueName'])
+            df['AMod_Beam'] = 1
+            df['WMod_Beam'] = 1
         beam_names = df.UniqueName.unique()
         beams_sections  = self.get_beams_sections(beam_names)
         df['Section'] = df['UniqueName'].map(beams_sections)
