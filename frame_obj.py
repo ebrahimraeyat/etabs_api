@@ -309,6 +309,7 @@ class FrameObj:
             df = pd.DataFrame(beams_names, columns=['UniqueName'])
             df['AMod_Beam'] = 1
             df['WMod_Beam'] = 1
+        # df.columns = ['Story', 'Label', 'UniqueName', 'AMod_Beam', 'WMod_Beam']
         beam_names = df.UniqueName.unique()
         beams_sections  = self.get_beams_sections(beam_names)
         df['Section'] = df['UniqueName'].map(beams_sections)
@@ -918,11 +919,11 @@ class FrameObj:
         # Distributed loads
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
+        ev_value = 0.6 * acc * importance_factor
         if df is not None:
             del df['GUID']
             filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
             df = df[filt]
-            ev_value = 0.6 * acc * importance_factor
             for i, row in df.iterrows():
                 val1 = math.ceil(float(row['ForceA']) * ev_value)
                 val2 = math.ceil(float(row['ForceB']) * ev_value)
