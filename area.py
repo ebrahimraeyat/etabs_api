@@ -402,7 +402,9 @@ class Area:
         df = df.set_index('Name')
         return df.to_dict()['PropType']
     
-    def get_expanded_shell_uniform_load_sets(self) -> pd.DataFrame:
+    def get_expanded_shell_uniform_load_sets(self,
+                                             areas: Union[list, bool]= None,
+                                             ) -> pd.DataFrame:
         '''
         Example:
         "Shell Uniform Load Sets"
@@ -412,7 +414,7 @@ class Area:
         2	ROOF	SNOW	    0.0011
         3	ROOF	WALL	    0.0005
 
-            "Area Load Assignments - Uniform Load Sets"
+        "Area Load Assignments - Uniform Load Sets"
             Story	Label	UniqueName	LoadSet
         0	Story4	F8	    44	        ROOF
 
@@ -425,13 +427,34 @@ class Area:
         '''
         table_key = 'Area Load Assignments - Uniform Load Sets'
         df1 = self.etabs.database.read(table_key, to_dataframe=True)
+        if areas is not None:
+            filt = df1['UniqueName'].isin(areas)
+            df1 = df1.loc[filt]
         if df1 is None or df1.empty:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue'])
         table_key = 'Shell Uniform Load Sets'
         df2 = self.etabs.database.read(table_key, to_dataframe=True)
         del df2['GUID']
         df = df1.merge(df2, left_on='LoadSet', right_on='Name')
         del df['Name']
+        return df
+    
+    def get_shell_uniform_loads(self,
+                                areas: Union[list, bool]= None,
+                                ) -> pd.DataFrame:
+        '''
+        Get All uniform loads on areas include uniforms and uniform load sets
+        '''
+        # shell uniform load sets
+        df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
+        del df1['LoadSet']
+        # shell uniform load
+        table_key = 'Area Load Assignments - Uniform'
+        df2 = self.etabs.database.read(table_key, to_dataframe=True)
+        if df2 is not None:
+            df2 = df2[['Story', 'Label', 'UniqueName', 'LoadPattern', 'Load']]
+            df2.rename(columns={'Load': 'LoadValue'}, inplace=True)
+        df = pd.concat([df1, df2])
         return df
 
 def deck_plate_equivalent_height_according_to_volume(

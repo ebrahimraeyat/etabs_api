@@ -62,6 +62,11 @@ def test_get_expanded_shell_uniform_load_sets(shayesteh):
     df = shayesteh.area.get_expanded_shell_uniform_load_sets()
     print(df)
 
+def test_get_shell_uniform_loads(shayesteh):
+    df = shayesteh.area.get_shell_uniform_loads()
+    assert len(df) == 200
+    print(df)
+
 def test_get_all_slab_types(shayesteh):
     d = shayesteh.area.get_all_slab_types()
     assert d['SLAB1'] == d['SLAB2'] == d['PLANK1']
