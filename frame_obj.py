@@ -279,17 +279,6 @@ class FrameObj:
             sec_t[sec_name] = t_crack / 1000000 / 9.81
         return sec_t
 
-    def get_unit_weight_of_materials(self) -> dict:
-        '''
-        Return the unit weight of each material as pair of key, value of dictionary
-        '''
-        table_key = "Material Properties - Basic Mechanical Properties"
-        cols = ['Material', 'UnitWeight']
-        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        df = df.set_index('Material')
-        return df.to_dict()['UnitWeight']
-        
-    
     def get_unit_weight_of_beams(self,
                     beams_names = None,
                     ) -> dict:
@@ -319,14 +308,14 @@ class FrameObj:
         df_sec = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         df = df.merge(df_sec, left_on='Section', right_on='Name')
         del df['Name']
-        unit_weights = self.get_unit_weight_of_materials()
+        unit_weights = self.etabs.material.get_unit_weight_of_materials()
         df['mat_unit_weight'] = df['Material'].map(unit_weights)
         df.dropna(inplace=True)
         convert_type = {
                     'Area' : float,
                     'AMod_Beam' : float,
                     'AMod' : float,
-                    'mat_unit_weight' : float,
+                    # 'mat_unit_weight' : float,
                     'WMod_Beam' : float,
                     'WMod' : float,
                     }

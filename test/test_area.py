@@ -47,7 +47,35 @@ def test_set_uniform_gravity_load(shayesteh_safe):
 
 def test_export_freecad_wall_loads(shayesteh_safe):
     shayesteh_safe.area.export_freecad_wall_loads(document)
-    
+
+def test_calculate_deck_weight_per_area(shayesteh):
+    df = shayesteh.area.calculate_deck_weight_per_area()
+    print(df)
+    df = shayesteh.area.calculate_deck_weight_per_area(use_user_deck_weight=False)
+    print(df)
+
+def test_calculate_slab_weight_per_area(shayesteh):
+    df = shayesteh.area.calculate_slab_weight_per_area()
+    print(df)
+
+def test_get_all_slab_types(shayesteh):
+    d = shayesteh.area.get_all_slab_types()
+    assert d['SLAB1'] == d['SLAB2'] == d['PLANK1']
+
+
+def test_calculate_equivalent_height_according_to_volume():
+    import area
+    h_equal = area.calculate_equivalent_height_according_to_volume(
+        s1=800, s2=800, d=380, tw1=130, tw2=130, hc=100
+    )
+    assert pytest.approx(h_equal, abs=.1) == 183.6
+
+def test_deck_plate_equivalent_height_according_to_volume():
+    import area
+    h_equal = area.deck_plate_equivalent_height_according_to_volume(
+        s=800, d=380, tw_top=140, tw_bot=120, hc=100
+    )
+    assert pytest.approx(h_equal, abs=.01) == 1340.357
 
 if __name__ == '__main__':
-    test_export_freecad_stiff_elements(shayesteh_safe)
+    test_calculate_slab_weight_per_area(shayesteh)

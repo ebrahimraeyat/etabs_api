@@ -37,6 +37,11 @@ def test_get_fc(shayesteh):
     fc = shayesteh.material.get_fc('CONC')
     assert fc == 25
 
+@pytest.mark.getmethod
+def test_get_unit_weight_of_materials(shayesteh):
+    ret = shayesteh.material.get_unit_weight_of_materials()
+    assert ret['CONC'] == 2400
+
 
 if __name__ == '__main__':
     from pathlib import Path
