@@ -401,7 +401,38 @@ class Area:
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         df = df.set_index('Name')
         return df.to_dict()['PropType']
+    
+    def get_expanded_shell_uniform_load_sets(self) -> pd.DataFrame:
+        '''
+        Example:
+        "Shell Uniform Load Sets"
+            Name	LoadPattern	LoadValue
+        0	ROOF	Dead	    0.003	
+        1	ROOF	LROOF	    0.0015
+        2	ROOF	SNOW	    0.0011
+        3	ROOF	WALL	    0.0005
 
+            "Area Load Assignments - Uniform Load Sets"
+            Story	Label	UniqueName	LoadSet
+        0	Story4	F8	    44	        ROOF
+
+        return:
+            Story	Label	UniqueName	LoadSet	LoadPattern	LoadValue
+        0	Story4	F8	    44	        ROOF	Dead	    0.003
+        1	Story4	F8	    44	        ROOF	LROOF	    0.0015
+        2	Story4	F8	    44	        ROOF	SNOW	    0.0011
+        3	Story4	F8	    44	        ROOF	WALL	    0.0005
+        '''
+        table_key = 'Area Load Assignments - Uniform Load Sets'
+        df1 = self.etabs.database.read(table_key, to_dataframe=True)
+        if df1 is None or df1.empty:
+            return pd.DataFrame()
+        table_key = 'Shell Uniform Load Sets'
+        df2 = self.etabs.database.read(table_key, to_dataframe=True)
+        del df2['GUID']
+        df = df1.merge(df2, left_on='LoadSet', right_on='Name')
+        del df['Name']
+        return df
 
 def deck_plate_equivalent_height_according_to_volume(
         s,
