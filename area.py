@@ -446,6 +446,7 @@ class Area:
         '''
         Get All uniform loads on areas include uniforms and uniform load sets
         '''
+        self.etabs.set_current_unit('kgf', 'm')
         # shell uniform load sets
         df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
         del df1['LoadSet']
