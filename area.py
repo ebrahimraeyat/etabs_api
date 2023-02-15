@@ -419,11 +419,11 @@ class Area:
         0	Story4	F8	    44	        ROOF
 
         return:
-            Story	Label	UniqueName	LoadSet	LoadPattern	LoadValue
-        0	Story4	F8	    44	        ROOF	Dead	    0.003
-        1	Story4	F8	    44	        ROOF	LROOF	    0.0015
-        2	Story4	F8	    44	        ROOF	SNOW	    0.0011
-        3	Story4	F8	    44	        ROOF	WALL	    0.0005
+            Story	Label	UniqueName	LoadSet	LoadPattern	Dir     LoadValue
+        0	Story4	F8	    44	        ROOF	Dead	    Gravity 0.003
+        1	Story4	F8	    44	        ROOF	LROOF	    Gravity 0.0015
+        2	Story4	F8	    44	        ROOF	SNOW	    Gravity 0.0011
+        3	Story4	F8	    44	        ROOF	WALL	    Gravity 0.0005
         '''
         table_key = 'Area Load Assignments - Uniform Load Sets'
         df1 = self.etabs.database.read(table_key, to_dataframe=True)
@@ -437,6 +437,7 @@ class Area:
         del df2['GUID']
         df = df1.merge(df2, left_on='LoadSet', right_on='Name')
         del df['Name']
+        df['Direction'] = 'Gravity'
         return df
     
     def get_shell_uniform_loads(self,
@@ -448,14 +449,25 @@ class Area:
         # shell uniform load sets
         df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
         del df1['LoadSet']
+        df1.rename(columns={'LoadValue': 'Load'}, inplace=True)
         # shell uniform load
         table_key = 'Area Load Assignments - Uniform'
         df2 = self.etabs.database.read(table_key, to_dataframe=True)
         if df2 is not None:
-            df2 = df2[['Story', 'Label', 'UniqueName', 'LoadPattern', 'Load']]
-            df2.rename(columns={'Load': 'LoadValue'}, inplace=True)
+            df2 = df2[['Story', 'Label', 'UniqueName', 'LoadPattern', 'Dir', 'Load']]
+            df2.rename(columns={'Dir': 'Direction'}, inplace=True)
         df = pd.concat([df1, df2])
         return df
+    
+    def expand_uniform_load_sets_and_apply_to_model(self):
+        df = self.get_shell_uniform_loads()
+        df = df[['UniqueName', 'LoadPattern', 'Direction', 'Load']]
+        df.columns = ['UniqueName', 'Load Pattern', 'Direction', 'Load']
+        table_key = 'Area Load Assignments - Uniform'
+        self.etabs.database.apply_data(table_key, df)
+        df2 = pd.DataFrame(columns=['UniqueName', 'Load Set'])
+        self.etabs.database.apply_data('Area Load Assignments - Uniform Load Sets', df2)
+        return True
 
 def deck_plate_equivalent_height_according_to_volume(
         s,
