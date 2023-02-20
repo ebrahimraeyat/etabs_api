@@ -425,13 +425,14 @@ class Area:
         2	Story4	F8	    44	        ROOF	SNOW	    Gravity 0.0011
         3	Story4	F8	    44	        ROOF	WALL	    Gravity 0.0005
         '''
+        self.etabs.set_current_unit('kgf', 'm')
         table_key = 'Area Load Assignments - Uniform Load Sets'
         df1 = self.etabs.database.read(table_key, to_dataframe=True)
         if areas is not None:
             filt = df1['UniqueName'].isin(areas)
             df1 = df1.loc[filt]
         if df1 is None or df1.empty:
-            return pd.DataFrame(columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue'])
+            return pd.DataFrame(columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue', 'Direction'])
         table_key = 'Shell Uniform Load Sets'
         df2 = self.etabs.database.read(table_key, to_dataframe=True)
         del df2['GUID']
@@ -442,13 +443,15 @@ class Area:
     
     def get_shell_uniform_loads(self,
                                 areas: Union[list, bool]= None,
+                                df1: Union[pd.DataFrame, bool]= None,
                                 ) -> pd.DataFrame:
         '''
         Get All uniform loads on areas include uniforms and uniform load sets
         '''
         self.etabs.set_current_unit('kgf', 'm')
         # shell uniform load sets
-        df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
+        if df1 is None:
+            df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
         del df1['LoadSet']
         df1.rename(columns={'LoadValue': 'Load'}, inplace=True)
         # shell uniform load
@@ -460,8 +463,10 @@ class Area:
         df = pd.concat([df1, df2])
         return df
     
-    def expand_uniform_load_sets_and_apply_to_model(self):
-        df = self.get_shell_uniform_loads()
+    def expand_uniform_load_sets_and_apply_to_model(self,
+                                                    df: Union[pd.DataFrame, bool] = None,
+                                                    ):
+        df = self.get_shell_uniform_loads(df1=df)
         df = df[['UniqueName', 'LoadPattern', 'Direction', 'Load']]
         df.columns = ['UniqueName', 'Load Pattern', 'Direction', 'Load']
         table_key = 'Area Load Assignments - Uniform'
