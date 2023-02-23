@@ -385,9 +385,14 @@ def generate_concrete_load_combinations(
     ev_negative: bool = True,
     A: float = 0.3,
     I: float = 1,
+    sequence_numbering: bool = False,
     ):
     data = []
+    i = 0
     for number, combos in get_mabhas6_load_combinations(design_type, separate_direction).items():
+        if sequence_numbering:
+            i += 1
+            number = i
         if A == 0.35:
             ev_sf = combos.get('EV', None)
             if ev_sf:
