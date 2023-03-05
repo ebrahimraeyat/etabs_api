@@ -326,6 +326,47 @@ class LoadPatterns:
         design_type = self.map_number_to_pattern.get(type_num, None)
         return design_type
 
+    def add_load_patterns(self,
+                names: list,
+                type_: str = 'Dead',
+                ):
+        type_ = LoadPatterns.map_pattern_to_number.get(type_, None)
+        if type_ is None:
+            return False
+        for name in names:
+            self.SapModel.LoadPatterns.Add(name, type_)
+        return True
+    
+    def add_notional_loads(self,
+                           loads: list,
+                           ):
+        notional_loads_x = [f'N{load}X' for load in loads]
+        notional_loads_y = [f'N{load}Y' for load in loads]
+        notional_loads = notional_loads_x + notional_loads_y
+        self.etabs.load_patterns.add_load_patterns(notional_loads, 'Notional')
+        table_key = "Load Pattern Definitions - Auto Notional Loads"
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        cols = ['Load Pattern', 'Base Load Pattern', 'Load Ratio', 'Load Direction']
+        df2 = []
+        for load in loads:
+            df2.extend([[f'N{load}X', load, '.002', 'X'], [f'N{load}Y', load, '.002', 'Y']])
+        df2 = pd.DataFrame(df2, columns=cols)
+        if df is not None and not df.empty:
+            df.columns = cols
+            df = pd.concat([df, df2], ignore_index=True)
+        else:
+            df = df2
+        self.etabs.database.apply_data(table_key, df)
+        
+
+
+
+
+        
+        
+
+    
+
 if __name__ == '__main__':
     from pathlib import Path
     current_path = Path(__file__).parent

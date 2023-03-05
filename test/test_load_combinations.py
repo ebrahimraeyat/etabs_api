@@ -7,7 +7,7 @@ sys.path.insert(0, str(etabs_api_path))
 
 from shayesteh import shayesteh, two_earthquakes, khiabani
 
-from load_combinations import generate_concrete_load_combinations
+# from load_combinations import generate_concrete_load_combinations
 
 
 @pytest.mark.getmethod
@@ -40,6 +40,22 @@ def test_generate_concrete_load_combinations_separate_direction_asd():
                     'L' : ['Live', 'L-RED'],
                     }
     data = generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD", separate_direction=True)
+    assert data
+
+@pytest.mark.getmethod
+def test_generate_concrete_load_combinations_notional_loads(shayesteh):
+    equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
+                    'L' : ['Live', 'L-RED'],
+                    }
+    data = shayesteh.load_combinations.generate_concrete_load_combinations(
+        equal_loads,
+        prefix='COMBO',
+        design_type="LRFD",
+        separate_direction=True,
+        sequence_numbering=True,
+        add_notional_loads=True,
+        )
+    # print(data)
     assert data
 
 @pytest.mark.setmethod

@@ -162,12 +162,81 @@ class LoadCombination:
                 )
         return True
 
-
-
-
-
-
-
+    def generate_concrete_load_combinations(self,
+        # load_patterns : {Uist,':nio bool] = None,
+        equivalent_loads : dict,
+        prefix : str = 'COMBO',
+        suffix : str = '',
+        rho_x : float = 1,
+        rho_y : float = 1,
+        type_ : str = 'Linear Add',
+        design_type: str = 'LRFD',
+        separate_direction: bool = False,
+        ev_negative: bool = True,
+        A: float = 0.3,
+        I: float = 1,
+        sequence_numbering: bool = False,
+        add_notional_loads: bool = True,
+        ):
+        data = []
+        i = 0
+        if add_notional_loads:
+            gravity_loads = []
+            for key in ['Dead', 'L', 'L_5', 'RoofLive', 'Snow']:
+                values = equivalent_loads.get(key, None)
+                if values is not None:
+                    gravity_loads.extend(values)
+            self.etabs.load_patterns.add_notional_loads(gravity_loads)
+            
+        for number, combos in get_mabhas6_load_combinations(design_type, separate_direction).items():
+            if add_notional_loads:
+                is_gravity = True
+                for lateral_load in ('EX', 'EPX', 'ENX', 'EY', 'EPY', 'ENY'):
+                    if lateral_load in combos.keys():
+                        is_gravity = False
+                        break
+            if sequence_numbering:
+                i += 1
+                number = i
+            combo_names = [f'{prefix}{number}{suffix}']
+            if add_notional_loads and is_gravity:
+                directions = ('X', 'Y', 'X', 'Y')
+                sf_multiply = (1, 1, -1, -1)
+                for j in range(1,4):
+                    if sequence_numbering:
+                        i += 1
+                        number = i
+                        combo_names.append(f'{prefix}{number}{suffix}')
+                    else:
+                        # number = f'{number}{j}'
+                        combo_names.append(f'{prefix}{number}{j}{suffix}')
+            else:
+                directions = ('',)
+                sf_multiply = ('',)
+            if A == 0.35:
+                ev_sf = combos.get('EV', None)
+                if ev_sf:
+                    dead_load_scale_factor = combos.get('Dead', None)
+                    if dead_load_scale_factor:
+                        plus_dead_sf = 0.6 * A * I * ev_sf
+                        if ev_negative or ev_sf > 0:
+                            combos['Dead'] = dead_load_scale_factor + plus_dead_sf
+            for lname, sf in combos.items():
+                if lname in ('EX', 'EPX', 'ENX'):
+                    sf *= rho_x
+                elif lname in ('EY', 'EPY', 'ENY'):
+                    sf *= rho_y
+                elif lname == 'EV' and not ev_negative and sf < 0:
+                    continue
+                equal_names = equivalent_loads.get(lname, [])
+                for name in equal_names:
+                    for k, (dir_, sfm) in enumerate(zip(directions, sf_multiply)):
+                        data.extend([combo_names[k], type_, name, sf])
+                        if add_notional_loads and is_gravity:
+                            data.extend([combo_names[k], type_, f'N{name}{dir_}', sfm * sf])
+                            
+        return data
+            
 def get_mabhas6_load_combinations(
     way='LRFD', # 'ASD'
     separate_direction: bool = False,
@@ -372,48 +441,6 @@ def get_mabhas6_load_combinations(
                 '1024' : {'Dead':0.6, 'EY' :-0.7, 'EX':-0.21, 'EV':-0.7},
             }
 
-def generate_concrete_load_combinations(
-    # load_patterns : {Uist,':nio bool] = None,
-    equivalent_loads : dict,
-    prefix : str = 'COMBO',
-    suffix : str = '',
-    rho_x : float = 1,
-    rho_y : float = 1,
-    type_ : str = 'Linear Add',
-    design_type: str = 'LRFD',
-    separate_direction: bool = False,
-    ev_negative: bool = True,
-    A: float = 0.3,
-    I: float = 1,
-    sequence_numbering: bool = False,
-    ):
-    data = []
-    i = 0
-    for number, combos in get_mabhas6_load_combinations(design_type, separate_direction).items():
-        if sequence_numbering:
-            i += 1
-            number = i
-        if A == 0.35:
-            ev_sf = combos.get('EV', None)
-            if ev_sf:
-                dead_load_scale_factor = combos.get('Dead', None)
-                if dead_load_scale_factor:
-                    plus_dead_sf = 0.6 * A * I * ev_sf
-                    if ev_negative or ev_sf > 0:
-                        combos['Dead'] = dead_load_scale_factor + plus_dead_sf
-        for lname, sf in combos.items():
-            if lname in ('EX', 'EPX', 'ENX'):
-                sf *= rho_x
-            elif lname in ('EY', 'EPY', 'ENY'):
-                sf *= rho_y
-            elif lname == 'EV' and not ev_negative and sf < 0:
-                continue
-            equal_names = equivalent_loads.get(lname, [])
-            for name in equal_names:
-                combo_name = f'{prefix}{number}{suffix}'
-                data.extend([combo_name, type_, name, sf])
-    return data
-        
 
 
 
