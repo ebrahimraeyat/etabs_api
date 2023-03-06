@@ -270,6 +270,7 @@ def get_mabhas6_load_combinations(
                 '76'   : {'Dead':0.9, 'ENY': 1, 'EV':-1},
                 '77'  : {'Dead':0.9, 'EPY':-1, 'EV':-1},
                 '78'  : {'Dead':0.9, 'ENY':-1, 'EV':-1},
+                '81'  : {'EV':-1},
             }
         elif way == "ASD":
             return {
@@ -358,6 +359,7 @@ def get_mabhas6_load_combinations(
                 '714'  : {'Dead':0.9, 'ENY':-1, 'EX': 0.3, 'EV':-1},
                 '715'  : {'Dead':0.9, 'EPY':-1, 'EX':-0.3, 'EV':-1},
                 '716'  : {'Dead':0.9, 'ENY':-1, 'EX':-0.3, 'EV':-1},
+                '81'  : {'EV':-1},
             }
         elif way == "ASD":
             return {
