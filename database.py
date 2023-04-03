@@ -909,11 +909,12 @@ class DatabaseTables:
             cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
             df = df[cols]
             df['StepType'].fillna('Max', inplace=True)
-            df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
-            df.drop(columns=['StepType'], inplace=True)
+            # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
+            # df.drop(columns=['StepType'], inplace=True)
         else:
             cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
             df = df[cols]
+            df['StepType'] = 'Max'
         df.dropna(inplace=True)
         return df
     
@@ -928,8 +929,6 @@ class DatabaseTables:
             cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
             df = df[cols]
             df['StepType'].fillna('Max', inplace=True)
-            # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
-            # df.drop(columns=['StepType'], inplace=True)
         else:
             cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
             df = df[cols]
