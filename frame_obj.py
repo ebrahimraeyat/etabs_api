@@ -935,10 +935,22 @@ class FrameObj:
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
         ev_value = 0.6 * acc * importance_factor
+        if replace:
+            # remove current loads
+            for name in frames:
+                self.SapModel.FrameObj.DeleteLoadDistributed(
+                    Name = name,
+                    LoadPat = ev,
+                )
+                self.SapModel.FrameObj.DeleteLoadPoint(
+                    Name = name,
+                    LoadPat = ev,
+                )
         if df is not None:
             del df['GUID']
             filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
             df = df[filt]
+
             for i, row in df.iterrows():
                 val1 = math.ceil(float(row['ForceA']) * ev_value)
                 val2 = math.ceil(float(row['ForceB']) * ev_value)
@@ -950,7 +962,7 @@ class FrameObj:
                     dist1 = float(row['RelDistA']),
                     dist2 = float(row['RelDistB']),
                     load_type = 1 if row['LoadType'] == 'Force' else 2,
-                    replace = replace,
+                    replace = False,
                 )
         # point load
         table_key = 'Frame Loads Assignments - Point'
@@ -967,13 +979,13 @@ class FrameObj:
                     val = val,
                     dist = float(row['RelDist']),
                     load_type = 1 if row['LoadType'] == 'Force' else 2,
-                    replace = replace,
+                    replace = False,
                 )
         # self weight load apply in load patterns
         if self_weight:
             df = self.get_unit_weight_of_beams(frames)
             for i, row in df.iterrows():
-                val = row['unit_weight'] * ev_value
+                val = math.ceil(row['unit_weight'] * ev_value)
                 self.assign_gravity_load(
                     name = row['UniqueName'],
                     loadpat = ev,
