@@ -88,7 +88,7 @@ class FrameObj:
         beams = []
         columns = []
         others = []
-        types = set(types).union(set([type_]))
+        types = set(types).union([type_])
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
             if (
                 self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types and
