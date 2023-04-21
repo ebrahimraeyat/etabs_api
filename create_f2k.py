@@ -342,8 +342,10 @@ class CreateF2kFile(Safe):
         df.drop(columns=['Label', 'CaseType'], inplace=True)
         for col in ('FX', 'FY', 'MX', 'MY', 'MZ'):
             df[col] = -df[col].astype(float)
-        df['xim'] = 'XDim=0'
-        df['yim'] = 'YDim=0'
+        df2 = self.etabs.database.get_basepoints_coord_and_dims(df)
+        df2 = df2.set_index('UniqueName')
+        df['xim'] = df['UniqueName'].map(df2['t2'])
+        df['yim'] = df['UniqueName'].map(df2['t3'])
         d = {
             'UniqueName': 'Point=',
             'OutputCase': 'LoadPat=',
@@ -353,6 +355,8 @@ class CreateF2kFile(Safe):
             'MX' : 'Mx=',
             'MY' : 'My=',
             'MZ' : 'Mz=',
+            'xim' : 'XDim=',
+            'yim' : 'YDim=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"

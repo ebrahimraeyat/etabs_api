@@ -32,7 +32,7 @@ def test_add_point_coordinates(shayesteh):
     assert len(points) == 11
 
 def test_add_load_patterns(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -41,7 +41,7 @@ def test_add_load_patterns(shayesteh):
     assert  'LoadPat=DEAD' in content
 
 def test_add_loadcase_general(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -50,7 +50,7 @@ def test_add_loadcase_general(shayesteh):
     assert  'LoadCase=DEAD' in content
 
 def test_add_modal_loadcase_definitions(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -59,7 +59,7 @@ def test_add_modal_loadcase_definitions(shayesteh):
     assert  'LoadCase=Modal' in content
 
 def test_add_loadcase_definitions(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -68,7 +68,7 @@ def test_add_loadcase_definitions(shayesteh):
     assert  'LoadCase=DEAD' in content
 
 def test_add_point_loads(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -78,14 +78,14 @@ def test_add_point_loads(shayesteh):
 
 
 def test_create_f2k(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
     safe.create_f2k()
 
 def test_add_grids(shayesteh):
-    safe = CreateF2kFile(
+    safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
         shayesteh,
         )
@@ -145,4 +145,4 @@ if __name__ == '__main__':
     sys.path.insert(0, str(etabs_api))
     from etabs_obj import EtabsModel
     etabs = EtabsModel(backup=False)
-    test_add_load_combinations_envelope(etabs)
+    test_add_point_loads(etabs)
