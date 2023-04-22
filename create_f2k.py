@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Iterable, Union
 
+import numpy as np
+
 
 __all__ = ['Safe', 'CreateF2kFile']
 
@@ -382,24 +384,21 @@ class CreateF2kFile(Safe):
                 load_combinations_with_dynamic = df['Name'].loc[filt].unique()
                 filt = df['Name'].isin(load_combinations_with_dynamic)
                 df = df.loc[~filt]
-        # design_load_combinations = set()
-        # for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
-        #     load_combos_names = self.etabs.database.get_design_load_combinations(type_)
-        #     if load_combos_names is not None:
-        #         design_load_combinations.update(load_combos_names)
-        # filt = df['Name'].isin(design_load_combinations)
         filt = df['Type'].isin(types)
         df = df.loc[filt]
         if load_combinations is not None:
             filt = df['Name'].isin(tuple(load_combinations))
             df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
+        load_combos_names = self.etabs.database.get_design_load_combinations("concrete")
+        df['strength'] = np.where(df['Name'].isin(load_combos_names), 'Yes', 'No')
 
         d = {
             'Name': 'Combo=',
             'LoadName': 'Load=',
             'Type' : 'Type=',
             'SF' : 'SF=',
+            'strength' : 'DSStrength=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD COMBINATIONS"
