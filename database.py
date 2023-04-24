@@ -75,6 +75,13 @@ class DatabaseTables:
         data = list(df.values.reshape(1, df.size)[0])
         return fields, data
 
+    def write(self,
+            table_key : str,
+            data : Union[list, pd.core.frame.DataFrame],
+            fields : Union[list, tuple, bool] = None,
+            ) -> None:
+        self.apply_data(table_key, data, fields)
+        
     def apply_data(self,
             table_key : str,
             data : Union[list, pd.core.frame.DataFrame],

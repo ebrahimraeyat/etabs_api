@@ -771,16 +771,48 @@ class FrameObj:
         type_number = 1 if type_ == 'Steel' else 2
         epsilon = .00000001
         columns = []
-        for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
-            if (self.is_column(name) and
-                self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
-                ):
-                self.etabs.design.set_overwrite(name, 9, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 10, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 11, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 12, epsilon, type_, code)
-                columns.append(name)
-        return columns
+        succeed = True
+        if type_ == 'Concrete':
+            try:
+                table_key = f'Concrete Column Overwrites - {code}'
+                df = self.etabs.database.read(table_key, to_dataframe=True)
+                for col in ('DnsMajor', 'DnsMinor', 'DsMajor', 'DsMinor'):
+                    df[col] = f'{epsilon}'
+                df['MinEcc'] = 'No'
+                self.etabs.database.remove_df_columns(df, ('Story', 'Label', 'Type'))
+                df.columns = (
+                    'Unique Name',
+                    'Design Section',
+                    'Frame Type',
+                    'LLRF',
+                    'Unbraced Length Ratio (Major)',
+                    'Unbraced Length Ratio (Minor)',
+                    'Effective Length Factor (K Major)',
+                    'Effective Length Factor (K Minor)',
+                    'Moment Coefficient (Cm Major)',
+                    'Moment Coefficient (Cm Minor)',
+                    'Non Sway Moment Factor (Dns Major)',
+                    'Non Sway Moment Factor (Dns Minor)',
+                    'Sway Moment Factor (Ds Major)',
+                    'Sway Moment Factor (Ds Minor)',
+                    'Consider Minimum Eccentricity?',
+                    )
+                self.etabs.database.write(table_key, df)
+            except:
+                succeed = False
+        if type_ == 'Steel' or not succeed:
+
+            for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
+                if (self.is_column(name) and
+                    self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
+                    ):
+                    self.etabs.design.set_overwrite(name, 9, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 10, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 11, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 12, epsilon, type_, code)
+                    # self.etabs.design.set_overwrite(name, 13, False, type_, code)
+                    columns.append(name)
+            return columns
 
     def set_infinite_bending_capacity_for_steel_columns(self,
             code_string : str,
