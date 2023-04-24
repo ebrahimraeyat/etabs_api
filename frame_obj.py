@@ -835,30 +835,37 @@ class FrameObj:
         if ex is None:
             ex, exn, exp, ey, eyn, eyp = self.etabs.load_patterns.get_seismic_load_patterns()
         combos = []
+        load_cases = []
         if ex:
-            self.SapModel.RespCombo.Add('EX_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EX_100_30', 0, ex, 1)
-            combos.append(['Strength', 'EX_100_30'])
+            self.SapModel.RespCombo.Add(f'{ex}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{ex}_100_30', 0, ex, 1)
+            combos.append(['Strength', f'{ex}_100_30'])
+            load_cases.append(ex)
         if exn:
-            self.SapModel.RespCombo.Add('EXN_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EXN_100_30', 0, exn, 1)
-            combos.append(['Strength', 'EXN_100_30'])
+            self.SapModel.RespCombo.Add(f'{exn}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{exn}_100_30', 0, exn, 1)
+            combos.append(['Strength', f'{exn}_100_30'])
+            load_cases.append(exn)
         if exp:
-            self.SapModel.RespCombo.Add('EXP_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EXP_100_30', 0, exp, 1)
-            combos.append(['Strength', 'EXP_100_30'])
+            self.SapModel.RespCombo.Add(f'{exp}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{exp}_100_30', 0, exp, 1)
+            combos.append(['Strength', f'{exp}_100_30'])
+            load_cases.append(exp)
         if ey:
-            self.SapModel.RespCombo.Add('EY_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EY_100_30', 0, ey, 1)
-            combos.append(['Strength', 'EY_100_30'])
+            self.SapModel.RespCombo.Add(f'{ey}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{ey}_100_30', 0, ey, 1)
+            combos.append(['Strength', f'{ey}_100_30'])
+            load_cases.append(ey)
         if eyn:
-            self.SapModel.RespCombo.Add('EYN_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EYN_100_30', 0, eyn, 1)
-            combos.append(['Strength', 'EYN_100_30'])
+            self.SapModel.RespCombo.Add(f'{eyn}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{eyn}_100_30', 0, eyn, 1)
+            combos.append(['Strength', f'{eyn}_100_30'])
+            load_cases.append(eyn)
         if eyp:
-            self.SapModel.RespCombo.Add('EYP_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList('EYP_100_30', 0, eyp, 1)
-            combos.append(['Strength', 'EYP_100_30'])
+            self.SapModel.RespCombo.Add(f'{eyp}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{eyp}_100_30', 0, eyp, 1)
+            combos.append(['Strength', f'{eyp}_100_30'])
+            load_cases.append(eyp)
         # set overwrite for columns
         if code is None:
             code = self.etabs.design.get_code(type_)
@@ -880,7 +887,7 @@ class FrameObj:
             columns = self.get_beams_columns(type_=1)[1]
         self.etabs.database.apply_data(table_key, df)
         # run analysis
-        self.etabs.analyze.set_load_cases_to_analyze([ex, exn, exp, ey, eyn, eyp])
+        self.etabs.analyze.set_load_cases_to_analyze(load_cases)
         self.etabs.run_analysis()
         self.set_frame_obj_selected(columns)
         print('Start Design ...')
