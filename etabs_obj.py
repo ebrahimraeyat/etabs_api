@@ -764,6 +764,7 @@ class EtabsModel:
         reset_scale : bool = True,
         analyze : bool = True,
         ):
+        self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=x_specs+y_specs)
         self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
@@ -817,6 +818,7 @@ class EtabsModel:
         reset_scale : bool = True,
         analyze : bool = True,
         ):
+        self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=specs)
         loadcases = [ex_name, ey_name] + specs
