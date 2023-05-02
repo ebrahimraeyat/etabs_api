@@ -394,11 +394,10 @@ class CreateF2kFile(Safe):
             filt = df['Name'].isin(tuple(load_combinations))
             df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
-        try:
-            load_combos_names = self.etabs.database.get_design_load_combinations("concrete")
-        except AttributeError:
+        load_combos_names = self.etabs.database.get_design_load_combinations("concrete")
+        if not load_combos_names:
             load_combos_names = self.etabs.database.get_design_load_combinations("steel")
-        except:
+        if not load_combos_names:
             load_combos_names = self.etabs.database.get_design_load_combinations("shearwall")
         if load_combos_names:
             df['strength'] = np.where(df['Name'].isin(load_combos_names), 'Yes', 'No')

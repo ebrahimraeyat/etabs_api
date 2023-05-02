@@ -859,6 +859,8 @@ class DatabaseTables:
         df = self.read(table_key, to_dataframe=True)
         if df is None:
             return None
+        if type_ == 'steel':
+            df = df[df['DesignType'] == 'Steel Frame']
         return list(df['ComboName'])
 
     def create_section_cuts(self,

@@ -16,7 +16,7 @@ sys.path.insert(0, str(etabs_api_path))
 
 import etabs_obj
 
-from shayesteh import shayesteh, two_earthquakes, khiabani
+from shayesteh import shayesteh, two_earthquakes, khiabani, steel
 
 
 @pytest.fixture
@@ -261,6 +261,9 @@ def test_create_punching_shear_perimeter_table(shayesteh_safe):
             o.Proxy.Type == "Punch":
             punches.append(o)
     shayesteh_safe.database.create_punching_shear_perimeter_table(punches)
+
+def test_get_design_load_combinations_steel(steel):
+    steel.database.get_design_load_combinations('steel')
 
 
 
