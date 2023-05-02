@@ -94,6 +94,27 @@ def test_get_expanded_seismic_load_patterns_apply(two_earthquakes):
     df, _ = two_earthquakes.load_patterns.get_expanded_seismic_load_patterns()
     two_earthquakes.database.write_seismic_user_coefficient_df(df)
 
+@pytest.mark.setmethod
+def test_add_load_patterns(shayesteh):
+    names = ['Nx', 'Ny']
+    type_ = 'Notional'
+    ret = shayesteh.load_patterns.add_load_patterns(names, type_)
+    assert ret
+    all_load_patterns = shayesteh.load_patterns.get_load_patterns()
+    for name in names:
+        assert name in all_load_patterns
+
+@pytest.mark.setmethod
+def test_add_notional_loads(shayesteh):
+    names = ['DL', 'LL', 'LL2']
+    shayesteh.load_patterns.add_notional_loads(names)
+    table_key = "Load Pattern Definitions - Auto Notional Loads"
+    df = shayesteh.database.read(table_key, to_dataframe=True)
+    for name in names:
+        assert f'N{name}X' in df.LoadPattern.unique()
+        assert f'N{name}Y' in df.LoadPattern.unique()
+    
+
 if __name__ == '__main__':
     import etabs_obj
     two_earthquakes = etabs_obj.EtabsModel(backup=True)

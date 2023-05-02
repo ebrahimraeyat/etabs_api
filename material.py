@@ -96,4 +96,15 @@ class Material:
         self.add_material(name, 6)
         self.SapModel.PropMaterial.SetORebar(name, 300, 500, 375, 625, 1, 1, 0.01, 0.09, False, 0)
 
+    def get_unit_weight_of_materials(self) -> dict:
+        '''
+        Return the unit weight of each material as pair of key, value of dictionary
+        '''
+        table_key = "Material Properties - Basic Mechanical Properties"
+        cols = ['Material', 'UnitWeight']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = df.astype({'UnitWeight': float})
+        df = df.set_index('Material')
+        return df.to_dict()['UnitWeight']
+
         

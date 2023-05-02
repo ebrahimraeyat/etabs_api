@@ -25,7 +25,8 @@ def open_browse(
 def find_etabs(
     run=False,
     backup=False,
-    filename=None
+    filename=None,
+    show_warning: bool = True,
     ):
     '''
     try to find etabs in this manner:
@@ -45,7 +46,7 @@ def find_etabs(
         filename_path = etabs.get_filename()
         if filename_path.exists():
             filename = str(filename_path)
-    else:
+    elif show_warning:
         QMessageBox.warning(
         None,
         'ETABS',
@@ -57,7 +58,7 @@ def find_etabs(
         hasattr(etabs, 'SapModel')
         ):
         filename = open_browse()
-    if filename is None and etabs.success:
+    if filename is None and etabs.success and show_warning:
         QMessageBox.warning(None, 'ETABS', 'Please Open ETABS Model and Run this command again.')
     elif (
         hasattr(etabs, 'success') and

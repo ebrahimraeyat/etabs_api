@@ -1,4 +1,6 @@
 from typing import Union
+import math
+import pandas as pd
 
 
 if __name__ == '__main__':
@@ -267,33 +269,277 @@ class Area:
                 -value,
                 6,  # Dir
             )
+
+
     
     @staticmethod
     def get_vertex_from_point(point):
         return Part.Vertex(point.x, point.y, point.z)
+    
 
+    def calculate_slab_weight_per_area(self,
+                                    slabs: Union[list, bool] = None,
+                                    ):
+        self.etabs.set_current_unit('kgf', 'm')
+        table_key = "Slab Property Definitions"
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if slabs is not None:
+            filt = df['Name'].isin(slabs)
+            df = df.loc[filt]
+        unit_weights = self.etabs.material.get_unit_weight_of_materials()
+        df['UnitWeight'] = df['Material'].map(unit_weights)
+        convert_types = {
+            'Depth': float,
+            'Thickness': float,
+            'WidthTop': float,
+            'WidthBot': float,
+            'RibSpacing1': float,
+            'RibSpacing2': float,
+                        'WMod': float,
+        }
+        df = df.astype(convert_types)
+        # flat slabs
+        thickness_names = ['Slab', 'Drop', 'Stiff', 'Mat', 'Footing']
+        filt = df['PropType'].isin(thickness_names)
+        df_thickness = df.loc[filt]
+        df_thickness['h_equal'] = df_thickness['Thickness']
+        df_thickness['RibWidth'] = None
+        # Ribbed Slabs
+        filt = df['PropType'] == 'Ribbed'
+        df_ribbed = df.loc[filt]
+        if not df_ribbed.empty:
+            df_ribbed['RibWidth'] = (df_ribbed['WidthTop'] + df_ribbed['WidthBot']) / 2
+            df_ribbed['h_equal'] = calculate_equivalent_height_according_to_volume(
+                df_ribbed['RibSpacing1'],
+                1,
+                df_ribbed['Depth'],
+                df_ribbed['RibWidth'],
+                0,
+                df_ribbed['Thickness']
+            )
+        # Waffle Slabs
+        filt = df['PropType'] == 'Waffle'
+        df_waffle = df.loc[filt]
+        if not df_waffle.empty:
+            df_waffle['RibWidth'] = (df_waffle['WidthTop'] + df_waffle['WidthBot']) / 2
+            df_waffle['h_equal'] = calculate_equivalent_height_according_to_volume(
+                df_waffle['RibSpacing1'],
+                df_waffle['RibSpacing2'],
+                df_waffle['Depth'],
+                df_waffle['RibWidth'],
+                df_waffle['RibWidth'],
+                df_waffle['Thickness']
+            )
+        df = pd.concat([df_thickness, df_ribbed, df_waffle])
+        df['Weight Kg/m^2'] = df['h_equal'] * df['UnitWeight'] * df['WMod']
+        cols = ['Name', 'PropType', 'Material', 'UnitWeight', 'Thickness', 'RibWidth', 'WMod', 'h_equal', 'Weight Kg/m^2']
+        df = df[cols]
+        return df
+
+    def calculate_deck_weight_per_area(self,
+                                    decks: Union[list, bool] = None,
+                                    use_user_deck_weight: bool = True
+                                    ):
+        self.etabs.set_current_unit('kgf', 'm')
+        table_key = "Deck Property Definitions"
+        cols = ['Name', 'DeckType', 'MaterialSlb', 'MaterialDck', 'SlabDepth', 'RibDepth', 'RibWidthTop', 'RibWidthBot', 'RibSpacing', 'DeckShrThk', 'DeckUnitWt', 'WMod']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if decks is not None:
+            filt = df['Name'].isin(decks)
+            df = df.loc[filt]
+        filt = df['DeckType'] == 'Filled'
+        df = df.loc[filt]
+        del df['DeckType']
+        convert_types = {
+            'SlabDepth': float,
+            'RibDepth': float,
+            'RibWidthTop': float,
+            'RibWidthBot': float,
+            'RibSpacing': float,
+            'DeckShrThk': float,
+            'DeckUnitWt': float,
+            'WMod': float,
+        }
+        df = df.astype(convert_types)
+        unit_weights = self.etabs.material.get_unit_weight_of_materials()
+        df['UnitWeightSlab'] = df['MaterialSlb'].map(unit_weights)
+        df['UnitWeightDeck'] = df['MaterialDck'].map(unit_weights)
+        df['RibWidth'] = (df['RibWidthTop'] + df['RibWidthBot']) / 2
+        df['d'] = df['SlabDepth'] + df['RibDepth']
+        df['h_eq_slab'] = calculate_equivalent_height_according_to_volume(
+            df['RibSpacing'],
+            1,
+            df['d'],
+            df['RibWidth'],
+            0,
+            df['SlabDepth']
+        )
+        df['slab_weight'] = df['h_eq_slab'] * df['UnitWeightSlab'] * df['WMod']
+        if use_user_deck_weight:
+            df['deck_weight'] = df['DeckUnitWt']
+        else:
+            df['h_eq_deck'] = deck_plate_equivalent_height_according_to_volume(
+                s=df['RibSpacing'],
+                d=df['d'],
+                tw_top=df['RibWidthTop'],
+                tw_bot=df['RibWidthBot'],
+                hc=df['SlabDepth'],
+                t_deck=df['DeckShrThk'],
+            )
+            df['deck_weight'] = df['h_eq_deck'] * df['UnitWeightDeck']
+            
+        df['weight Kg/m^2'] = df['slab_weight'] + df['deck_weight']
+        return df
+        
+    def get_all_slab_types(self) -> dict:
+        '''
+        Return all slab types in etabs model definition
+        Slab, Drop, Stiff, Ribbed, Waffle, Mat, Footing
+        '''
+        table_key = "Slab Property Definitions"
+        cols = ['Name', 'PropType']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = df.set_index('Name')
+        return df.to_dict()['PropType']
+    
+    def get_expanded_shell_uniform_load_sets(self,
+                                             areas: Union[list, bool]= None,
+                                             ) -> pd.DataFrame:
+        '''
+        Example:
+        "Shell Uniform Load Sets"
+            Name	LoadPattern	LoadValue
+        0	ROOF	Dead	    0.003	
+        1	ROOF	LROOF	    0.0015
+        2	ROOF	SNOW	    0.0011
+        3	ROOF	WALL	    0.0005
+
+        "Area Load Assignments - Uniform Load Sets"
+            Story	Label	UniqueName	LoadSet
+        0	Story4	F8	    44	        ROOF
+
+        return:
+            Story	Label	UniqueName	LoadSet	LoadPattern	Dir     LoadValue
+        0	Story4	F8	    44	        ROOF	Dead	    Gravity 0.003
+        1	Story4	F8	    44	        ROOF	LROOF	    Gravity 0.0015
+        2	Story4	F8	    44	        ROOF	SNOW	    Gravity 0.0011
+        3	Story4	F8	    44	        ROOF	WALL	    Gravity 0.0005
+        '''
+        self.etabs.set_current_unit('kgf', 'm')
+        table_key = 'Area Load Assignments - Uniform Load Sets'
+        df1 = self.etabs.database.read(table_key, to_dataframe=True)
+        if areas is not None:
+            filt = df1['UniqueName'].isin(areas)
+            df1 = df1.loc[filt]
+        if df1 is None or df1.empty:
+            return pd.DataFrame(columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue', 'Direction'])
+        table_key = 'Shell Uniform Load Sets'
+        df2 = self.etabs.database.read(table_key, to_dataframe=True)
+        del df2['GUID']
+        df = df1.merge(df2, left_on='LoadSet', right_on='Name')
+        del df['Name']
+        df['Direction'] = 'Gravity'
+        return df
+    
+    def get_shell_uniform_loads(self,
+                                areas: Union[list, bool]= None,
+                                df1: Union[pd.DataFrame, bool]= None,
+                                ) -> pd.DataFrame:
+        '''
+        Get All uniform loads on areas include uniforms and uniform load sets
+        '''
+        self.etabs.set_current_unit('kgf', 'm')
+        # shell uniform load sets
+        if df1 is None:
+            df1 = self.get_expanded_shell_uniform_load_sets(areas=areas)
+        del df1['LoadSet']
+        df1.rename(columns={'LoadValue': 'Load'}, inplace=True)
+        # shell uniform load
+        table_key = 'Area Load Assignments - Uniform'
+        df2 = self.etabs.database.read(table_key, to_dataframe=True)
+        if df2 is not None:
+            df2 = df2[['Story', 'Label', 'UniqueName', 'LoadPattern', 'Dir', 'Load']]
+            df2.rename(columns={'Dir': 'Direction'}, inplace=True)
+        df = pd.concat([df1, df2])
+        return df
+    
+    def expand_uniform_load_sets_and_apply_to_model(self,
+                                                    df: Union[pd.DataFrame, bool] = None,
+                                                    ):
+        df = self.get_shell_uniform_loads(df1=df)
+        df = df[['UniqueName', 'LoadPattern', 'Direction', 'Load']]
+        df.columns = ['UniqueName', 'Load Pattern', 'Direction', 'Load']
+        table_key = 'Area Load Assignments - Uniform'
+        self.etabs.database.apply_data(table_key, df)
+        df2 = pd.DataFrame(columns=['UniqueName', 'Load Set'])
+        self.etabs.database.apply_data('Area Load Assignments - Uniform Load Sets', df2)
+        return True
+
+def deck_plate_equivalent_height_according_to_volume(
+        s,
+        d,
+        tw_top,
+        tw_bot,
+        hc,
+        t_deck,
+        ) -> float:
+    '''
+    s: Spacing of Ribs
+    d: Overall Depth
+    tw_top, tw_bot: Stem Width at top & bot
+    hc: Slab Thickness
+    return the equivalent height of deck plate
+    '''
+    hw = d - hc
+    eps_width = tw_top - tw_bot
+    oblique_len = (hw ** 2 + (eps_width / 2) ** 2) ** 0.5
+    equal_length = s - eps_width + 2 * oblique_len
+    return equal_length * t_deck / s
+
+def calculate_equivalent_height_according_to_volume(
+        s1,
+        s2,
+        d,
+        tw1,
+        tw2,
+        hc,
+        ) -> float:
+    '''
+    s1: Spacing of Ribs that are Parallel to Slab 1-Axis
+    s2: Spacing of Ribs that are Parallel to Slab 2-Axis
+    d: Overall Depth
+    tw1, tw2: Average Stem Width
+    hc: Slab Thickness
+    return the equivalent height of slab
+
+    '''
+    hw = (d - hc)
+    equal_height = d - (s1 - tw1) * (s2 - tw2) * hw / (s1 * s2)
+    return equal_height
+    
 
 if __name__ == '__main__':
     import sys
     from pathlib import Path
 
-    FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
-    sys.path.append(FREECADPATH)
-    import FreeCAD
-    if FreeCAD.GuiUp:
-        document = FreeCAD.ActiveDocument
-    else:
-        filename = Path(__file__).absolute().parent.parent / 'etabs_api' / 'test' / 'etabs_api' / 'test_files' / 'freecad' / 'mat.FCStd'
-        document= FreeCAD.openDocument(str(filename))
-    slabs = document.Foundation.tape_slabs
-    openings = document.Foundation.openings
+    # FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
+    # sys.path.append(FREECADPATH)
+    # import FreeCAD
+    # if FreeCAD.GuiUp:
+    #     document = FreeCAD.ActiveDocument
+    # else:
+    #     filename = Path(__file__).absolute().parent.parent / 'etabs_api' / 'test' / 'etabs_api' / 'test_files' / 'freecad' / 'mat.FCStd'
+    #     document= FreeCAD.openDocument(str(filename))
+    # slabs = document.Foundation.tape_slabs
+    # openings = document.Foundation.openings
 
-    current_path = Path(__file__).parent
-    sys.path.insert(0, str(current_path))
+    etabs_api_path = Path(__file__).parent
+    sys.path.insert(0, str(etabs_api_path))
     from etabs_obj import EtabsModel
-    etabs = EtabsModel(backup=False, software='SAFE')
-    # etabs.area.get_scale_area_points_with_scale(document.Foundation.plan_without_openings)
-    SapModel = etabs.SapModel
-    ret = etabs.area.export_freecad_slabs(document)
-    ret = etabs.area.export_freecad_openings(openings)
-    print('Wow')
+    # etabs = EtabsModel(backup=False, software='SAFE')
+    etabs = EtabsModel(backup=False)
+    etabs.area.calculate_deck_weight_per_area()
+    # SapModel = etabs.SapModel
+    # ret = etabs.area.export_freecad_slabs(document)
+    # ret = etabs.area.export_freecad_openings(openings)
+    # print('Wow')

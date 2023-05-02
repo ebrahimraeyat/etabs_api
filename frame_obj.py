@@ -32,6 +32,22 @@ class FrameObj:
     def is_brace(self, name):
         return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 3
 
+    def get_section_name(self, frame_name):
+        return self.SapModel.FrameObj.GetSection(frame_name)[0]
+    
+    def set_section_name(self,
+        frame_name : str,
+        name : str,
+        ):
+        self.SapModel.FrameObj.SetSection(frame_name, name)
+
+    def set_sections_name(self,
+        frame_names : list,
+        name : str,
+        ):
+        for frame in frame_names:
+            self.set_section_name(frame, name)
+
     def is_frame_on_story(self, frame, story=None):
         if story is None:
             return True
@@ -63,6 +79,7 @@ class FrameObj:
     def get_beams_columns(
             self,
             type_=2,
+            types : list =[],
             story : Union[str, bool] = None,
             ):
         '''
@@ -71,9 +88,10 @@ class FrameObj:
         beams = []
         columns = []
         others = []
+        types = set(types).union([type_])
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
             if (
-                self.SapModel.FrameObj.GetDesignProcedure(label)[0] == type_ and
+                self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types and
                 self.is_frame_on_story(label, story)
                 ): 
                 if self.is_column(label):
@@ -260,6 +278,51 @@ class FrameObj:
             t_crack = phi * .33 * math.sqrt(fc) * A ** 2 / p 
             sec_t[sec_name] = t_crack / 1000000 / 9.81
         return sec_t
+
+    def get_unit_weight_of_beams(self,
+                    beams_names = None,
+                    ) -> dict:
+        import math
+        if beams_names is None:
+            beams_names, _ = self.get_beams_columns(types=[1,2,3])
+        table_key = "Frame Assignments - Property Modifiers"
+        cols = ['Story', 'Label', 'UniqueName', 'AMod', 'WMod']
+        import pandas as pd
+        df = pd.DataFrame(beams_names, columns=['UniqueName'])
+        df['AMod_Beam'] = 1
+        df['WMod_Beam'] = 1
+        df1 = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if df1 is not None:
+            filt = df1['UniqueName'].isin(beams_names)
+            df1 = df1.loc[filt]
+            cols = {'AMod':'AMod_Beam', 'WMod':'WMod_Beam'}
+            df1.rename(columns=cols, inplace=True)
+            df.merge(df1, on='UniqueName', how='left')
+        # df.columns = ['Story', 'Label', 'UniqueName', 'AMod_Beam', 'WMod_Beam']
+        beam_names = df.UniqueName.unique()
+        beams_sections  = self.get_beams_sections(beam_names)
+        df['Section'] = df['UniqueName'].map(beams_sections)
+
+        table_key = "Frame Section Property Definitions - Summary"
+        cols = ['Name', 'Material', 'Area', 'AMod', 'WMod']
+        df_sec = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = df.merge(df_sec, left_on='Section', right_on='Name')
+        del df['Name']
+        unit_weights = self.etabs.material.get_unit_weight_of_materials()
+        df['mat_unit_weight'] = df['Material'].map(unit_weights)
+        df.dropna(inplace=True)
+        convert_type = {
+                    'Area' : float,
+                    'AMod_Beam' : float,
+                    'AMod' : float,
+                    # 'mat_unit_weight' : float,
+                    'WMod_Beam' : float,
+                    'WMod' : float,
+                    }
+        df = df.astype(convert_type)
+        df['unit_weight'] = df['Area'] * df['AMod_Beam'] * df['AMod'] * df['mat_unit_weight'] * df['WMod_Beam'] * df['WMod']
+        return df
+
 
     def get_beams_sections(self,
             beams_names : Iterable[str] = None,
@@ -628,7 +691,7 @@ class FrameObj:
             names = []
             types, all_names = self.SapModel.SelectObj.GetSelected()[1:3]
             for t, name in zip(types, all_names):
-                if t == 2 and not self.is_column(name):
+                if t == 2 and self.is_beam(name):
                     names.append(name)
         if stories is None:
             stories = self.SapModel.Story.GetNameList()[1]
@@ -708,16 +771,48 @@ class FrameObj:
         type_number = 1 if type_ == 'Steel' else 2
         epsilon = .00000001
         columns = []
-        for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
-            if (self.is_column(name) and
-                self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
-                ):
-                self.etabs.design.set_overwrite(name, 9, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 10, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 11, epsilon, type_, code)
-                self.etabs.design.set_overwrite(name, 12, epsilon, type_, code)
-                columns.append(name)
-        return columns
+        succeed = True
+        if type_ == 'Concrete':
+            try:
+                table_key = f'Concrete Column Overwrites - {code}'
+                df = self.etabs.database.read(table_key, to_dataframe=True)
+                for col in ('DnsMajor', 'DnsMinor', 'DsMajor', 'DsMinor'):
+                    df[col] = f'{epsilon}'
+                df['MinEcc'] = 'No'
+                self.etabs.database.remove_df_columns(df, ('Story', 'Label', 'Type'))
+                df.columns = (
+                    'Unique Name',
+                    'Design Section',
+                    'Frame Type',
+                    'LLRF',
+                    'Unbraced Length Ratio (Major)',
+                    'Unbraced Length Ratio (Minor)',
+                    'Effective Length Factor (K Major)',
+                    'Effective Length Factor (K Minor)',
+                    'Moment Coefficient (Cm Major)',
+                    'Moment Coefficient (Cm Minor)',
+                    'Non Sway Moment Factor (Dns Major)',
+                    'Non Sway Moment Factor (Dns Minor)',
+                    'Sway Moment Factor (Ds Major)',
+                    'Sway Moment Factor (Ds Minor)',
+                    'Consider Minimum Eccentricity?',
+                    )
+                self.etabs.database.write(table_key, df)
+            except:
+                succeed = False
+        if type_ == 'Steel' or not succeed:
+
+            for name in self.SapModel.FrameObj.GetLabelNameList()[1]:
+                if (self.is_column(name) and
+                    self.SapModel.FrameObj.GetDesignProcedure(name)[0] == type_number
+                    ):
+                    self.etabs.design.set_overwrite(name, 9, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 10, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 11, epsilon, type_, code)
+                    self.etabs.design.set_overwrite(name, 12, epsilon, type_, code)
+                    # self.etabs.design.set_overwrite(name, 13, False, type_, code)
+                    columns.append(name)
+            return columns
 
     def set_infinite_bending_capacity_for_steel_columns(self,
             code_string : str,
@@ -746,7 +841,11 @@ class FrameObj:
 
     def require_100_30(self,
             ex: Union[str, bool]=None,
+            exn: Union[str, bool]=None,
+            exp: Union[str, bool]=None,
             ey: Union[str, bool]=None,
+            eyn: Union[str, bool]=None,
+            eyp: Union[str, bool]=None,
             file_name: Union[str, Path] = '100_30.EDB',
             type_: str = 'Concrete', # 'Steel'
             code : Union[str, None] = None,
@@ -767,11 +866,39 @@ class FrameObj:
         #     pass
             # self.SapModel.File.Open(str(file_name))
         if ex is None:
-            ex, ey = self.etabs.load_patterns.get_EX_EY_load_pattern()
-        self.SapModel.RespCombo.Add('EX_100_30', 0)
-        self.SapModel.RespCombo.Add('EY_100_30', 0)
-        self.SapModel.RespCombo.SetCaseList('EX_100_30', 0, ex, 1)
-        self.SapModel.RespCombo.SetCaseList('EY_100_30', 0, ey, 1)
+            ex, exn, exp, ey, eyn, eyp = self.etabs.load_patterns.get_seismic_load_patterns()
+        combos = []
+        load_cases = []
+        if ex:
+            self.SapModel.RespCombo.Add(f'{ex}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{ex}_100_30', 0, ex, 1)
+            combos.append(['Strength', f'{ex}_100_30'])
+            load_cases.append(ex)
+        if exn:
+            self.SapModel.RespCombo.Add(f'{exn}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{exn}_100_30', 0, exn, 1)
+            combos.append(['Strength', f'{exn}_100_30'])
+            load_cases.append(exn)
+        if exp:
+            self.SapModel.RespCombo.Add(f'{exp}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{exp}_100_30', 0, exp, 1)
+            combos.append(['Strength', f'{exp}_100_30'])
+            load_cases.append(exp)
+        if ey:
+            self.SapModel.RespCombo.Add(f'{ey}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{ey}_100_30', 0, ey, 1)
+            combos.append(['Strength', f'{ey}_100_30'])
+            load_cases.append(ey)
+        if eyn:
+            self.SapModel.RespCombo.Add(f'{eyn}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{eyn}_100_30', 0, eyn, 1)
+            combos.append(['Strength', f'{eyn}_100_30'])
+            load_cases.append(eyn)
+        if eyp:
+            self.SapModel.RespCombo.Add(f'{eyp}_100_30', 0)
+            self.SapModel.RespCombo.SetCaseList(f'{eyp}_100_30', 0, eyp, 1)
+            combos.append(['Strength', f'{eyp}_100_30'])
+            load_cases.append(eyp)
         # set overwrite for columns
         if code is None:
             code = self.etabs.design.get_code(type_)
@@ -780,19 +907,20 @@ class FrameObj:
         import pandas as pd
         if type_ == 'Concrete':
             columns = self.set_column_dns_overwrite(code=code_string, type_=type_)
-            df = pd.DataFrame([['Strength', 'EX_100_30'], ['Strength', 'EY_100_30']],columns=['Combo Type', 'Combo Name'])
+            df = pd.DataFrame(combos,columns=['Combo Type', 'Combo Name'])
             table_key = 'Concrete Frame Design Load Combination Data'
         elif type_ == 'Steel':
+            for c in combos:
+                c.insert(0, 'Steel Frame')
             # self.set_infinite_bending_capacity_for_steel_columns(code_string)
-            df = pd.DataFrame([['Steel Frame', 'Strength', 'EX_100_30'],
-                                ['Steel Frame', 'Strength', 'EY_100_30']],
+            df = pd.DataFrame(combos,
                                 columns=['Design Type', 'Combo Type', 'Combo Name']
                                 )
             table_key = 'Steel Design Load Combination Data'
             columns = self.get_beams_columns(type_=1)[1]
         self.etabs.database.apply_data(table_key, df)
         # run analysis
-        self.etabs.analyze.set_load_cases_to_analyze([ex, ey])
+        self.etabs.analyze.set_load_cases_to_analyze(load_cases)
         self.etabs.run_analysis()
         self.set_frame_obj_selected(columns)
         print('Start Design ...')
@@ -839,44 +967,75 @@ class FrameObj:
         ev : str,
         importance_factor : float = 1,
         replace : bool  = True,
+        self_weight : bool = False,
         ):
         self.etabs.unlock_model()
         self.etabs.set_current_unit('kgf', 'm')
         # Distributed loads
         table_key = 'Frame Loads Assignments - Distributed'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
-        del df['GUID']
-        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
-        df = df[filt]
-        for i, row in df.iterrows():
-            val1 = math.ceil(float(row['ForceA']) * 0.6 * acc * importance_factor)
-            val2 = math.ceil(float(row['ForceB']) * 0.6 * acc * importance_factor)
-            self.assign_gravity_load(
-                name = row['UniqueName'],
-                loadpat = ev,
-                val1 = val1,
-                val2 = val2,
-                dist1 = float(row['RelDistA']),
-                dist2 = float(row['RelDistB']),
-                load_type = 1 if row['LoadType'] == 'Force' else 2,
-                replace = replace,
-            )
+        ev_value = 0.6 * acc * importance_factor
+        if replace:
+            # remove current loads
+            for name in frames:
+                self.SapModel.FrameObj.DeleteLoadDistributed(
+                    Name = name,
+                    LoadPat = ev,
+                )
+                self.SapModel.FrameObj.DeleteLoadPoint(
+                    Name = name,
+                    LoadPat = ev,
+                )
+        if df is not None:
+            del df['GUID']
+            filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+            df = df[filt]
+
+            for i, row in df.iterrows():
+                val1 = math.ceil(float(row['ForceA']) * ev_value)
+                val2 = math.ceil(float(row['ForceB']) * ev_value)
+                self.assign_gravity_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val1 = val1,
+                    val2 = val2,
+                    dist1 = float(row['RelDistA']),
+                    dist2 = float(row['RelDistB']),
+                    load_type = 1 if row['LoadType'] == 'Force' else 2,
+                    replace = False,
+                )
         # point load
         table_key = 'Frame Loads Assignments - Point'
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True)
-        del df['GUID']
-        filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
-        df = df[filt]
-        for i, row in df.iterrows():
-            val = math.ceil(float(row['Force']) * 0.6 * acc * importance_factor)
-            self.assign_point_load(
-                name = row['UniqueName'],
-                loadpat = ev,
-                val = val,
-                dist = float(row['RelDist']),
-                load_type = 1 if row['LoadType'] == 'Force' else 2,
-                replace = replace,
-            )
+        if df is not None:
+            del df['GUID']
+            filt = (df.UniqueName.isin(frames) & df.LoadPattern.isin(load_patterns))
+            df = df[filt]
+            for i, row in df.iterrows():
+                val = math.ceil(float(row['Force']) * ev_value)
+                self.assign_point_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val = val,
+                    dist = float(row['RelDist']),
+                    load_type = 1 if row['LoadType'] == 'Force' else 2,
+                    replace = False,
+                )
+        # self weight load apply in load patterns
+        if self_weight:
+            df = self.get_unit_weight_of_beams(frames)
+            for i, row in df.iterrows():
+                val = math.ceil(row['unit_weight'] * ev_value)
+                self.assign_gravity_load(
+                    name = row['UniqueName'],
+                    loadpat = ev,
+                    val1 = val,
+                    val2 = val,
+                    dist1 = 0,
+                    dist2 = 1,
+                    load_type = 1,
+                    replace = False,
+                )
 
 if __name__ == '__main__':
     from pathlib import Path

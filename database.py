@@ -75,6 +75,13 @@ class DatabaseTables:
         data = list(df.values.reshape(1, df.size)[0])
         return fields, data
 
+    def write(self,
+            table_key : str,
+            data : Union[list, pd.core.frame.DataFrame],
+            fields : Union[list, tuple, bool] = None,
+            ) -> None:
+        self.apply_data(table_key, data, fields)
+        
     def apply_data(self,
             table_key : str,
             data : Union[list, pd.core.frame.DataFrame],
@@ -909,11 +916,30 @@ class DatabaseTables:
             cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
             df = df[cols]
             df['StepType'].fillna('Max', inplace=True)
-            df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
-            df.drop(columns=['StepType'], inplace=True)
+            # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
+            # df.drop(columns=['StepType'], inplace=True)
         else:
             cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
             df = df[cols]
+            df['StepType'] = 'Max'
+        df.dropna(inplace=True)
+        return df
+    
+    def get_all_joint_design_reactions(self,
+        select_combos : bool = True,
+        ):
+        if select_combos:
+            self.etabs.load_combinations.select_load_combinations()
+        table_key = 'Joint Design Reactions'
+        df = self.read(table_key, to_dataframe=True)
+        if 'StepType' in df.columns:
+            cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
+            df = df[cols]
+            df['StepType'].fillna('Max', inplace=True)
+        else:
+            cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
+            df = df[cols]
+            df['StepType'] = 'Max'
         df.dropna(inplace=True)
         return df
 

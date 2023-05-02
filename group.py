@@ -12,9 +12,11 @@ class Group:
     def names(self):
         return self.SapModel.GroupDef.GetNameList()[1]
 
-    def add(self, name):
+    def add(self,
+            name,
+            remove: bool=False,
+            ):
         names = self.names()
-        if not name in names:
-            self.SapModel.GroupDef.SetGroup(name)
-            return True
-        return False
+        if remove and name in names:
+            self.SapModel.GroupDef.Delete(name)
+        self.SapModel.GroupDef.SetGroup(name)

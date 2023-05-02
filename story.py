@@ -84,6 +84,8 @@ class Story:
     def get_story_boundbox(self, story_name) -> tuple:
         self.etabs.set_current_unit('kgf', 'cm')
         points = self.SapModel.PointObj.GetNameListOnStory(story_name)[1]
+        if len(points) == 0:
+            return (0, 0, 0, 0)
         xs = []
         ys = []
         for p in points:
