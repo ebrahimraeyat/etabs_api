@@ -905,7 +905,7 @@ class DatabaseTables:
         return df
 
     def get_joint_design_reactions(self,
-        types : list = ['concrete'],
+        types : list = ['concrete', 'steel'],
         select_combos : bool = True,
         ):
         if select_combos:

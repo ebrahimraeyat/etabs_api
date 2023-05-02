@@ -344,10 +344,14 @@ class CreateF2kFile(Safe):
         df.drop(columns=['Label', 'CaseType'], inplace=True)
         for col in ('FX', 'FY', 'MX', 'MY', 'MZ'):
             df[col] = -df[col].astype(float)
-        df2 = self.etabs.database.get_basepoints_coord_and_dims(df)
-        df2 = df2.set_index('UniqueName')
-        df['xim'] = df['UniqueName'].map(df2['t2'])
-        df['yim'] = df['UniqueName'].map(df2['t3'])
+        try:
+            df2 = self.etabs.database.get_basepoints_coord_and_dims(df)
+            df2 = df2.set_index('UniqueName')
+            df['xim'] = df['UniqueName'].map(df2['t2'])
+            df['yim'] = df['UniqueName'].map(df2['t3'])
+        except AttributeError:
+            df['xim'] = 0
+            df['yim'] = 0
         d = {
             'UniqueName': 'Point=',
             'OutputCase': 'LoadPat=',
@@ -357,8 +361,8 @@ class CreateF2kFile(Safe):
             'MX' : 'Mx=',
             'MY' : 'My=',
             'MZ' : 'Mz=',
-            'xim' : 'XDim=',
-            'yim' : 'YDim=',
+            # 'xim' : 'XDim=',
+            # 'yim' : 'YDim=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"
@@ -390,10 +394,11 @@ class CreateF2kFile(Safe):
             filt = df['Name'].isin(tuple(load_combinations))
             df = df.loc[filt]
         df.replace({'Type': {'Linear Add': '"Linear Add"'}}, inplace=True)
-        load_combos_names = self.etabs.database.get_design_load_combinations("concrete")
-        if not load_combos_names:
+        try:
+            load_combos_names = self.etabs.database.get_design_load_combinations("concrete")
+        except AttributeError:
             load_combos_names = self.etabs.database.get_design_load_combinations("steel")
-        if not load_combos_names:
+        except:
             load_combos_names = self.etabs.database.get_design_load_combinations("shearwall")
         if load_combos_names:
             df['strength'] = np.where(df['Name'].isin(load_combos_names), 'Yes', 'No')
