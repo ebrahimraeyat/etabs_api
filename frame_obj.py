@@ -332,6 +332,25 @@ class FrameObj:
         beams_sections = {name : self.SapModel.FrameObj.GetSection(name)[0] for name in beams_names}
         return beams_sections
     
+    def assign_frame_modifires(self,
+            frame_names: list,
+            area: Union[None, float]=None,
+            as2: Union[None, float]=None,
+            as3: Union[None, float]=None,
+            torsion: Union[None, float]=None,
+            i22: Union[None, float]=None,
+            i33: Union[None, float]=None,
+            mass: Union[None, float]=None,
+            weight: Union[None, float]=None,
+            ):
+        mod_names = [area, as2, as3, torsion, i22, i33, mass, weight]
+        for name in frame_names:
+            modifiers = list(self.SapModel.FrameObj.GetModifiers(name)[0])
+            for i, mod in enumerate(mod_names):    
+                if mod:
+                    modifiers[i] = mod
+            self.SapModel.FrameObj.SetModifiers(name, modifiers)
+    
     def get_beams_torsion_prop_modifiers(self,
             beams_names : Iterable[str] = None,
             ) -> dict:

@@ -128,6 +128,13 @@ def test_get_unit_weight_of_beams(shayesteh):
     df = shayesteh.frame_obj.get_unit_weight_of_beams()
     assert len(df) == 92
 
+def test_assign_frame_modifires(shayesteh):
+    beams, _ = shayesteh.frame_obj.get_beams_columns()
+    shayesteh.frame_obj.assign_frame_modifires(beams, i33=0.5)
+    for beam in beams:
+        modifiers = shayesteh.SapModel.FrameObj.GetModifiers(beam)[0]
+        assert modifiers[5] == 0.5
+
 # @pytest.mark.setmethod
 def test_assign_ev(shayesteh):
     shayesteh.frame_obj.assign_ev(
