@@ -6,7 +6,7 @@ from unittest.mock import Mock
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
+from shayesteh import shayesteh, get_temp_filepath
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -140,6 +140,11 @@ def test_set_current_unit(shayesteh):
 def test_add_prefix_suffix_name(shayesteh):
     path = shayesteh.add_prefix_suffix_name(prefix='asli_', suffix='_x', open=False)
     assert path.name == 'asli_test_x.EDB'
+
+def test_create_joint_shear_file(shayesteh):
+    filename = get_temp_filepath(filename='js')
+    df = shayesteh.create_joint_shear_file(file_name=filename.name, open_main_file=True)
+    assert len(df) > 0
 
 
 if __name__ == '__main__':

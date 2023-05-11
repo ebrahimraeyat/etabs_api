@@ -111,8 +111,13 @@ def steel(edb="steel.EDB"):
         return create_test_file(etabs)
         
 
-def create_test_file(etabs, suffix='EDB'):
+def create_test_file(etabs, suffix='EDB', filename='test'):
     temp_path = Path(tempfile.gettempdir())
-    test_file_path = temp_path / f"test.{suffix}"
+    test_file_path = temp_path / f"{filename}.{suffix}"
     etabs.SapModel.File.Save(str(test_file_path))
     return etabs
+
+def get_temp_filepath(suffix='EDB', filename='test') -> Path:
+    temp_path = Path(tempfile.gettempdir())
+    temp_file_path = temp_path / f"{filename}.{suffix}"
+    return temp_file_path
