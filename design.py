@@ -50,6 +50,34 @@ class Design:
             code = self.get_code_string(type_)
         exec(f"self.SapModel.Design{type_}.{code}.SetOverwrite('{name}',{item}, {value})")
 
+    def set_concrete_framing_type(self,
+        type_: str = 2,
+        beams: bool = True,
+        columns: bool = True,
+        ):
+        '''
+        type_:
+            0 = Program Default
+            1 = Sway special
+            2 = Sway Intermediate
+            3 = Sway Ordinary
+            4 = Non-sway
+        '''
+        beam_names, column_names = self.etabs.frame_obj.get_beams_columns(type_=2)
+        if columns:
+            for name in column_names:
+                self.set_overwrite(
+                    name = name,
+                    item = 1, # Framing Type
+                    value = type_, # Sway special
+                    )
+        if beams:
+            for name in beam_names:
+                self.set_overwrite(
+                    name = name,
+                    item = 1, # Framing Type
+                    value = type_, # Sway special
+                    )
 
 
         
