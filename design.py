@@ -78,6 +78,33 @@ class Design:
                     item = 1, # Framing Type
                     value = type_, # Sway special
                     )
+                
+    def set_preference(self,
+        item: int,
+        value,
+        type_: str = 'Concrete', # 'Steel'
+        code: Union[str, bool] = None,
+        ):
+        if code is None:
+            code = self.get_code_string(type_)
+        exec(f"self.SapModel.Design{type_}.{code}.SetPreference({item}, {value})")
+
+    def set_phi_joint_shear(self,
+        value=0.75,
+        code=None,
+        ):
+        if code is None:
+            code = self.get_code_string('Concrete')
+        item = 15
+        if '11' in code:
+            item = 14
+        elif '08' in code:
+            item = 10
+        self.set_preference(item, value, code=code)
+
+
+
+
 
 
         
