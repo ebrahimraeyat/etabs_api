@@ -52,5 +52,10 @@ class SelectObj:
                 selected_objects[t] = []
             selected_objects[t].append(name)
         return selected_objects
+    
+    def select_concrete_columns(self):
+        _, columns = self.etabs.frame_obj.get_beams_columns(type_=2)
+        for name in columns:
+            self.SapModel.FrameObj.SetSelected(name, True)
 
     
