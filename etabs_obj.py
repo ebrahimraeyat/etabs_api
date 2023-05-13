@@ -869,10 +869,7 @@ class EtabsModel:
 
     def create_joint_shear_file(self,
         file_name: Union[str, Path]= 'js.EDB',
-        phi: float = 0.75,
-        run_analysis: bool = True,
-        start_design: bool = True,
-        get_joint_shear_df: bool = True,
+        structure_type: str = 'Sway Intermediate',
         open_main_file: bool =  False,
         ):
         # get main file path
@@ -880,22 +877,20 @@ class EtabsModel:
         main_file_path = main_file_path.with_suffix(".EDB")
         self.save_as(str(file_name))
         self.design.set_concrete_framing_type(1, beams=False)
-        self.design.set_phi_joint_shear(phi)
-        if run_analysis:
-            self.run_analysis()
-        if start_design:
-            self.run_analysis()
-            self.start_design()
-        if get_joint_shear_df:
-            code = self.design.get_code()
-            table_key = f"Concrete Joint Design Summary - {code}"
-            cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio']
-            df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
-            df.dropna(subset=['JSMajRatio', 'JSMinRatio'], inplace=True)
+        if structure_type == 'Sway Intermediate':
+            phi = 0.75
+            self.design.set_phi_joint_shear(phi)
+        self.run_analysis()
+        self.start_design()
+        code = self.design.get_code()
+        table_key = f"Concrete Joint Design Summary - {code}"
+        cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio']
+        df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
+        df.dropna(subset=['JSMajRatio', 'JSMinRatio'], inplace=True)
+        df = df.astype({'JSMajRatio':float, 'JSMinRatio': float})
         if open_main_file:
             self.SapModel.File.OpenFile(str(main_file_path))
-        if get_joint_shear_df:
-            return df
+        return df
 
 
 class Build:
