@@ -102,6 +102,44 @@ class Design:
             item = 10
         self.set_preference(item, value, code=code)
 
+    def get_rho(
+            self,
+            name: str,
+            distance: float,
+            location: str = 'top',
+            torsion_area: Union[bool, float] = None,
+            frame_area: Union[bool, float] = None,
+            cover: float= 0,
+        ):
+        self.etabs.set_current_unit('N', 'cm')
+        beam_rebars = self.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
+        if location == 'top':
+            areas = beam_rebars[4]
+        elif location == 'bot':
+            areas = beam_rebars[6]
+        first_dist = beam_rebars[2][0]
+        last_dist = beam_rebars[2][-1]
+        if distance < first_dist:
+            area = areas[0]
+            if not torsion_area:
+                torsion_area = beam_rebars[10][0] / 2
+        elif distance > last_dist:
+            area = areas[-1]
+            if not torsion_area:
+                torsion_area = beam_rebars[10][-1] / 2
+        else:
+            import numpy as np
+            from scipy.interpolate import interp1d
+            f = interp1d(beam_rebars[2], areas)
+            area = f(distance)
+            if not torsion_area:
+                f = interp1d(beam_rebars[2], beam_rebars[10])
+                torsion_area = f(distance) / 2
+        area += torsion_area
+        frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
+        return area / frame_area
+            
+
 
 
 

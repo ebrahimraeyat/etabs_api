@@ -47,3 +47,7 @@ def test_set_phi_joint_shear_aci08(shayesteh):
     shayesteh.design.set_phi_joint_shear(value=phi_joint_shear)
     ret = shayesteh.SapModel.DesignConcrete.ACI318_08_IBC2009.GetPreference(10)
     assert ret[0] == phi_joint_shear
+
+def test_get_rho(shayesteh):
+    rho = shayesteh.design.get_rho('130', distance=0)
+    assert pytest.approx(rho, abs=.0001) == .01517
