@@ -25,6 +25,22 @@ class Area:
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
+    def get_names_of_areas_of_type(
+            self,
+            type_='floor',
+            story : Union[str, bool] = None,
+            ):
+        '''
+        type_: wall:1, floor:2
+        '''
+        map_dict = {'wall':1, 'floor':2}
+        type_ = map_dict.get(type_, 5)
+        names = []
+        for name in self.SapModel.AreaObj.GetNameList()[1]:
+            if self.SapModel.AreaObj.GetDesignOrientation(name)[0] == type_:
+                names.append(name)
+        return names
+
     def export_freecad_slabs(self,
         doc : 'App.Document' = None,
         soil_name : str = 'SOIL',
