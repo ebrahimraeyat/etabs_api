@@ -1198,6 +1198,21 @@ class DatabaseTables:
         column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
         fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
         return column_forces, fields
+    
+    def set_floor_cracking(self,
+        names: Union[list, bool]=None,
+        type_: str='Frame', # 'Area
+        ):
+        table_key = f"{type_} Assignments - Floor Cracking"
+        if names is None:
+            if type_ == 'Frame':
+                names, _ = self.etabs.frame_obj.get_beams_columns()
+            elif type_ == 'Area':
+                names = self.etabs.area.get_names_of_areas_of_type(type_='floor')
+        df = pd.DataFrame(names)
+        df['Consider for Cracking'] = 'Yes'
+        df.columns = ['UniqueName', 'Consider for Cracking']
+        self.write(table_key=table_key, data=df)
 
 
 
