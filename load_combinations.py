@@ -178,6 +178,8 @@ class LoadCombination:
         sequence_numbering: bool = False,
         add_notional_loads: bool = True,
         retaining_wall: bool = False,
+        omega_x: float=0,
+        omega_y: float=0,
         ):
         data = []
         i = 0
@@ -224,9 +226,9 @@ class LoadCombination:
                             combos['Dead'] = dead_load_scale_factor + plus_dead_sf
             for lname, sf in combos.items():
                 if lname in ('EX', 'EXP', 'EXN'):
-                    sf *= rho_x
+                    sf *= max(rho_x, omega_x)
                 elif lname in ('EY', 'EYP', 'EYN'):
-                    sf *= rho_y
+                    sf *= max(rho_y, omega_y)
                 elif lname == 'EV' and not ev_negative and sf < 0:
                     continue
                 equal_names = equivalent_loads.get(lname, [])
