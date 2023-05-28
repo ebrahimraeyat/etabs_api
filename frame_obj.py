@@ -90,7 +90,7 @@ class FrameObj:
         columns = []
         others = []
         types = set(types).union([type_])
-        if story is None:
+        if story is None and len(stories) > 0:
             story = stories[0]
         stories = set(stories).union([story])
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
