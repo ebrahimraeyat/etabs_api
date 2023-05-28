@@ -20,6 +20,11 @@ def test_set_concrete_framing_type(shayesteh):
         ret = shayesteh.SapModel.DesignConcrete.ACI318_19.GetOverwrite(name,1)
         assert ret[0] == 1
 
+def test_get_code_string(shayesteh):
+    code = "ACI 318-08"
+    code_string = shayesteh.design.get_code_string(code=code)
+    assert code_string == "ACI318_08_IBC2009"
+
 def test_set_phi_joint_shear_aci19(shayesteh):
     phi_joint_shear = 0.87
     shayesteh.SapModel.DesignConcrete.SetCode("ACI 318-19")

@@ -37,6 +37,8 @@ class Design:
         i = code.find('-')
         # code = code.replace("-", "ـ")
         code = code[:i] + '_' + code[i + 1:]
+        if 'ACI318_08' in code:
+            code += '_IBC2009'
         return code
 
     def set_overwrite(self,
