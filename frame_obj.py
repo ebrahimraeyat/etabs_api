@@ -81,6 +81,7 @@ class FrameObj:
             type_=2,
             types : list =[],
             story : Union[str, bool] = None,
+            stories: list=[],
             ):
         '''
         type_: 1=steel and 2=concrete
@@ -89,18 +90,32 @@ class FrameObj:
         columns = []
         others = []
         types = set(types).union([type_])
+        if story is None:
+            story = stories[0]
+        stories = set(stories).union([story])
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
-            if (
-                self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types and
-                self.is_frame_on_story(label, story)
-                ): 
-                if self.is_column(label):
-                    columns.append(label)
-                elif self.is_beam(label):
-                    beams.append(label)
-                else:
-                    others.append(label)
+            if self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types:
+                for story in stories:
+                    if self.is_frame_on_story(label, story):
+                        if self.is_column(label):
+                            columns.append(label)
+                        elif self.is_beam(label):
+                            beams.append(label)
+                        else:
+                            others.append(label)
         return beams, columns
+    
+    def get_unique_frames(self,
+        frame_names: list,
+        ):
+        unique_names = []
+        labels = []
+        for frame in frame_names:
+            label, _, _ = self.etabs.SapModel.FrameObj.GetLabelFromName(frame)
+            if label not in labels:
+                labels.append(label)
+                unique_names.append(frame)
+        return unique_names
 
     def get_columns_pmm_and_beams_rebars(self, frame_names):
         if not self.SapModel.GetModelIsLocked():
@@ -1055,6 +1070,8 @@ class FrameObj:
                     load_type = 1,
                     replace = False,
                 )
+
+
 
 if __name__ == '__main__':
     from pathlib import Path

@@ -14,6 +14,13 @@ def test_get_beams_columns(shayesteh):
     assert len(beams) == 92
     assert len(columns) == 48
 
+def test_get_beams_columns_in_stories(shayesteh):
+    # frame_names = '116', '253']
+    # shayesteh.frame_obj.set_frame_obj_selected(frame_names)
+    beams, columns = shayesteh.frame_obj.get_beams_columns(stories=['STORY1', 'STORY2'])
+    assert len(beams) == 44
+    assert len(columns) == 22
+
 def test_get_beams_columns_weakness_structure(shayesteh):
     cols_pmm, col_fields, beams_rebars, beam_fields = shayesteh.frame_obj.get_beams_columns_weakness_structure('115')
     assert len(col_fields) == 5
@@ -155,6 +162,7 @@ def test_set_column_dns_overwrite(shayesteh):
         code='ACI 318-19',
     )
     assert True
+
 
 
 
