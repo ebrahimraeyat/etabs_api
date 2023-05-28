@@ -48,6 +48,10 @@ def test_set_uniform_gravity_load(shayesteh_safe):
 def test_export_freecad_wall_loads(shayesteh_safe):
     shayesteh_safe.area.export_freecad_wall_loads(document)
 
+def test_get_names_of_areas_of_type(shayesteh):
+    area_names = shayesteh.area.get_names_of_areas_of_type(type_='floor')
+    assert len(area_names) == 232
+    
 def test_calculate_deck_weight_per_area(shayesteh):
     df = shayesteh.area.calculate_deck_weight_per_area()
     print(df)

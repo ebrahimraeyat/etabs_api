@@ -1071,6 +1071,20 @@ class FrameObj:
                     replace = False,
                 )
 
+    def get_area(self,
+        name: str,
+        cover: float=0,
+        location: Union[bool, float] = None,
+        ):
+        '''
+        Return area of section in cm^2
+        '''
+        # self.etabs.set_current_unit('N', 'cm')
+        section_name = self.SapModel.FrameObj.GetSection(name)[0]
+        _, _, h, b, *_ = self.SapModel.PropFrame.GetRectangle(section_name)
+        if cover == 0:
+            cover = 6
+        return (b * (h - cover))
 
 
 if __name__ == '__main__':

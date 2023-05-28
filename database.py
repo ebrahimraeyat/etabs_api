@@ -1198,8 +1198,63 @@ class DatabaseTables:
         column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
         fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
         return column_forces, fields
+    
+    def set_floor_cracking(self,
+        names: Union[list, bool]=None,
+        type_: str='Frame', # 'Area
+        ):
+        table_key = f"{type_} Assignments - Floor Cracking"
+        if names is None:
+            if type_ == 'Frame':
+                names, _ = self.etabs.frame_obj.get_beams_columns()
+            elif type_ == 'Area':
+                names = self.etabs.area.get_names_of_areas_of_type(type_='floor')
+        df = pd.DataFrame(names)
+        df['Consider for Cracking'] = 'Yes'
+        df.columns = ['UniqueName', 'Consider for Cracking']
+        self.write(table_key=table_key, data=df)
 
-
+    def create_nonlinear_loadcases(self,
+        dead: list,
+        supper_dead: list,
+        lives: list,
+        lives_percentage: float = 0.25,
+        ):
+        cols = ['Name',
+                # 'Mass Source', 'Initial Condition',
+                'Load Type',
+                'Load Name',
+                'Load SF',
+                # 'Modal Case',
+                'Cracked Option',
+                # 'Displ Tolerance', 'Max Iterations',
+                ]
+        import pandas as pd
+        df = pd.DataFrame(columns=cols)
+        df['Load Name'] = (dead + supper_dead + lives) * 2 + dead
+        all_len = len(dead + supper_dead + lives)
+        dead_sd_len = len(dead + supper_dead)
+        # load names
+        dead_name = dead[0]
+        supper_dead_name = ''
+        if supper_dead:
+            supper_dead_name = supper_dead[0] + '+'
+        lc1 = f'{dead_name}+{supper_dead_name}{lives_percentage:.2f}Live'
+        lc2 = f'{dead_name}+{supper_dead_name}Live'
+        lc3 = dead_name + '_NL'
+        df['Name'] = [lc1] * all_len + [lc2] * all_len + [lc3] * len(dead)
+        df['Load SF'] = ['1'] * dead_sd_len + [f'{lives_percentage}'] * len(lives) + ['1'] * all_len + ['1'] * len(dead)
+        df['Load Type'] = 'Load'
+        df['Cracked Option'] = 'Short Term'
+        # modal_case = self.etabs.load_cases.get_modal_loadcase_name()
+        # df['Mass Source'] = 'Previous'
+        # df['Initial Condition'] = 'Unstressed'
+        # df['Modal Case'] = modal_case
+        # df['Displ Tolerance'] = '.005'
+        # df['Max Iterations'] = '30'
+        table_key = 'Load Case Definitions - Nonlinear Static'
+        self.write(table_key, df)
+        return lc1, lc2, lc3
 
 if __name__ == '__main__':
     from pathlib import Path

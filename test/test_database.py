@@ -262,10 +262,36 @@ def test_create_punching_shear_perimeter_table(shayesteh_safe):
             punches.append(o)
     shayesteh_safe.database.create_punching_shear_perimeter_table(punches)
 
+def test_set_floor_cracking_for_floor(shayesteh):
+    type_ = 'Area'
+    shayesteh.database.set_floor_cracking(type_=type_)
+    names = shayesteh.area.get_names_of_areas_of_type(type_='floor')
+    table_key = f"{type_} Assignments - Floor Cracking"
+    df = shayesteh.database.read(table_key, to_dataframe=True)
+    assert set(names) == set(df['UniqueName'].unique())
+
+def test_set_floor_cracking_for_beams(shayesteh):
+    type_ = 'Frame'
+    shayesteh.database.set_floor_cracking(type_=type_)
+    names, _ = shayesteh.frame_obj.get_beams_columns()
+    table_key = f"{type_} Assignments - Floor Cracking"
+    df = shayesteh.database.read(table_key, to_dataframe=True)
+    assert set(names) == set(df['UniqueName'].unique())
+
 def test_get_design_load_combinations_steel(steel):
     steel.database.get_design_load_combinations('steel')
+
+def test_create_nonlinear_loadcases(shayesteh):
+    dead = ['DEAD']
+    sd = []
+    lives = ['LPART', 'LRED']
+    ret = shayesteh.database.create_nonlinear_loadcases(dead, sd, lives)
+    load_cases = shayesteh.load_cases.get_load_cases()
+    for name in ret:
+        assert name in load_cases
+    assert ret[0] == 'DEAD+0.25Live'
 
 
 
 if __name__ == '__main__':
-    sh = shayesteh()
+    test_set_floor_cracking_for_floor(shayesteh)

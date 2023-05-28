@@ -163,6 +163,18 @@ def test_set_column_dns_overwrite(shayesteh):
     )
     assert True
 
+def test_get_area(shayesteh):
+    area = shayesteh.frame_obj.get_area(
+        '130',
+    )
+    assert area == 40 * 44
+    cover = 6.5
+    area = shayesteh.frame_obj.get_area(
+        '130',
+        cover = cover,
+    )
+    assert area == 40 * (50 - cover)
+
 
 
 
