@@ -136,8 +136,68 @@ class Design:
                 f = interp1d(beam_rebars[2], beam_rebars[10])
                 torsion_area = f(distance) / 2
         area += torsion_area
-        frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
+        if frame_area is None:
+            frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
         return area / frame_area
+    
+    def get_deflection_of_beam(self,
+        dead: list,
+        supper_dead: list,
+        lives: list,
+        beam_name: str,
+        distance: float,
+        location: str = 'top',
+        torsion_area: Union[bool, float] = None,
+        frame_area: Union[bool, float] = None,
+        cover: float= 6,
+        lives_percentage: float = 0.25,
+        filename: str='',
+        ):
+        self.etabs.run_analysis()
+        self.etabs.start_design()
+        print('Getting Rho')
+        rho = self.get_rho(
+            beam_name,
+            distance,
+            location,
+            torsion_area,
+            frame_area,
+            cover,
+        )
+        landa = 2 / (1 + 50 * rho)
+        print(f'{rho=}\n{landa=}')
+        if not filename:
+            filename = f'deflection{beam_name}.EDB'
+        print(f'Save file as {filename}')
+        self.etabs.save_as(filename)
+        beams, columns = self.etabs.frame_obj.get_beams_columns()
+        self.etabs.frame_obj.assign_frame_modifires(
+            frame_names=beams + columns,
+            i22=1,
+            i33=1,
+        )
+        self.etabs.database.set_floor_cracking(type_='Frame')
+        self.etabs.database.set_floor_cracking(type_='Area')
+        lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(
+            dead=dead,
+            supper_dead=supper_dead,
+            lives=lives,
+            lives_percentage=lives_percentage,
+            )
+        self.SapModel.RespCombo.Add('deflection1', 0)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc1, -1)
+        self.SapModel.RespCombo.Add('deflection2', 0)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc2, 1)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, -1)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, landa)
+        if supper_dead:
+            self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -1)
+        self.etabs.run_analysis()
+        
+        
+
+
             
 
 

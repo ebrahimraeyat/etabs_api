@@ -51,3 +51,19 @@ def test_set_phi_joint_shear_aci08(shayesteh):
 def test_get_rho(shayesteh):
     rho = shayesteh.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
+
+def test_get_deflection_of_beam(shayesteh):
+    dead = shayesteh.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = shayesteh.load_patterns.get_special_load_pattern_names(2)
+    l1 = shayesteh.load_patterns.get_special_load_pattern_names(3)
+    l2 = shayesteh.load_patterns.get_special_load_pattern_names(4)
+    l3 = shayesteh.load_patterns.get_special_load_pattern_names(11)
+    lives = l1 + l2 + l3
+    shayesteh.design.get_deflection_of_beam(
+        dead=dead,
+        supper_dead=supper_dead,
+        lives=lives,
+        beam_name='157',
+        distance=972/2,
+    )
+    assert True
