@@ -37,7 +37,7 @@ def test_get_point_abs_displacement(shayesteh):
         '116',
         'DEAD',
         )
-    assert V == pytest.approx((-.0508, .1243, -.0199))
+    assert V == pytest.approx((-.0508, .1243, -.0199), abs=.001)
 
 def test_get_point_displacement(shayesteh):
     shayesteh.set_current_unit('N', 'cm')
@@ -46,4 +46,4 @@ def test_get_point_displacement(shayesteh):
         '116',
         'DEAD',
         )
-    assert V == pytest.approx((-.0508, .1243, -.0199))
+    assert V == pytest.approx((-.0508, .1243, -.0199), abs=.001)

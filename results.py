@@ -32,22 +32,34 @@ class Results:
         from math import pi
         return (2 * pi / Tx, 2 * pi / Ty, i_x, i_y)
 
-    def get_point_xy_displacement(self, point_name, lp_name):
-        x, y, _ = self.get_point_displacement(point_name, lp_name)
+    def get_point_xy_displacement(self,
+            point_name: str,
+            lp_name: str,
+            type_: str='Case', # 'Combo
+            ):
+        x, y, _ = self.get_point_displacement(point_name, lp_name, type_)
         return x, y
     
-    def get_point_displacement(self, point_name, lp_name):
+    def get_point_displacement(self,
+            point_name: str,
+            lp_name: str,
+            type_: str='Case', # 'Combo
+            ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
-        self.SapModel.Results.Setup.SetCaseSelectedForOutput(lp_name)
+        exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         results = self.SapModel.Results.JointDispl(point_name, 0)
         x = results[6][0]
         y = results[7][0]
         z = results[8][0]
         return x, y, z
     
-    def get_point_abs_displacement(self, point_name, lp_name):
+    def get_point_abs_displacement(self,
+            point_name: str,
+            lp_name: str,
+            type_: str='Case', # 'Combo
+        ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
-        self.SapModel.Results.Setup.SetCaseSelectedForOutput(lp_name)
+        exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         results = self.SapModel.Results.JointDisplAbs(point_name, 0)
         x = results[6][0]
         y = results[7][0]
