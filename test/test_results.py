@@ -29,3 +29,21 @@ def test_get_base_react_loadcases(shayesteh):
     assert V[0] == pytest.approx(110709.5, .1)
     assert V[1] == pytest.approx(110709.5, .1)
     assert V[2] == pytest.approx(58251.6, .1)
+
+def test_get_point_abs_displacement(shayesteh):
+    shayesteh.set_current_unit('N', 'cm')
+    shayesteh.run_analysis()
+    V = shayesteh.results.get_point_abs_displacement(
+        '116',
+        'DEAD',
+        )
+    assert V == pytest.approx((-.0508, .1243, -.0199))
+
+def test_get_point_displacement(shayesteh):
+    shayesteh.set_current_unit('N', 'cm')
+    shayesteh.run_analysis()
+    V = shayesteh.results.get_point_displacement(
+        '116',
+        'DEAD',
+        )
+    assert V == pytest.approx((-.0508, .1243, -.0199))
