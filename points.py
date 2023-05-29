@@ -45,8 +45,10 @@ class Points:
         x: float,
         y: float,
         z: float,
+        unlock_model: bool=True,
         ):
-        self.etabs.unlock_model()
+        if unlock_model:
+            self.etabs.unlock_model()
         name = self.SapModel.PointObj.AddCartesian(float(x), float(y), float(z))[0]
         return name
 
