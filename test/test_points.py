@@ -18,5 +18,14 @@ def test_add_point(shayesteh):
     x1, y1, z1 = 1.01, 12, 20
     name = shayesteh.points.add_point(x1, y1, z1)
     coords = shayesteh.points.get_points_coords([name])
-    print(coords[name])
     assert pytest.approx(coords[name], abs=1) == (x1, y1, z1)
+
+def test_add_point_on_beam(shayesteh):
+    shayesteh.set_current_unit('N', 'cm')
+    name = shayesteh.points.add_point_on_beam('115')
+    coords = shayesteh.points.get_points_coords([name])
+    assert pytest.approx(coords[name], abs=1) == (1086.5, 0, 522)
+    # get distance
+    distance = shayesteh.frame_obj.get_length_of_frame(name) / 2
+    shayesteh.points.add_point_on_beam('115', distance=distance)
+    assert pytest.approx(coords[name], abs=1) == (1086.5, 0, 522)

@@ -1,4 +1,5 @@
 from typing import Iterable, Union
+import math
 
 class Points:
     def __init__(
@@ -30,7 +31,6 @@ class Points:
             x2, y2 = p2
         else:
             x2, y2 = self.SapModel.PointObj.GetCoordCartesian(p2)[:2]
-        import math
         d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return d
 
@@ -51,6 +51,25 @@ class Points:
             self.etabs.unlock_model()
         name = self.SapModel.PointObj.AddCartesian(float(x), float(y), float(z))[0]
         return name
+    
+    def add_point_on_beam(self,
+        name: str,
+        distance: Union[str, float]='middle', #start, end 
+        unlock_model: bool=True,
+        ):
+        p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(name)
+        x1, y1, z1 = self.SapModel.PointObj.GetCoordCartesian(p1_name)[:3]
+        x2, y2, z2 = self.SapModel.PointObj.GetCoordCartesian(p2_name)[:3]
+        length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+        if type(distance) == str:
+            if distance == 'middle':
+                distance = length / 2
+        rel = distance / length
+        x = (x2 - x1) * rel + x1
+        y = (y2 - y1) * rel + y1
+        z = (z2 - z1) * rel + z1
+        return self.add_point(x, y, z, unlock_model=unlock_model)
+        
 
 
 
