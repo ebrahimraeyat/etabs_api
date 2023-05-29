@@ -40,6 +40,16 @@ class Points:
             x, y, z, _ = self.SapModel.PointObj.GetCoordCartesian(p)
             points_xyz[p] = (x, y, z)
         return points_xyz
+    
+    def add_point(self,
+        x: float,
+        y: float,
+        z: float,
+        ):
+        self.etabs.unlock_model()
+        name = self.SapModel.PointObj.AddCartesian(float(x), float(y), float(z))[0]
+        return name
+
 
 
 
