@@ -175,6 +175,19 @@ def test_get_area(shayesteh):
     )
     assert area == 40 * (50 - cover)
 
+def test_get_length_of_frame(shayesteh):
+    length = shayesteh.frame_obj.get_length_of_frame(
+        '126',
+        'cm'
+        )
+    assert pytest.approx(length, abs=0.01) == 599.715
+    length = shayesteh.frame_obj.get_length_of_frame(
+        '126',
+        'm'
+        )
+    assert pytest.approx(length, abs=.01) == 5.997
+
+
 
 
 
