@@ -107,7 +107,7 @@ class Design:
     def get_rho(
             self,
             name: str,
-            distance: float,
+            distance: Union[float, str]='middle', # start, end
             location: str = 'top',
             torsion_area: Union[bool, float] = None,
             frame_area: Union[bool, float] = None,
@@ -121,6 +121,13 @@ class Design:
             areas = beam_rebars[6]
         first_dist = beam_rebars[2][0]
         last_dist = beam_rebars[2][-1]
+        if type(distance) == str:
+            if distance == 'start':
+                distance = first_dist
+            elif distance == 'end':
+                distance = last_dist
+            elif distance == 'middle':
+                distance = (last_dist - first_dist) / 2
         if distance < first_dist:
             area = areas[0]
             if not torsion_area:
@@ -130,7 +137,6 @@ class Design:
             if not torsion_area:
                 torsion_area = beam_rebars[10][-1] / 2
         else:
-            import numpy as np
             from scipy.interpolate import interp1d
             f = interp1d(beam_rebars[2], areas)
             area = f(distance)
@@ -147,7 +153,7 @@ class Design:
         supper_dead: list,
         lives: list,
         beam_name: str,
-        distance: float,
+        distance: Union[float, str]='middle', # start, end
         location: str = 'top',
         torsion_area: Union[bool, float] = None,
         frame_area: Union[bool, float] = None,
@@ -191,30 +197,11 @@ class Design:
         self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc1, -1)
         self.SapModel.RespCombo.Add('deflection2', 0)
         self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc2, 1)
-        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, -1)
-        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, landa)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, landa - 1)
         if supper_dead:
-            self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -1)
+            # scale factor set to 0.5 due to xi for 3 month equal to 1.0
+            self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -0.5)
         self.etabs.run_analysis()
-        
-        
-
-
-            
-
-
-
-
-
-
-        
-        
-
-
-
-
-
-
 
 if __name__ == '__main__':
     from pathlib import Path

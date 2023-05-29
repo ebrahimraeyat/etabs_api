@@ -5,7 +5,7 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
+from shayesteh import shayesteh, madadi
 
 def test_set_concrete_framing_type(shayesteh):
     shayesteh.design.set_concrete_framing_type()
@@ -57,14 +57,14 @@ def test_get_rho(shayesteh):
     rho = shayesteh.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
 
-def test_get_deflection_of_beam(shayesteh):
-    dead = shayesteh.load_patterns.get_special_load_pattern_names(1)
-    supper_dead = shayesteh.load_patterns.get_special_load_pattern_names(2)
-    l1 = shayesteh.load_patterns.get_special_load_pattern_names(3)
-    l2 = shayesteh.load_patterns.get_special_load_pattern_names(4)
-    l3 = shayesteh.load_patterns.get_special_load_pattern_names(11)
+def test_get_deflection_of_beam(madadi):
+    dead = madadi.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = madadi.load_patterns.get_special_load_pattern_names(2)
+    l1 = madadi.load_patterns.get_special_load_pattern_names(3)
+    l2 = madadi.load_patterns.get_special_load_pattern_names(4)
+    l3 = madadi.load_patterns.get_special_load_pattern_names(11)
     lives = l1 + l2 + l3
-    shayesteh.design.get_deflection_of_beam(
+    madadi.design.get_deflection_of_beam(
         dead=dead,
         supper_dead=supper_dead,
         lives=lives,

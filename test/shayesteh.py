@@ -109,6 +109,27 @@ def steel(edb="steel.EDB"):
                 software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
             )
         return create_test_file(etabs)
+
+@pytest.fixture
+def madadi(edb="madadi.EDB"):
+    try:
+        etabs = etabs_obj.EtabsModel(backup=False)
+        if etabs.success:
+            filepath = Path(etabs.SapModel.GetModelFilename())
+            if 'test.' in filepath.name:
+                return etabs
+            else:
+                return create_test_file(etabs)
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
+        etabs = etabs_obj.EtabsModel(
+                attach_to_instance=False,
+                backup = False,
+                model_path = Path(__file__).parent / 'files' / edb,
+                software_exe_path=r'G:\program files\Computers and Structures\ETABS 19\ETABS.exe'
+            )
+        return create_test_file(etabs)
         
 
 def create_test_file(etabs, suffix='EDB', filename='test'):
