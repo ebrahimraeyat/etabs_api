@@ -153,45 +153,53 @@ class Design:
         supper_dead: list,
         lives: list,
         beam_name: str,
-        distance: Union[float, str]='middle', # start, end
+        distance_for_calculate_rho: Union[float, str]='middle', # start, end
         location: str = 'top',
         torsion_area: Union[bool, float] = None,
         frame_area: Union[bool, float] = None,
         cover: float= 6,
         lives_percentage: float = 0.25,
         filename: str='',
+        point_for_get_deflection: Union[str, None]=None,
+        is_console: bool=False,
+        rho: Union[float, bool] = None,
         ):
-        self.etabs.run_analysis()
-        self.etabs.start_design()
-        print('Getting Rho')
-        rho = self.get_rho(
-            beam_name,
-            distance,
-            location,
-            torsion_area,
-            frame_area,
-            cover,
-        )
+        if rho is None:
+            self.etabs.run_analysis()
+            self.etabs.start_design()
+            print('Getting Rho ...')
+            rho = self.get_rho(
+                beam_name,
+                distance_for_calculate_rho,
+                location,
+                torsion_area,
+                frame_area,
+                cover,
+            )
         landa = 2 / (1 + 50 * rho)
-        print(f'{rho=}\n{landa=}')
+        print(f'\n{rho=}\n{landa=}')
         if not filename:
             filename = f'deflection{beam_name}.EDB'
-        print(f'Save file as {filename}')
+        print(f'Save file as {filename} ...')
         self.etabs.save_as(filename)
+        print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
         self.etabs.frame_obj.assign_frame_modifires(
             frame_names=beams + columns,
             i22=1,
             i33=1,
         )
+        print("Set floor cracking for beams and floors ...")
         self.etabs.database.set_floor_cracking(type_='Frame')
         self.etabs.database.set_floor_cracking(type_='Area')
+        print("Create nonlinear load cases ...")
         lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(
             dead=dead,
             supper_dead=supper_dead,
             lives=lives,
             lives_percentage=lives_percentage,
             )
+        print("Create deflection load combinations ...")
         self.SapModel.RespCombo.Add('deflection1', 0)
         self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
         self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc1, -1)
@@ -201,7 +209,45 @@ class Design:
         if supper_dead:
             # scale factor set to 0.5 due to xi for 3 month equal to 1.0
             self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -0.5)
+        if (
+            point_for_get_deflection is None and \
+            not is_console and \
+            type(distance_for_calculate_rho) == str
+            ):
+            point_for_get_deflection = point_for_get_deflection = self.etabs.points.add_point_on_beam(
+                name=beam_name,
+                distance=distance_for_calculate_rho,
+                unlock_model=False,
+                )
+        # if supper_dead:
+        self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
+        # else:
+        #     self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         self.etabs.run_analysis()
+        p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
+        p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=1)[2]
+        p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection2', type_='Combo', index=1)[2]
+        p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=1)[2]
+        p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection2', type_='Combo', index=1)[2]
+        print(f'{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
+        if is_console:
+            def1 = p2_def1 - p1_def1
+            def2 = p2_def2 - p1_def2
+            if def1 > 0:
+                def1 *= -1
+            if def2 > 0:
+                def2 *= -1
+        else:
+            def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=1)[2]
+            def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection2', type_='Combo', index=1)[2]
+            def1 = def_def1 - (p1_def1 + p2_def1) / 2
+            def2 = def_def2 - (p1_def2 + p2_def2) / 2
+        print(def1, def2)
+        return def1, def2
+
+
+        
+
 
 if __name__ == '__main__':
     from pathlib import Path

@@ -69,6 +69,24 @@ def test_get_deflection_of_beam(madadi):
         supper_dead=supper_dead,
         lives=lives,
         beam_name='157',
-        distance=972/2,
+        distance_for_calculate_rho='middle',
+    )
+    assert True
+
+def test_get_deflection_of_beam_console(shayesteh):
+    dead = shayesteh.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = shayesteh.load_patterns.get_special_load_pattern_names(2)
+    l1 = shayesteh.load_patterns.get_special_load_pattern_names(3)
+    l2 = shayesteh.load_patterns.get_special_load_pattern_names(4)
+    l3 = shayesteh.load_patterns.get_special_load_pattern_names(11)
+    lives = l1 + l2 + l3
+    shayesteh.design.get_deflection_of_beam(
+        dead=dead,
+        supper_dead=supper_dead,
+        lives=lives,
+        beam_name='129',
+        distance_for_calculate_rho='end', #The frame is reverse
+        is_console=True,
+        rho=0.00579,
     )
     assert True

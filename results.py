@@ -44,26 +44,28 @@ class Results:
             point_name: str,
             lp_name: str,
             type_: str='Case', # 'Combo
+            index: int=0,
             ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         results = self.SapModel.Results.JointDispl(point_name, 0)
-        x = results[6][0]
-        y = results[7][0]
-        z = results[8][0]
+        x = results[6][index]
+        y = results[7][index]
+        z = results[8][index]
         return x, y, z
     
     def get_point_abs_displacement(self,
             point_name: str,
             lp_name: str,
             type_: str='Case', # 'Combo
+            index: int=0,
         ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
-        results = self.SapModel.Results.JointDisplAbs(point_name, 0)
-        x = results[6][0]
-        y = results[7][0]
-        z = results[8][0]
+        results = self.SapModel.Results.JointDispl(point_name, 0)
+        x = results[6][index]
+        y = results[7][index]
+        z = results[8][index]
         return x, y, z
 
     def get_base_react(self,
