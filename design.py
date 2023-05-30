@@ -130,17 +130,17 @@ class Design:
                 distance = (last_dist - first_dist) / 2
         if distance < first_dist:
             area = areas[0]
-            if not torsion_area:
+            if torsion_area is None:
                 torsion_area = beam_rebars[10][0] / 2
         elif distance > last_dist:
             area = areas[-1]
-            if not torsion_area:
+            if torsion_area is None:
                 torsion_area = beam_rebars[10][-1] / 2
         else:
             from scipy.interpolate import interp1d
             f = interp1d(beam_rebars[2], areas)
             area = f(distance)
-            if not torsion_area:
+            if torsion_area is None:
                 f = interp1d(beam_rebars[2], beam_rebars[10])
                 torsion_area = f(distance) / 2
         area += torsion_area
@@ -209,27 +209,26 @@ class Design:
         if supper_dead:
             # scale factor set to 0.5 due to xi for 3 month equal to 1.0
             self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -0.5)
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
+        else:
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         if (
             point_for_get_deflection is None and \
             not is_console and \
             type(distance_for_calculate_rho) == str
             ):
-            point_for_get_deflection = point_for_get_deflection = self.etabs.points.add_point_on_beam(
+            point_for_get_deflection = self.etabs.points.add_point_on_beam(
                 name=beam_name,
                 distance=distance_for_calculate_rho,
                 unlock_model=False,
                 )
-        # if supper_dead:
-        self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
-        # else:
-        #     self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         self.etabs.run_analysis()
         p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
         p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=1)[2]
         p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection2', type_='Combo', index=1)[2]
         p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=1)[2]
         p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection2', type_='Combo', index=1)[2]
-        print(f'{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
+        print(f'\n{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
         if is_console:
             def1 = p2_def1 - p1_def1
             def2 = p2_def2 - p1_def2
@@ -240,9 +239,10 @@ class Design:
         else:
             def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=1)[2]
             def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection2', type_='Combo', index=1)[2]
+            print(f'\n{def_def1=}, {def_def2=}')
             def1 = def_def1 - (p1_def1 + p2_def1) / 2
             def2 = def_def2 - (p1_def2 + p2_def2) / 2
-        print(def1, def2)
+        print(f'\n{def1=}, {def2=}')
         return def1, def2
 
 
