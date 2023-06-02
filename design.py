@@ -177,6 +177,24 @@ class Design:
         rho: Union[float, bool] = None,
         additional_rebars: float=0,
         ):
+        '''
+        dead: a list of Dead loads
+        supper_dead: a list of supper Dead loads
+        lives: a list of live loads
+        beam_name: The name of beam for calculating deflection
+        distance_for_calculate_rho: A string or float length for calculating rho, string can be 'middle', 'start' and 'end'
+        location: location for getting rebar area, 'top' and 'bot'
+        torsion_area: area of torsion rebars, if it None, automatically 1/2 of torsion area added to flextural rebar area
+        frame_area: The area of concrete section, when it is None, obtain automatically
+        cover: cover of beam
+        lives_percentage: live load percentage for considering to calculate short term cracking deflection
+        filename: The etabs file name for creating deflection model
+        point_for_get_deflection: The name of the point for calculate deflection on it, if it is None, for console it is 'start'
+                and for contiues beam it is 'middle'
+        is_console: If beam is console
+        rho: As / bd
+        additional_rebars: Add this to rebar area for calculating rho
+        '''
         text = ''
         if rho is None:
             self.etabs.run_analysis()
