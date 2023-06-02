@@ -90,3 +90,13 @@ def test_get_deflection_of_beam_console(shayesteh):
         rho=0.00579,
     )
     assert True
+
+def test_get_deflection_check_result():
+    import design
+    text = design.get_deflection_check_result(
+        -1.8,
+        -2.4,
+        800,
+    )
+    print(text)
+    assert type(text) == str

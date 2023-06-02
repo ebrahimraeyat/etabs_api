@@ -278,6 +278,62 @@ class Design:
             def2 = def_def2 - (p1_def2 + p2_def2) / 2
         print(f'\n{def1=}, {def2=}')
         return def1, def2, text
+    
+def get_deflection_check_result(
+    def1: float,
+    def2: float,
+    ln: float,
+    ):
+    if def1 < 0:
+        def1 *= -1
+    if def2 < 0:
+        def2 *= -1
+    allow_def1 = ln / 360
+    allow_def2 = ln / 480
+    ret = f'Ln = {ln:.0f} Cm\n'
+    ret += 20 * '-'
+    ret += f'\ncombo1 deflection = {def1:.3f} Cm '
+    if def1 <= allow_def1:
+        ret += f'< Ln / 360 = {allow_def1:.2f} Cm ==> OK'
+    else:
+        ret += f'> Ln / 360 = {allow_def1:.2f} Cm ==> Not OK'
+    # combo 2
+    ret += f'\ncombo2 deflection = {def2:.3f} Cm '
+    if def2 <= allow_def2:
+        ret += f'< Ln / 480 = {allow_def2:.2f} Cm ==> OK\n'
+    else:
+        ret += f'> Ln / 480 = {allow_def2:.2f} Cm ==> Not OK\n'
+    ret += 20 * '-'
+    ret += '\n'
+    ret += 20 * '-'
+    ret += f'\ncombo1 deflection = {def1:.3f} Cm '
+    if def1 <= allow_def1 * 2:
+        ret += f'< Ln / 180 = {allow_def1 * 2:.2f} Cm ==> OK'
+    else:
+        ret += f'> Ln / 180 = {allow_def1 * 2:.2f} Cm ==> Not OK'
+    # combo 2
+    ret += f'\ncombo2 deflection = {def2:.3f} Cm '
+    if def2 <= allow_def2 * 2:
+        ret += f'< Ln / 240 = {allow_def2 * 2:.2f} Cm ==> OK\n'
+    else:
+        ret += f'> Ln / 240 = {allow_def2 * 2:.2f} Cm ==> Not OK\n'
+    ret += 20 * '-'
+    ret += '\n'
+    ret += 20 * '-'
+    ret += '\nIn Common Structures\n'
+    ret += f'\ncombo1 deflection = {def1:.3f} Cm '
+    if def1 <= allow_def1:
+        ret += f'< Ln / 360 = {allow_def1:.2f} Cm ==> OK'
+    else:
+        ret += f'> Ln / 360 = {allow_def1:.2f} Cm ==> Not OK'
+    # combo 2
+    ret += f'\ncombo2 deflection = {def2:.3f} Cm '
+    if def2 <= allow_def2 * 2:
+        ret += f'< Ln / 240 = {allow_def2 * 2:.2f} Cm ==> OK\n'
+    else:
+        ret += f'> Ln / 240 = {allow_def2 * 2:.2f} Cm ==> Not OK\n'
+    ret += 20 * '-'
+    return ret
 
 
         
