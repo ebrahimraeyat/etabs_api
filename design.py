@@ -112,7 +112,9 @@ class Design:
             torsion_area: Union[bool, float] = None,
             frame_area: Union[bool, float] = None,
             cover: float= 0,
+            additional_rebars: float = 0,
         ):
+        text = ''
         self.etabs.set_current_unit('N', 'cm')
         beam_rebars = self.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
         if location == 'top':
@@ -121,13 +123,17 @@ class Design:
             areas = beam_rebars[6]
         first_dist = beam_rebars[2][0]
         last_dist = beam_rebars[2][-1]
+        text += f'The area of main rebar of beam name {name} at {location} in '
         if type(distance) == str:
+            text += f'{distance} of beam = '
             if distance == 'start':
                 distance = first_dist
             elif distance == 'end':
                 distance = last_dist
             elif distance == 'middle':
                 distance = (last_dist - first_dist) / 2
+        else:
+            text += f'{distance:.1f} cm = '
         if distance < first_dist:
             area = areas[0]
             if torsion_area is None:
@@ -143,10 +149,16 @@ class Design:
             if torsion_area is None:
                 f = interp1d(beam_rebars[2], beam_rebars[10])
                 torsion_area = f(distance) / 2
+        text += f'{area:.1f} Cm2\n'
+        text += f'Torsion area = {torsion_area:0.1f} Cm2\n'
         area += torsion_area
         if frame_area is None:
             frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
-        return area / frame_area
+        area += additional_rebars
+        rho = area / frame_area
+        text += f'b x d = {frame_area:.1f} Cm2\n'
+        text += f'Rho = As / bd = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
+        return rho, text
     
     def get_deflection_of_beam(self,
         dead: list,
@@ -163,20 +175,24 @@ class Design:
         point_for_get_deflection: Union[str, None]=None,
         is_console: bool=False,
         rho: Union[float, bool] = None,
+        additional_rebars: float=0,
         ):
+        text = ''
         if rho is None:
             self.etabs.run_analysis()
             self.etabs.start_design()
             print('Getting Rho ...')
-            rho = self.get_rho(
+            rho, text = self.get_rho(
                 beam_name,
                 distance_for_calculate_rho,
                 location,
                 torsion_area,
                 frame_area,
                 cover,
+                additional_rebars,
             )
         landa = 2 / (1 + 50 * rho)
+        text += f'lambda = 2 / (1 + 50 x rho) = 2 / (1 + 50 x {rho:.4f}) = {landa:.2f}'
         print(f'\n{rho=}\n{landa=}')
         if not filename:
             filename = f'deflection{beam_name}.EDB'
@@ -243,7 +259,7 @@ class Design:
             def1 = def_def1 - (p1_def1 + p2_def1) / 2
             def2 = def_def2 - (p1_def2 + p2_def2) / 2
         print(f'\n{def1=}, {def2=}')
-        return def1, def2
+        return def1, def2, text
 
 
         

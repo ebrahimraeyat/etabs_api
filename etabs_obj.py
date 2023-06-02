@@ -229,6 +229,12 @@ class EtabsModel:
         f = Path(self.SapModel.GetModelFilename())
         name = f.name.replace(f.suffix, '')
         return name
+    
+    def get_filename_path_with_suffix(self,
+            suffix: str= '.EDB',
+            ):
+        file_path = Path(self.etabs.SapModel.GetModelFilename())
+        return file_path.with_suffix(suffix)
 
     def add_prefix_suffix_name(self,
             prefix : str = '',

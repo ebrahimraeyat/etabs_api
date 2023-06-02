@@ -54,7 +54,7 @@ def test_set_phi_joint_shear_aci08(shayesteh):
     assert ret[0] == phi_joint_shear
 
 def test_get_rho(shayesteh):
-    rho = shayesteh.design.get_rho('130', distance=0)
+    rho, _ = shayesteh.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
 
 def test_get_deflection_of_beam(madadi):
