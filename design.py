@@ -210,12 +210,34 @@ class Design:
                 additional_rebars,
             )
         landa = 2 / (1 + 50 * rho)
+        p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
         text += f'lambda = 2 / (1 + 50 x rho) = 2 / (1 + 50 x {rho:.4f}) = {landa:.2f}'
         print(f'\n{rho=}\n{landa=}')
         if not filename:
-            filename = f'deflection{beam_name}.EDB'
-        print(f'Save file as {filename} ...')
-        self.etabs.save_as(filename)
+            filename1 = 'deflection_beams.EDB'
+        else:
+            filename1 = filename
+        print(f'Save file as {filename1} ...')
+        self.etabs.save_as(filename1)
+        if (
+            point_for_get_deflection is None and \
+            not is_console and \
+            type(distance_for_calculate_rho) == str
+            ):
+            point_for_get_deflection = self.etabs.points.add_point_on_beam(
+                name=beam_name,
+                distance=distance_for_calculate_rho,
+                unlock_model=False,
+                )
+        if (
+            point_for_get_deflection is None and \
+            is_console
+            ):
+            point_for_get_deflection = 'end'
+        if not filename:
+            filename = f'deflection_b{beam_name}_p{point_for_get_deflection}.EDB'
+            print(f'Save file as {filename} ...')
+            self.etabs.save_as(filename)
         print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
         self.etabs.frame_obj.assign_frame_modifires(
@@ -246,18 +268,7 @@ class Design:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
         else:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
-        if (
-            point_for_get_deflection is None and \
-            not is_console and \
-            type(distance_for_calculate_rho) == str
-            ):
-            point_for_get_deflection = self.etabs.points.add_point_on_beam(
-                name=beam_name,
-                distance=distance_for_calculate_rho,
-                unlock_model=False,
-                )
         self.etabs.run_analysis()
-        p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
         p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=1)[2]
         p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection2', type_='Combo', index=1)[2]
         p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=1)[2]
