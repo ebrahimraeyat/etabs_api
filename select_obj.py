@@ -14,7 +14,7 @@ class SelectObj:
 
     def get_selected_obj_type(self,
             n : int,
-            ) :
+            ) -> list:
         '''
         n: 
             1 = points
