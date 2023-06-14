@@ -233,9 +233,10 @@ class Design:
             point_for_get_deflection is None and \
             is_console
             ):
-            point_for_get_deflection = 'end'
+            point_for_get_deflection = p2_name
         if not filename:
-            filename = f'deflection_b{beam_name}_p{point_for_get_deflection}.EDB'
+            label, story, _ = self.SapModel.FrameObj.GetLabelFromName(beam_name)
+            filename = f'deflection_{label}_{story}_p{point_for_get_deflection}.EDB'
             print(f'Save file as {filename} ...')
             self.etabs.save_as(filename)
         print("Set frame stiffness modifiers ...")
