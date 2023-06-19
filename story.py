@@ -80,6 +80,12 @@ class Story:
         name = self.SapModel.Story.GetStories()[1][0]
         level = self.SapModel.Story.GetStories()[2][0]
         return name, level
+    
+    def storyname_and_levels(self) -> dict:
+        stories_data = self.SapModel.Story.GetStories()
+        names = stories_data[1]
+        levels = stories_data[2]
+        return dict(zip(names, levels))
 
     def get_story_boundbox(self, story_name) -> tuple:
         self.etabs.set_current_unit('kgf', 'cm')

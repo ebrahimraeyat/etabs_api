@@ -80,3 +80,15 @@ def test_get_stories_diaphragms(shayesteh):
         'STORY2': ['D1'],
         'STORY1': ['D1'],
     }
+
+def test_storyname_and_levels(shayesteh):
+    shayesteh.set_current_unit('N', 'mm')
+    story_levels = shayesteh.story.storyname_and_levels()
+    assert story_levels == pytest.approx({
+                    'BASE': 0.0, 
+                    'STORY1': 5220.0, 
+                    'STORY2': 8640.0, 
+                    'STORY3': 12060.0, 
+                    'STORY4': 15480.0, 
+                    'STORY5': 18680.0,
+                    })
