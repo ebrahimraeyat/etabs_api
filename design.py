@@ -218,7 +218,12 @@ class Design:
         else:
             filename1 = filename
         print(f'Save file as {filename1} ...')
-        self.etabs.save_as(filename1)
+        file_path = self.etabs.get_filepath()
+        deflection_path = file_path / 'deflections'
+        if not deflection_path.exists():
+            import os
+            os.mkdir(str(deflection_path))
+        self.SapModel.File.Save(str(deflection_path / filename1))
         if (
             point_for_get_deflection is None and \
             not is_console and \
@@ -238,7 +243,7 @@ class Design:
             label, story, _ = self.SapModel.FrameObj.GetLabelFromName(beam_name)
             filename = f'deflection_{label}_{story}_p{point_for_get_deflection}.EDB'
             print(f'Save file as {filename} ...')
-            self.etabs.save_as(filename)
+            self.SapModel.File.Save(str(deflection_path / filename))
         print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
         self.etabs.frame_obj.assign_frame_modifires(
