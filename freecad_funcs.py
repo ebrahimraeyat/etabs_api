@@ -1,6 +1,8 @@
 from typing import Union
 from pathlib import Path
 
+from PySide2.QtWidgets import QMessageBox
+
 import FreeCAD
 import FreeCADGui
 import Part
@@ -108,7 +110,6 @@ def show_status_message(
 
 def ask_to_unlock(etabs):
     if etabs.SapModel.GetModelIsLocked():
-        from PySide2.QtWidgets import QMessageBox
         if QMessageBox.question(
             None,
             'Unlock',
@@ -117,3 +118,76 @@ def ask_to_unlock(etabs):
             return 'NO'
         else:
             etabs.unlock_model()
+
+
+class GitFailed(RuntimeError):
+    """The call to git returned an error of some kind"""
+
+def show_help(
+        filename: str,
+        software: str = 'civilTools',
+        ):
+    try:
+        import Help
+    except ModuleNotFoundError:
+        if (QMessageBox.question(
+                None,
+                "Install Help",
+                "You must install Help WB to view the manual, do you want to install it?",
+                            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes) == QMessageBox.No):
+            return
+        try:
+            clone_repos(["https://github.com/FreeCAD/FreeCAD-Help.git"])
+            return
+        except:
+            FreeCADGui.runCommand('Std_AddonMgr',0)
+            return
+    software_help_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / f"{software}" / 'help'
+    help_path = software_help_dir / filename
+    Help.show(str(help_path))
+
+def get_git_exe():
+    import shutil
+    git_exe = shutil.which("git")
+    if not git_exe:
+        link = 'https://github.com/git-for-windows/git/releases/download/v2.37.2.windows.2/Git-2.37.2.2-64-bit.exe'
+        link = "<a href='{link}'>here</a>"
+        text = '<span style=" font-size:9pt; font-weight:600; color:#0000ff;">%s</span>'
+        message = '<html>Git not installed on your system, Please download and install it from %s' % text  % link
+        QMessageBox.warning(None, 'Install Git', message)
+        return None
+    return git_exe
+
+def clone_repos(repos: list):
+    import subprocess, os
+    git_exe = get_git_exe()
+    if git_exe is None:
+        return
+    user_path = Path(FreeCAD.getUserAppDataDir() / 'Mod' / 'FreeCAD-Help')
+    old_dir = os.getcwd()
+    failed = False
+    os.chdir(str(user_path.parent))  # Mod folder
+    for repo in repos:
+        final_args = [git_exe, 'clone', f'{repo}:{user_path}']
+        try:
+            subprocess.run(
+                final_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                shell=True # On Windows this will prevent all the pop-up consoles        
+            )
+        except GitFailed as e:
+            FreeCAD.Console.PrintWarning(
+                "Basic git clone failed with the following message:" \
+                + str(e) \
+                + "\n"
+            )
+            failed = True
+    os.chdir(old_dir)
+    if not failed:
+        msg = 'Help installed Successfully.'
+        QMessageBox.information(None, "Successful", msg)
+    else:
+        msg = 'Install failed.'
+        QMessageBox.warning(None, "Failed", msg)
