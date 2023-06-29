@@ -141,8 +141,7 @@ class DatabaseTables:
             df,
             loads_type : dict = {},
             ):
-        etabs_version = self.etabs.get_etabs_main_version()
-        if etabs_version < 20:
+        if self.etabs.etabs_main_version < 20:
             new_columns = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
                                 'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
                                 'Ecc Ratio', 'Top Story', 'Bottom Story',
@@ -215,7 +214,7 @@ class DatabaseTables:
         converted_loads = dict.fromkeys(multi_load_names)
         for i, row in df.loc[filt_multi].iterrows():
             name = row['Name']
-            load_type = 37 if name in drift_load_names else 5
+            load_type = self.etabs.seismic_drift_load_type if name in drift_load_names else 5
             for col in cols:
                 if row[col] == 1:
                     if all((

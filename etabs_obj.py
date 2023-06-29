@@ -131,6 +131,13 @@ class EtabsModel:
             self.area = Area(self)
             self.design = Design(self)
             self.prop_frame = PropFrame(self)
+            self.etabs_main_version = self.get_etabs_main_version()
+            if self.etabs_main_version < 20:
+                self.seismic_drift_text = 'Seismic (Drift)'
+                self.seismic_drift_load_type = 37
+            else:
+                self.seismic_drift_text = 'QuakeDrift'
+                self.seismic_drift_load_type = 61
 
     def get_etabs_main_version(self):
         ver = self.SapModel.GetVersion()

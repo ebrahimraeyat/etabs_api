@@ -233,7 +233,7 @@ class CreateF2kFile(Safe):
         cols = ['Name', 'Type', 'SelfWtMult']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         # remove drift load patterns
-        filt = df['Type'] == 'Seismic (Drift)'
+        filt = df['Type'] == self.etabs.seismic_drift_text
         df = df.loc[~filt]
         # drift_names = df.loc[filt]['Name'].unique()
         df['Type'] = df.Name.apply(get_design_type, args=(self.etabs,))

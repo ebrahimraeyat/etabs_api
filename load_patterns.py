@@ -60,10 +60,9 @@ class LoadPatterns:
         
     def get_drift_load_pattern_names(self):
         '''
-        Drift loadType number is 37, when user ticks the eccentricity of load,
-        etabs creates additional (1/3), (2/3), and (3/3) load when structure is analyzed
+        Drift loadType number is 37 in etabs v19 and 61 in etabs v20
         '''
-        return self.get_special_load_pattern_names(37)
+        return self.get_special_load_pattern_names(self.etabs.seismic_drift_load_type)
 
     def get_load_patterns_in_XYdirection(self, only_ecc=False):
         '''
