@@ -99,6 +99,18 @@ def test_write_seismic_user_coefficient_df(two_earthquakes):
     df = two_earthquakes.database.read(table_key, to_dataframe=True)
     assert len(df) == 14
 
+def test_write_seismic_user_coefficient_df01(two_earthquakes):
+    import pandas as pd
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
+    df = pd.read_pickle(filename)
+    df['C'] = "0.1"
+    two_earthquakes.database.write_seismic_user_coefficient_df(df)
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = two_earthquakes.database.read(table_key, to_dataframe=True)
+    assert len(df) == 14
+    for _, row in df.iterrows():
+        assert row['C'] == '0.1'
+
 def test_write_seismic_user_coefficient_df_overwrite(two_earthquakes):
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'

@@ -131,6 +131,10 @@ class EtabsModel:
             self.area = Area(self)
             self.design = Design(self)
             self.prop_frame = PropFrame(self)
+
+    def get_etabs_main_version(self):
+        ver = self.SapModel.GetVersion()
+        return int(ver[0].split('.')[0])
     
     def close_etabs(self):
         self.SapModel.SetModelIsLocked(False)

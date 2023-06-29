@@ -26,6 +26,10 @@ def create_building():
     building.kx_drift, building.ky_drift = 1.15, 1.2
     return building
 
+def test_get_etabs_main_version(shayesteh):
+    ver = shayesteh.get_etabs_main_version()
+    assert ver == 19
+    
 def test_get_from_list_table(shayesteh):
     data = [['STORY5', 'QX', 'LinStatic', None, None, None, 'Top', '0', '0'],
             ['STORY5', 'QX', 'LinStatic', None, None, None, 'Bottom', '0', '0'],

@@ -86,7 +86,7 @@ class DatabaseTables:
             table_key : str,
             data : Union[list, pd.core.frame.DataFrame],
             fields : Union[list, tuple, bool] = None,
-            ) -> None:
+            ) -> tuple:
         if type(data) == pd.core.frame.DataFrame:
             if fields is None:
                 fields, data = self.get_fields_and_data_from_dataframe(data)
@@ -96,8 +96,8 @@ class DatabaseTables:
                 else:
                     return False
         self.SapModel.DatabaseTables.SetTableForEditingArray(table_key, 0, fields, 0, data)
-        self.apply_table()
-        return True
+        NumFatalErrors, ret = self.apply_table()
+        return True, NumFatalErrors, ret
 
     def apply_table(self):
         if self.SapModel.GetModelIsLocked():
@@ -133,34 +133,27 @@ class DatabaseTables:
                 del df[col]
 
     def write_seismic_user_coefficient(self, TableKey, FieldsKeysIncluded, TableData):
-        FieldsKeysIncluded1 = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
-                            'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
-                            'Ecc Ratio', 'Top Story', 'Bottom Story',
-                            ]
-        if len(FieldsKeysIncluded) == len(FieldsKeysIncluded1) + 2:
-            FieldsKeysIncluded1.extend(['C', 'K'])
-        else:
-            FieldsKeysIncluded1.extend(['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm',
-            'Ecc Overwrite Length', 'C', 'K'])
-        assert len(FieldsKeysIncluded) == len(FieldsKeysIncluded1)
-        self.SapModel.DatabaseTables.SetTableForEditingArray(TableKey, 0, FieldsKeysIncluded1, 0, TableData)
-        NumFatalErrors, ret = self.apply_table()
-        return NumFatalErrors, ret
+        df = self.reshape_data_to_df(FieldsKeysIncluded, TableData)
+        ret = self.write_seismic_user_coefficient_df(df)
+        return ret
     
     def write_seismic_user_coefficient_df(self, 
             df,
             loads_type : dict = {},
             ):
-        new_columns = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
-                            'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
-                            'Ecc Ratio', 'Top Story', 'Bottom Story',
-                            ]
-        if len(df.columns) == len(new_columns) + 2:
-            new_columns.extend(['C', 'K'])
-        else:
-            new_columns.extend(['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm',
-            'Ecc Overwrite Length', 'C', 'K'])
-        assert len(df.columns) == len(new_columns)
+        etabs_version = self.etabs.get_etabs_main_version()
+        if etabs_version < 20:
+            new_columns = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
+                                'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
+                                'Ecc Ratio', 'Top Story', 'Bottom Story',
+                                ]
+            if len(df.columns) == len(new_columns) + 2:
+                new_columns.extend(['C', 'K'])
+            else:
+                new_columns.extend(['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm',
+                'Ecc Overwrite Length', 'C', 'K'])
+            assert len(df.columns) == len(new_columns)
+            df.columns = new_columns
         # create new load patterns
         x, y = self.etabs.load_patterns.get_load_patterns_in_XYdirection()
         current_names = x.union(y)
@@ -169,9 +162,9 @@ class DatabaseTables:
                 load_type = loads_type.get(name, 5)
                 self.SapModel.LoadPatterns.Add(name, load_type, 0, True)
                 current_names.add(name)
-        df.columns = new_columns
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        self.apply_data(table_key, df)
+        ret = self.apply_data(table_key, df)
+        return ret[1:]
 
     def expand_seismic_load_patterns(self,
         equal_names : dict = {
@@ -453,7 +446,7 @@ class DatabaseTables:
         # fields = ('Name', 'Exclude Group', 'Mass Source', 'Stiffness Type', 'Load Type', 'Load Name', 'Load SF', 'Design Type', 'User Design Type')
         # df = df[['Name', 'Group', 'MassSource', 'StiffType', 'LoadType', 'LoadName', 'LoadSF', 'DesignType', 'UserDesType']]
         ret = self.apply_data(table_key, df, etabs_fields)
-        if not ret:
+        if not ret[0]:
             all_loadcases = list(df['Name'].unique())
             for loadcase in all_loadcases:
                 temp_df = df.loc[df['Name'] == loadcase]
@@ -470,7 +463,7 @@ class DatabaseTables:
         fields = ('Name', 'Type', 'Is Auto', 'Load Name', 'SF', 'Notes')
         df = df[['Name', 'Type', 'IsAuto', 'LoadName', 'SF', 'Notes']]
         ret = self.apply_data(table_key, df, fields)
-        if not ret:
+        if not ret[0]:
             all_loadcases = self.etabs.load_cases.get_load_cases()
             for _, row in df.iterrows():
                 name = row['Name']
