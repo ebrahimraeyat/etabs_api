@@ -70,7 +70,9 @@ def test_get_seismic_load_cases(shayesteh):
 @pytest.mark.getmethod
 def test_get_seismic_drift_load_cases(shayesteh):
     seismic_drift_load_cases = shayesteh.load_cases.get_seismic_drift_load_cases()
-    assert len(seismic_drift_load_cases) == 6
+    assert len(seismic_drift_load_cases) == 2
+    assert seismic_drift_load_cases == ['EXDRIFT', 'EYDRIFT']
+
 
 @pytest.mark.getmethod
 def test_get_xy_seismic_load_cases(shayesteh):

@@ -179,7 +179,7 @@ class LoadCases:
             load_case_type = self.SapModel.LoadCases.GetTypeOAPI(lc)[0]
             if load_case_type == 1:  # Static Linear
                 for lp in self.SapModel.LoadCases.StaticLinear.GetLoads(lc)[2]:
-                    if self.SapModel.LoadPatterns.GetLoadType(lp)[0] == 37:  # seismic load pattern
+                    if self.SapModel.LoadPatterns.GetLoadType(lp)[0] == self.etabs.seismic_drift_load_type:  # seismic load pattern
                         seismic_drift_load_cases.append(lc)
                         break
         return seismic_drift_load_cases
