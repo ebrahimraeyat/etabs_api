@@ -1203,7 +1203,10 @@ class DatabaseTables:
                 names = self.etabs.area.get_names_of_areas_of_type(type_='floor')
         df = pd.DataFrame(names)
         df['Consider for Cracking'] = 'Yes'
-        df.columns = ['UniqueName', 'Consider for Cracking']
+        if self.etabs.etabs_main_version < 20:
+            df.columns = ['UniqueName', 'Consider for Cracking']
+        else:
+            df.columns = ['UniqueName', 'Consider']
         self.write(table_key=table_key, data=df)
 
     def create_nonlinear_loadcases(self,
