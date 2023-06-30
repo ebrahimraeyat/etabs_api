@@ -275,10 +275,14 @@ class Design:
         else:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         self.etabs.run_analysis()
-        p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=1)[2]
-        p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection2', type_='Combo', index=1)[2]
-        p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=1)[2]
-        p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection2', type_='Combo', index=1)[2]
+        if self.etabs.etabs_main_version < 20:
+            index = 1
+        else:
+            index = 0
+        p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=index)[2]
+        p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection2', type_='Combo', index=index)[2]
+        p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=index)[2]
+        p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection2', type_='Combo', index=index)[2]
         print(f'\n{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
         if is_console:
             def1 = p2_def1 - p1_def1
@@ -288,8 +292,8 @@ class Design:
             if def2 > 0:
                 def2 *= -1
         else:
-            def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=1)[2]
-            def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection2', type_='Combo', index=1)[2]
+            def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=index)[2]
+            def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection2', type_='Combo', index=index)[2]
             print(f'\n{def_def1=}, {def_def2=}')
             def1 = def_def1 - (p1_def1 + p2_def1) / 2
             def2 = def_def2 - (p1_def2 + p2_def2) / 2
