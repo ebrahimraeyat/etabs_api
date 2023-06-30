@@ -294,7 +294,7 @@ def test_get_design_load_combinations_steel(steel):
     steel.database.get_design_load_combinations('steel')
 
 def test_create_nonlinear_loadcases(shayesteh):
-    dead = ['DEAD']
+    dead = ['Dead']
     sd = []
     lives = ['LPART', 'LRED']
     ret = shayesteh.database.create_nonlinear_loadcases(dead, sd, lives)
@@ -302,6 +302,17 @@ def test_create_nonlinear_loadcases(shayesteh):
     for name in ret:
         assert name in load_cases
     assert ret[0] == 'DEAD+0.25Live'
+
+def test_create_nonlinear_loadcases_01(shayesteh):
+    dead = ['Dead']
+    sd = ['S-DEAD']
+    lives = ['Live', 'Live-0.5', 'L-RED']
+    ret = shayesteh.database.create_nonlinear_loadcases(dead, sd, lives)
+    load_cases = shayesteh.load_cases.get_load_cases()
+    for name in ret:
+        assert name in load_cases
+    assert ret[0] == 'Dead+S-DEAD+0.25Live'
+
 
 
 

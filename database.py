@@ -1215,18 +1215,28 @@ class DatabaseTables:
         lives: list,
         lives_percentage: float = 0.25,
         ):
+        if self.etabs.etabs_main_version < 20:
+            load_sf = 'Load SF'
+            load_type = 'Load Type'
+            cracked_option = 'Cracked Option'
+            load_name = 'Load Name'
+        else:
+            load_sf = 'LoadSF'
+            load_type = 'LoadType'
+            cracked_option = 'CrackedOpt'
+            load_name = 'LoadName'
         cols = ['Name',
                 # 'Mass Source', 'Initial Condition',
-                'Load Type',
-                'Load Name',
-                'Load SF',
+                load_type,
+                load_name,
+                load_sf,
                 # 'Modal Case',
-                'Cracked Option',
+                cracked_option,
                 # 'Displ Tolerance', 'Max Iterations',
                 ]
         import pandas as pd
         df = pd.DataFrame(columns=cols)
-        df['Load Name'] = (dead + supper_dead + lives) * 2 + dead
+        df[load_name] = (dead + supper_dead + lives) * 2 + dead
         all_len = len(dead + supper_dead + lives)
         dead_sd_len = len(dead + supper_dead)
         # load names
@@ -1238,9 +1248,9 @@ class DatabaseTables:
         lc2 = f'{dead_name}+{supper_dead_name}Live'
         lc3 = dead_name + '_NL'
         df['Name'] = [lc1] * all_len + [lc2] * all_len + [lc3] * len(dead)
-        df['Load SF'] = ['1'] * dead_sd_len + [f'{lives_percentage}'] * len(lives) + ['1'] * all_len + ['1'] * len(dead)
-        df['Load Type'] = 'Load'
-        df['Cracked Option'] = 'Short Term'
+        df[load_sf] = ['1'] * dead_sd_len + [f'{lives_percentage}'] * len(lives) + ['1'] * all_len + ['1'] * len(dead)
+        df[load_type] = 'Load'
+        df[cracked_option] = 'Short Term'
         # modal_case = self.etabs.load_cases.get_modal_loadcase_name()
         # df['Mass Source'] = 'Previous'
         # df['Initial Condition'] = 'Unstressed'
@@ -1248,6 +1258,7 @@ class DatabaseTables:
         # df['Displ Tolerance'] = '.005'
         # df['Max Iterations'] = '30'
         table_key = 'Load Case Definitions - Nonlinear Static'
+        print(df)
         self.write(table_key, df)
         return lc1, lc2, lc3
 
