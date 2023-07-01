@@ -484,10 +484,14 @@ class Area:
                                                     ):
         df = self.get_shell_uniform_loads(df1=df)
         df = df[['UniqueName', 'LoadPattern', 'Direction', 'Load']]
-        df.columns = ['UniqueName', 'Load Pattern', 'Direction', 'Load']
+        if self.etabs.etabs_main_version < 20:
+            df.columns = ['UniqueName', 'Load Pattern', 'Direction', 'Load']
+            df2 = pd.DataFrame(columns=['UniqueName', 'Load Set'])
+        else:
+            df.columns = ['UniqueName', 'LoadPattern', 'Dir', 'Load']
+            df2 = pd.DataFrame(columns=['UniqueName', 'LoadSet'])
         table_key = 'Area Load Assignments - Uniform'
         self.etabs.database.apply_data(table_key, df)
-        df2 = pd.DataFrame(columns=['UniqueName', 'Load Set'])
         self.etabs.database.apply_data('Area Load Assignments - Uniform Load Sets', df2)
         return True
 
