@@ -114,7 +114,7 @@ def update(repos_path: list):
 
 
 def restart_freecad():
-    # return
+    return
     """Shuts down and restarts FreeCAD"""
     # args = QtWidgets.QApplication.arguments()[1:]
     FreeCADGui.getMainWindow().deleteLater()

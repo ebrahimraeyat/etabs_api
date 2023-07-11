@@ -76,9 +76,9 @@ class Section:
                       self.Ry, self.Zx, self.Zy, self.J, self.cw, secType)
         return s
 
-def test_import_sections_to_etabs(shayesteh):
+def test_import_sections_to_etabs():
     sections = [Section(140), Section(160)]
-    ret = shayesteh.sections.import_sections_to_etabs(sections)
+    ret = etabs.sections.import_sections_to_etabs(sections)
     assert ret == {0}
 
 # def test_get_section_property_FieldsKeysIncluded():
@@ -97,7 +97,7 @@ def test_import_sections_to_etabs(shayesteh):
 #     assert ret == FieldsKeysIncluded1
 
 # @pytest.mark.section
-# def test_write_section_names_to_etabs(shayesteh):
+# def test_write_section_names_to_etabs():
 #     sections = []
 #     for d in (140, 160, 180, 200, 220, 240, 270, 300):
 #         sec = Section(d)
@@ -107,7 +107,7 @@ def test_import_sections_to_etabs(shayesteh):
 #     assert ret == {0}
 
 # # @pytest.mark.section
-# def test_apply_sections_to_etabs(shayesteh):
+# def test_apply_sections_to_etabs():
 #     sections = [Section(140)]
 #     NumFatalErrors, ret = etabs.apply_sections_to_etabs(sections)
 #     assert NumFatalErrors == 0

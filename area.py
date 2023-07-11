@@ -287,7 +287,6 @@ class Area:
             )
 
 
-    
     @staticmethod
     def get_vertex_from_point(point):
         return Part.Vertex(point.x, point.y, point.z)
@@ -305,14 +304,16 @@ class Area:
         unit_weights = self.etabs.material.get_unit_weight_of_materials()
         df['UnitWeight'] = df['Material'].map(unit_weights)
         convert_types = {
-            'Depth': float,
-            'Thickness': float,
-            'WidthTop': float,
-            'WidthBot': float,
-            'RibSpacing1': float,
-            'RibSpacing2': float,
-                        'WMod': float,
+            'Depth',
+            'Thickness',
+            'WidthTop',
+            'WidthBot',
+            'RibSpacing1',
+            'RibSpacing2',
+            'WMod',
         }
+        convert_types = convert_types.intersection(df.columns)
+        convert_types = {key: float for key in convert_types}
         df = df.astype(convert_types)
         # flat slabs
         thickness_names = ['Slab', 'Drop', 'Stiff', 'Mat', 'Footing']

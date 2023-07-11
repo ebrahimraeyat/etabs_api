@@ -1037,6 +1037,7 @@ class DatabaseTables:
         '''
         get base points coordinates and related column dimensions
         '''
+        self.etabs.run_analysis()
         if joint_design_reactions_df is None:
             joint_design_reactions_df = self.get_joint_design_reactions()
         df = pd.DataFrame()

@@ -8,16 +8,16 @@ sys.path.insert(0, str(etabs_api_path))
 from shayesteh import shayesteh
 
 @pytest.mark.getmethod
-def test_names(shayesteh):
-    names = shayesteh.group.names()
+def test_names():
+    names = etabs.group.names()
     assert len(names) == 1
     assert names == ('All',)
 
 @pytest.mark.setmethod
-def test_add(shayesteh):
-    ret = shayesteh.group.add('sec')
+def test_add():
+    ret = etabs.group.add('sec')
     assert ret
-    names = shayesteh.group.names()
+    names = etabs.group.names()
     assert 'sec' in names
-    ret = shayesteh.group.add('sec')
+    ret = etabs.group.add('sec')
     assert not ret
