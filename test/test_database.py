@@ -244,6 +244,20 @@ def test_create_nonlinear_loadcases():
         assert name in load_cases
     assert ret[0] == 'Dead+S-DEAD+0.25Live'
 
+def test_add_grid_lines():
+    data = [
+    'G1', 'X (Cartesian)', '1', '140.0', 'End', 'Yes',
+    'G1', 'X (Cartesian)', '2', '250.0', 'End', 'Yes',
+    'G1', 'Y (Cartesian)', 'BF', '6130.0', 'Start', 'Yes',
+    'G1', 'Y (Cartesian)', 'BG', '290.0', 'Start', 'Yes',
+    ]
+    etabs.database.add_grid_lines(data)
+    table_key = 'Grid Definitions - Grid Lines'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert len(df) == 4
+    assert set(df.Ordinate) == {'140', '250', '6130', '290'}
+
+
 
 
 

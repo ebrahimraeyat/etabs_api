@@ -1262,6 +1262,22 @@ class DatabaseTables:
         print(df)
         self.write(table_key, df)
         return lc1, lc2, lc3
+    
+    def add_grid_lines(self,
+                       data: list,
+                       len_unit: str='mm',
+                       ):
+        self.etabs.unlock_model()
+        self.etabs.set_current_unit('N', len_unit)
+        table_key = 'Grid Definitions - Grid Lines'
+        if self.etabs.etabs_main_version > 19:
+            grid_line_type = 'LineType'
+            bubble_location = 'BubbleLoc'
+        else:
+            grid_line_type = 'Grid Line Type'
+            bubble_location = 'Bubble Location'
+        fields = ['Name', grid_line_type, 'ID', 'Ordinate', bubble_location, 'Visible']
+        self.etabs.database.apply_data(table_key, data, fields)
 
 if __name__ == '__main__':
     from pathlib import Path

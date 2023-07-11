@@ -5,6 +5,7 @@ import etabs_obj
 
 global etabs
 global open_model
+version = 20
 
 def etabs_model(
         edb: str="shayesteh.EDB",
@@ -90,7 +91,6 @@ def get_all_open_software(
     return softwares
                         
 
-version = 19
 
 etabs, new_instance = etabs_model(version=version)
 # register_version = etabs.etabs_main_version
