@@ -257,6 +257,17 @@ def test_add_grid_lines():
     assert len(df) == 4
     assert set(df.Ordinate) == {'140', '250', '6130', '290'}
 
+def test_set_cracking_analysis_option():
+    min_tension_ratio = .1
+    min_compression_ratio = .2
+    etabs.database.set_cracking_analysis_option(
+        min_tension_ratio=min_tension_ratio,
+        min_compression_ratio=min_compression_ratio,
+        )
+    table_key = 'Analysis Options - Cracking Analysis Options'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert list(df.iloc[0]) == ['User and Designed', str(min_tension_ratio), str(min_compression_ratio)]
+
 
 
 

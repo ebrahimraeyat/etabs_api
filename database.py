@@ -1279,6 +1279,21 @@ class DatabaseTables:
         fields = ['Name', grid_line_type, 'ID', 'Ordinate', bubble_location, 'Visible']
         self.etabs.database.apply_data(table_key, data, fields)
 
+    def set_cracking_analysis_option(self,
+        min_tension_ratio: float= .0018,
+        min_compression_ratio: float=0,
+        ):
+        assert min_tension_ratio < 1
+        assert min_compression_ratio < 1
+        table_key = 'Analysis Options - Cracking Analysis Options'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        df.iloc[0] = ['User and Designed', str(min_tension_ratio), str(min_compression_ratio)]
+        if self.etabs.etabs_main_version < 20:
+            df.columns = ['Reinforcement Source', 'Minimum Tension Ratio', 'Minimum Compression Ratio']
+        self.etabs.database.write(table_key, df)
+
+
+
 if __name__ == '__main__':
     from pathlib import Path
     current_path = Path(__file__).parent
