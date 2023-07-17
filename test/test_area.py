@@ -58,5 +58,18 @@ def test_deck_plate_equivalent_height_according_to_volume():
     )
     assert pytest.approx(h_equal, abs=.01) == 1340.357
 
+def test_calculate_rho():
+    import area
+    rho_top, rho_bot = area.calculate_rho(
+        s=700, d=300, tw=120, hc=50, as_top=204, as_bot=308, fill=True
+    )
+    assert pytest.approx(rho_top, abs=.00001) == .00097
+    assert pytest.approx(rho_bot, abs=.00001) == .001466
+    rho_top, rho_bot = area.calculate_rho(
+        s=800, d=380, tw=130, hc=100, as_top=204, as_bot=308, fill=False
+    )
+    assert pytest.approx(rho_top, abs=.00001) == .00138
+    assert pytest.approx(rho_bot, abs=.00001) == .002096
+
 if __name__ == '__main__':
     test_calculate_slab_weight_per_area()

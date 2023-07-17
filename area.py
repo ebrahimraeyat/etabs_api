@@ -537,6 +537,42 @@ def calculate_equivalent_height_according_to_volume(
     hw = (d - hc)
     equal_height = d - (s1 - tw1) * (s2 - tw2) * hw / (s1 * s2)
     return equal_height
+
+def calculate_rho(
+        s: float,
+        d: float,
+        tw: float,
+        hc: float,
+        as_top: float,
+        as_bot: float,
+        fill: bool=False,
+    ):
+    '''
+    s: Spacing of Ribs that are Parallel to Slab 1-Axis
+    d: Overall Depth
+    tw: Average Stem Width
+    hc: Slab Thickness
+    as_top: Area of top rebars
+    as_bot: Area of bottom rebars
+    fill: calculate rho according to fill slab or not
+    return the equivalent height of slab
+    '''
+    if fill:
+        h = d
+    else:
+        h = calculate_equivalent_height_according_to_volume(
+            s,
+            s,
+            d,
+            tw,
+            tw,
+            hc,
+        )
+    rho_top = as_top / (s * h)
+    rho_bot = as_bot / (s * h)
+    return rho_top, rho_bot
+
+
     
 
 if __name__ == '__main__':
