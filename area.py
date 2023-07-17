@@ -546,6 +546,7 @@ def calculate_rho(
         as_top: float,
         as_bot: float,
         fill: bool=False,
+        two_way: bool=True,
     ):
     '''
     s: Spacing of Ribs that are Parallel to Slab 1-Axis
@@ -560,20 +561,28 @@ def calculate_rho(
     if fill:
         h = d
     else:
-        h = calculate_equivalent_height_according_to_volume(
-            s,
-            s,
-            d,
-            tw,
-            tw,
-            hc,
-        )
+        if two_way:
+            h = calculate_equivalent_height_according_to_volume(
+                s,
+                s,
+                d,
+                tw,
+                tw,
+                hc,
+            )
+        else:
+            h = calculate_equivalent_height_according_to_volume(
+                s,
+                1,
+                d,
+                tw,
+                0,
+                hc,
+            )
     rho_top = as_top / (s * h)
     rho_bot = as_bot / (s * h)
     return rho_top, rho_bot
 
-
-    
 
 if __name__ == '__main__':
     import sys
