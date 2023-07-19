@@ -438,6 +438,7 @@ def get_mabhas6_load_combinations(
                     '714'  : {'Dead':0.9, 'EYN':-1, 'EX': 0.3, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
                     '715'  : {'Dead':0.9, 'EYP':-1, 'EX':-0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
                     '716'  : {'Dead':0.9, 'EYN':-1, 'EX':-0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                    '81'  : {'EV':-1},
                 }
             elif way == "ASD":
                 return {
@@ -562,6 +563,7 @@ def get_mabhas6_load_combinations(
                     '714'  : {'Dead':0.9, 'EYN':-1, 'EX': 0.3, 'EV':-1},
                     '715'  : {'Dead':0.9, 'EYP':-1, 'EX':-0.3, 'EV':-1},
                     '716'  : {'Dead':0.9, 'EYN':-1, 'EX':-0.3, 'EV':-1},
+                    '81'  : {'EV':-1},
                 }
             elif way == "ASD":
                 return {
@@ -644,18 +646,3 @@ def get_mabhas6_load_combinations(
                     '1023' : {'Dead':0.6, 'EY' :-0.7, 'EX': 0.21, 'EV':-0.7},
                     '1024' : {'Dead':0.6, 'EY' :-0.7, 'EX':-0.21, 'EV':-0.7},
                 }
-
-
-
-
-
-
-
-
-    
-    
-        
-        
-        
-
-    
