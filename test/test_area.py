@@ -5,7 +5,7 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'shayesteh19' not in dir(__builtins__):
+if 'etabs' not in dir(__builtins__):
     from shayesteh import *
 
 FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'

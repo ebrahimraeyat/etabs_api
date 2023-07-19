@@ -6,7 +6,8 @@ from unittest.mock import Mock
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh, get_temp_filepath
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import *
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -29,6 +30,16 @@ def create_building():
 def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
     assert ver == 19
+
+def test_get_filename_with_suffix():
+    open_model(etabs, 'shayesteh.EDB')
+    name = etabs.get_filename_with_suffix()
+    assert name == f'test{version}.EDB'
+    open_model(etabs, "madadi.EDB")
+    name = etabs.get_filename_with_suffix()
+    assert name == f'test{version}.EDB'
+    name = etabs.get_filename_with_suffix('.e2k')
+    assert name == f'test{version}.e2k'
     
 def test_get_from_list_table():
     data = [['STORY5', 'QX', 'LinStatic', None, None, None, 'Top', '0', '0'],
