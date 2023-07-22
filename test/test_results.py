@@ -5,7 +5,8 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import *
 
 @pytest.mark.getmethod
 def test_get_xy_period():
@@ -47,3 +48,48 @@ def test_get_point_displacement():
         'DEAD',
         )
     assert V == pytest.approx((-.0508, .1243, -.0199), abs=.001)
+
+def test_get_point_displacement_nonlinear_cases():
+    # create nonlinear combos
+    open_model(etabs, 'khiabany.EDB')
+    dead = ['Dead']
+    sd = ['S-DEAD']
+    lives = ['Live', 'Live-0.5', 'L-RED']
+    ret = etabs.database.create_nonlinear_loadcases(dead, sd, lives)
+    # nonlinear load combinations
+    print("Create deflection load combinations ...")
+    etabs.SapModel.RespCombo.Add('deflection1', 0)
+    etabs.SapModel.RespCombo.SetCaseList('deflection1', 0, ret[1], 1)
+    etabs.SapModel.RespCombo.SetCaseList('deflection1', 0, ret[0], -1)
+    etabs.set_current_unit('N', 'cm')
+    etabs.run_analysis()
+    etabs.load_cases.select_load_cases(ret)
+    V = etabs.results.get_point_displacement(
+        '~215',
+        'Dead+S-DEAD+0.25Live',
+        item_type_elm=1,
+        )
+    assert V == pytest.approx((.1478, 0, 0), abs=.001)
+    V = etabs.results.get_point_displacement(
+        '~215',
+        'Dead+S-DEAD+0.25Live',
+        index=1,
+        item_type_elm=1,
+        )
+    assert V == pytest.approx((0, -0.03779, -0.22628), abs=.001)
+    V = etabs.results.get_point_displacement(
+        '~215',
+        'deflection1',
+        type_='Combo',
+        item_type_elm=1,
+        )
+    assert V == pytest.approx(( 0.15553, 0.03779, 0.22628), abs=.001)
+    V = etabs.results.get_point_displacement(
+        '~215',
+        'deflection1',
+        type_='Combo',
+        index=1,
+        item_type_elm=1,
+        )
+    assert V == pytest.approx(( -0.1472, -0.0336, -0.2336), abs=.001)
+    

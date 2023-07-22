@@ -45,10 +45,11 @@ class Results:
             lp_name: str,
             type_: str='Case', # 'Combo
             index: int=0,
+            item_type_elm: int=0,
             ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
-        results = self.SapModel.Results.JointDispl(point_name, 0)
+        results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
         x = results[6][index]
         y = results[7][index]
         z = results[8][index]
@@ -59,10 +60,11 @@ class Results:
             lp_name: str,
             type_: str='Case', # 'Combo
             index: int=0,
+            item_type_elm: int=0,
         ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
-        results = self.SapModel.Results.JointDispl(point_name, 0)
+        results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
         x = results[6][index]
         y = results[7][index]
         z = results[8][index]
