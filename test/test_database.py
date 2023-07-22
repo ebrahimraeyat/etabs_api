@@ -195,6 +195,27 @@ def test_expand_design_combos():
     assert len(dfs) == 1
     assert list(dfs.keys())[0] == 'Concrete Frame Design Load Combination Data'
 
+def test_get_shell_joints():
+    open_model(etabs=etabs, filename="khiabany.EDB")
+    ret = etabs.database.get_shell_joints(shell_names=['4'])
+    if version < 20:
+        assert len(ret['4']) == 15
+        assert set(ret['4']['~199']) == set([5750, -1700, 15840])
+    else:
+        assert len(ret['4']) == 16
+        assert set(ret['4']['~208']) == set([5750, -1700, 15840])
+    # multi shells
+    shells = ['4', '15', '29']
+    ret = etabs.database.get_shell_joints(shell_names=shells)
+    assert len(ret) == 3
+    assert set(ret.keys()) == set(shells)
+    if version < 20:
+        assert len(ret['4']) == 15
+        assert set(ret['4']['~199']) == set([5750, -1700, 15840])
+    else:
+        assert len(ret['4']) == 16
+        assert set(ret['4']['~208']) == set([5750, -1700, 15840])
+
 
 def test_apply_expand_design_combos():
     open_model(etabs=etabs, filename="shayesteh.EDB")
