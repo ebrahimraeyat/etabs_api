@@ -70,6 +70,24 @@ class Results:
         z = results[8][index]
         return x, y, z
 
+    def get_points_displacement(self,
+            point_names: list,
+            lp_name: str,
+            type_: str='Case', # 'Combo
+            index: int=0,
+            item_type_elm: int=0,
+            ):
+        self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
+        exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
+        displacements = {}
+        for point_name in point_names:
+            results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
+            x = results[6][index]
+            y = results[7][index]
+            z = results[8][index]
+            displacements[point_name] = (x, y, z)
+        return displacements
+    
     def get_base_react(self,
             loadcases: Union[list, bool] = None,
             directions: Union[list, bool] = None,

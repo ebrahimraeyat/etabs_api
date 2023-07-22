@@ -49,8 +49,17 @@ def test_get_point_displacement():
         )
     assert V == pytest.approx((-.0508, .1243, -.0199), abs=.001)
 
+def test_get_points_displacement():
+    etabs.set_current_unit('N', 'cm')
+    etabs.run_analysis()
+    V = etabs.results.get_points_displacement(
+        ['116'],
+        'DEAD',
+        )
+    assert V['116'] == pytest.approx((-.0508, .1243, -.0199), abs=.001)
+
 def test_get_point_displacement_nonlinear_cases():
-    # create nonlinear combos
+    # create nonlinear cases
     open_model(etabs, 'khiabany.EDB')
     dead = ['Dead']
     sd = ['S-DEAD']
@@ -92,4 +101,6 @@ def test_get_point_displacement_nonlinear_cases():
         item_type_elm=1,
         )
     assert V == pytest.approx(( -0.1472, -0.0336, -0.2336), abs=.001)
+
+
     
