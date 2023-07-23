@@ -216,6 +216,36 @@ def test_get_shell_joints():
         assert len(ret['4']) == 16
         assert set(ret['4']['~208']) == set([5750, -1700, 15840])
 
+def test_area_mesh_joints():
+    # open_model(etabs=etabs, filename="khiabany.EDB")
+    ret = etabs.database.area_mesh_joints(areas=['4'])
+    assert len(ret) == 2
+    if version < 20:
+        assert len(ret[0]) == 0
+        assert len(ret[1]['4'].keys()) == 13
+        assert set(ret[1]['4']['4-1']) == set(['99', '~199', '~200', '~201'])
+        for value in ret[1]['4'].values():
+            assert len(value) == 4
+    # else:
+    #     assert len(ret['4']) == 16
+    #     assert set(ret['4']['~208']) == set([5750, -1700, 15840])
+    # # multi shells
+    areas = ['4', '15', '29']
+    ret = etabs.database.area_mesh_joints(areas=areas)
+    assert len(ret) == 2
+    if version < 20:
+        assert len(ret[0]) == 0
+        assert len(ret[1]['4'].keys()) == 13
+        assert set(ret[1]['4']['4-1']) == set(['99', '~199', '~200', '~201'])
+        for area in areas:
+            for value in ret[1][area].values():
+                assert len(value) == 4
+    #     assert len(ret['4']) == 15
+    #     assert set(ret['4']['~199']) == set([5750, -1700, 15840])
+    # else:
+    #     assert len(ret['4']) == 16
+    #     assert set(ret['4']['~208']) == set([5750, -1700, 15840])
+
 
 def test_apply_expand_design_combos():
     open_model(etabs=etabs, filename="shayesteh.EDB")

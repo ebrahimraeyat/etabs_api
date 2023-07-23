@@ -1308,6 +1308,33 @@ class DatabaseTables:
         d = df.groupby('ObjName').apply(
                 lambda x: dict(zip(x['ElmName'], zip(x['GlobalX'], x['GlobalY'], x['GlobalZ'])))).to_dict()
         return d
+    
+    def area_mesh_joints(self,
+            areas: list = [],
+            types: list = ['Floor']
+            ) -> tuple:
+        '''
+        return joint numbers of 3 and 4 elements nodes
+        '''
+        self.etabs.run_analysis()
+        table_key = 'Objects and Elements - Areas'
+        df = self.read(table_key=table_key, to_dataframe=True)
+        if types:
+            df = df[df['ObjType'].isin(types)]
+        if areas:
+            df = df[df['ObjName'].isin(areas)]
+        filt = df.ElmJt4.isnull()
+        df3 = df[filt]
+        df4 = df[~filt]
+        d3 = {}
+        d4 = {}
+        if not df3.empty:
+            d3 = df3.groupby('ObjName').apply(
+                lambda x: dict(zip(x['ElmName'], zip(x['ElmJt1'], x['ElmJt2'], x['ElmJt3'])))).to_dict()
+        if not df4.empty:
+            d4 = df4.groupby('ObjName').apply(
+                lambda x: dict(zip(x['ElmName'], zip(x['ElmJt1'], x['ElmJt2'], x['ElmJt3'], x['ElmJt4'])))).to_dict()
+        return d3, d4
 
 
 
