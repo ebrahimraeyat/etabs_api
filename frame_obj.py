@@ -408,6 +408,7 @@ class FrameObj:
             df['ratio'].fillna(1, inplace=True)
             mask = (df['ratio'] > low)
             if mask.all():
+                yield num_iteration - 1
                 break
             else:
                 df['j'] = df['ratio'] * df['j']
@@ -423,9 +424,10 @@ class FrameObj:
                 cols=['UniqueName', 'T']
                 torsion_dict = self.etabs.database.get_beams_torsion(load_combinations, beams_names, cols)
                 df['T'] = df['UniqueName'].map(torsion_dict)
+            yield i
         df.drop(columns=['ratio'], inplace=True)
         df = df[['Story', 'Beam', 'UniqueName', 'section', 'phi_Tcr', 'T', 'j', 'init_j']]
-        return df
+        yield df
 
     def angle_between_two_lines(self,
         line1 : Union[str, Iterable],

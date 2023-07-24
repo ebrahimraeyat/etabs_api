@@ -5,11 +5,12 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
-
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import *
 
 # @pytest.mark.getmethod
 def test_get_beams_columns():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     beams, columns = etabs.frame_obj.get_beams_columns()
     assert len(beams) == 92
     assert len(columns) == 48
@@ -57,6 +58,29 @@ def test_get_beams_torsion_prop_modifiers():
     assert len(beams_j) == 2
     assert pytest.approx(beams_j['115'], abs=.01) == .35
     assert pytest.approx(beams_j['120'], abs=.01) == 1.0
+
+def test_correct_torsion_stiffness_factor():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    num_iteration = 1
+    g = etabs.frame_obj.correct_torsion_stiffness_factor(
+        num_iteration = num_iteration,
+        )
+    i = 0
+    try:
+        while True:
+            ret = g.__next__()
+            if isinstance(ret, int):
+                print(f'{ret=}, {i=}')
+                assert ret == i
+            else:
+                print('Return df')
+                import pandas as pd
+                assert isinstance(ret, pd.DataFrame)
+                assert len(ret) == 92
+            i += 1
+    except StopIteration:
+        return
+
 
 # @pytest.mark.getmethod
 def test_get_above_frames():
