@@ -347,7 +347,7 @@ class FrameObj:
         beams_sections = {name : self.SapModel.FrameObj.GetSection(name)[0] for name in beams_names}
         return beams_sections
     
-    def assign_frame_modifires(self,
+    def assign_frame_modifiers(self,
             frame_names: list,
             area: Union[None, float]=None,
             as2: Union[None, float]=None,

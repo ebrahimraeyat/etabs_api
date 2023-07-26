@@ -159,9 +159,9 @@ def test_get_unit_weight_of_beams():
     df = etabs.frame_obj.get_unit_weight_of_beams()
     assert len(df) == 92
 
-def test_assign_frame_modifires():
+def test_assign_frame_modifiers():
     beams, _ = etabs.frame_obj.get_beams_columns()
-    etabs.frame_obj.assign_frame_modifires(beams, i33=0.5)
+    etabs.frame_obj.assign_frame_modifiers(beams, i33=0.5)
     for beam in beams:
         modifiers = etabs.SapModel.FrameObj.GetModifiers(beam)[0]
         assert modifiers[5] == 0.5
