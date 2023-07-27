@@ -99,10 +99,18 @@ def test_get_story_forces_with_percentages():
     assert len(forces) == 10
 
 def test_get_drifts():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     no_story, cdx, cdy = 4, 4.5, 4.5
     drifts, headers = etabs.get_drifts(no_story, cdx, cdy)
     assert len(drifts[0]) == len(headers)
-    assert len(drifts) == 30
+    assert len(drifts) == 10
+    print(drifts)
+    # drifts is look like this
+    # [['STORY5', 'EX_DRIFT', 'LinStatic', None, None, None, 'Diaph D1 X', '0.001227',
+    # None, '0.001152', '1.065', '7', '11.81', '5', '18.68', '0.0056'], [...]]
+    ret_drifts = [.0012, .0025, .0043, .0038, .0057, .0049, .0056, .0049, .0038, .0034]
+    for i, dr in enumerate(ret_drifts):
+        assert pytest.approx(dr, abs=0.0001) == float(drifts[i][9])
 
 def test_calculate_drifts(shayesteh, mocker):
     mocker.patch(
