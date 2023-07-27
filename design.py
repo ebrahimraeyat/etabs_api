@@ -246,7 +246,7 @@ class Design:
             self.SapModel.File.Save(str(deflection_path / filename))
         print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
-        self.etabs.frame_obj.assign_frame_modifires(
+        self.etabs.frame_obj.assign_frame_modifiers(
             frame_names=beams + columns,
             i22=1,
             i33=1,
