@@ -160,11 +160,38 @@ def test_get_unit_weight_of_beams():
     assert len(df) == 92
 
 def test_assign_frame_modifiers():
-    beams, _ = etabs.frame_obj.get_beams_columns()
-    etabs.frame_obj.assign_frame_modifiers(beams, i33=0.5)
+    i33_beam = 0.5
+    i33_column = 0.7
+    beams, columns = etabs.frame_obj.get_beams_columns(type_=2)
+    etabs.frame_obj.assign_frame_modifiers(beams, i33=i33_beam)
+    etabs.frame_obj.assign_frame_modifiers(columns, i33=i33_column)
     for beam in beams:
         modifiers = etabs.SapModel.FrameObj.GetModifiers(beam)[0]
-        assert modifiers[5] == 0.5
+        assert modifiers[5] == i33_beam
+    for column in columns:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(column)[0]
+        assert modifiers[5] == i33_column
+    # filter design_procedure
+    etabs.frame_obj.assign_frame_modifiers(beams, i33=0.8, design_procedure='steel')
+    etabs.frame_obj.assign_frame_modifiers(columns, i33=0.9, design_procedure='steel')
+    for beam in beams:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(beam)[0]
+        assert modifiers[5] == i33_beam
+    for column in columns:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(column)[0]
+        assert modifiers[5] == i33_column
+    # filter design orientation
+    etabs.frame_obj.assign_frame_modifiers(beams, i33=0.8, design_orientation='column')
+    etabs.frame_obj.assign_frame_modifiers(columns, i33=0.9, design_orientation='beam')
+    for beam in beams:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(beam)[0]
+        assert modifiers[5] == i33_beam
+    for column in columns:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(column)[0]
+        assert modifiers[5] == i33_column
+    
+
+
 
 # @pytest.mark.setmethod
 def test_assign_ev():

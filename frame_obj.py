@@ -357,7 +357,30 @@ class FrameObj:
             i33: Union[None, float]=None,
             mass: Union[None, float]=None,
             weight: Union[None, float]=None,
+            design_procedure: str='',
+            design_orientation: str='',
             ):
+        '''
+        design_procedure: steel: 1, concrete: 2
+        '''
+        # filter desired procedure
+        design_procedures = {'steel': 1, 'concrete': 2}
+        design_procedure = design_procedures.get(design_procedure, None)
+        if design_procedure is not None:
+            desired_procedure = []
+            for name in frame_names:
+                if self.SapModel.FrameObj.GetDesignProcedure(name)[0] == design_procedure:
+                    desired_procedure.append(name)
+            frame_names = desired_procedure
+        # filter desired orientation
+        design_orientations = {'column': 1, 'beam': 2}
+        design_orientation = design_orientations.get(design_orientation)
+        if design_orientation is not None:
+            desired_orientation = []
+            for name in frame_names:
+                if self.SapModel.FrameObj.GetDesignOrientation(name)[0] == design_orientation:
+                    desired_orientation.append(name)
+            frame_names = desired_orientation
         mod_names = [area, as2, as3, torsion, i22, i33, mass, weight]
         for name in frame_names:
             modifiers = list(self.SapModel.FrameObj.GetModifiers(name)[0])
