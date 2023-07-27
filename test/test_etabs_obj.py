@@ -7,7 +7,7 @@ etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
 if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model
+    from shayesteh import etabs, open_model, version
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -29,7 +29,7 @@ def create_building():
 
 def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
-    assert ver == 19
+    assert ver == version
 
 def test_get_filename_with_suffix():
     open_model(etabs, 'shayesteh.EDB')
@@ -59,13 +59,20 @@ def test_get_from_list_table():
 
 @pytest.mark.slow
 def test_get_drift_periods():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     Tx_drift, Ty_drift, file_name = etabs.get_drift_periods()
-    # close_etabs(shayesteh)
-    # assert pytest.approx(Tx_drift, .01) == 0.888
-    # assert pytest.approx(Ty_drift, .01) == 0.738
     assert pytest.approx(Tx_drift, .01) == 1.085
     assert pytest.approx(Ty_drift, .01) == 1.085
-    assert file_name.name == "test.EDB"
+    assert file_name.name == f"test{version}.EDB"
+
+def test_get_drift_periods_steel():
+    open_model(etabs=etabs, filename='steel.EDB')
+    Tx_drift, Ty_drift, file_name = etabs.get_drift_periods(open_main_file=False)
+    assert file_name.name == f"test{version}.EDB"
+    assert pytest.approx(Tx_drift, .01) == 0.789
+    assert pytest.approx(Ty_drift, .01) == 0.449
+    # did not open main file after get tx, ty
+    assert etabs.get_filename_with_suffix() == 'T.EDB'
 
 @pytest.mark.slow
 def test_apply_cfactor_to_edb():
