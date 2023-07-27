@@ -7,7 +7,7 @@ etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
 if 'etabs' not in dir(__builtins__):
-    from shayesteh import *
+    from shayesteh import etabs, open_model
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -160,6 +160,14 @@ def test_create_joint_shear_file():
     filename = get_temp_filepath(filename='js')
     df = etabs.create_joint_shear_file(file_name=filename.name, open_main_file=True)
     assert len(df) > 0
+
+def test_get_type_of_structure():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    typ = etabs.get_type_of_structure()
+    assert typ == 'concrete'
+    open_model(etabs=etabs, filename='steel.EDB')
+    typ = etabs.get_type_of_structure()
+    assert typ == 'steel'
 
 
 if __name__ == '__main__':

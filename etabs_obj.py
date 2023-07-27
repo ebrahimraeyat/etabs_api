@@ -328,13 +328,15 @@ class EtabsModel:
 
     def get_drift_periods(
                 self,
-                t_filename="T.EDB",
+                t_filename: str="T.EDB",
+                open_main_file: bool=True,
                 ):
         '''
         This function creates an Etabs file called T.EDB from current open Etabs file,
         then in T.EDB file change the stiffness properties of frame elements according 
         to ACI 318 to get periods of structure, for this it set M22 and M33 stiffness of
-        beams to 0.5 and column and wall to 1.0. Then it runs the analysis and get the x and y period of structure.
+        beams to 0.5 and column and wall to 1.0. Then it runs the analysis and get the x
+        and y period of structure.
         '''
         print(10 * '-' + "Get drift periods" + 10 * '-' + '\n')
         self.SapModel.File.Save()
@@ -354,7 +356,7 @@ class EtabsModel:
                 if self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 1: # Column
                     IMod = IMod_col_wall
                     modifiers[:6] = 6 * [IMod]
-                elif self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 2:   # Beam
+                elif self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 2:  # Beam
                     IMod = IMod_beam
                     modifiers[4:6] = [IMod, IMod]
                 self.SapModel.FrameObj.SetModifiers(label, modifiers)
@@ -386,7 +388,8 @@ class EtabsModel:
         Ty_drift = periods[uy_max_i]
         print(f"Tx_drift = {Tx_drift}, Ty_drift = {Ty_drift}\n")
         print("opening the main file\n")
-        self.SapModel.File.OpenFile(str(asli_file_path))
+        if open_main_file:
+            self.SapModel.File.OpenFile(str(asli_file_path))
         return Tx_drift, Ty_drift, asli_file_path
 
     def get_diaphragm_max_over_avg_drifts(
@@ -915,6 +918,27 @@ class EtabsModel:
         if open_main_file:
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
+    
+    def get_type_of_structure(self):
+        '''
+        Return 'steel' or 'concrete' or 'unknown'
+        '''
+        steel = 'steel'
+        concrete = 'concrete'
+        steel_beams, steel_columns = self.frame_obj.get_beams_columns(type_=1)
+        concrete_beams, concrete_columns = self.frame_obj.get_beams_columns(type_=2)
+        if len(concrete_columns) > len(steel_columns):
+            return concrete
+        elif len(concrete_columns) < len(steel_columns):
+            return steel
+        if len(concrete_beams) > len(steel_beams):
+            return concrete
+        elif len(concrete_beams) < len(steel_beams):
+            return steel
+        return 'unknown'
+        
+        
+
 
 
 class Build:
