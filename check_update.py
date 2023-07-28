@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide2.QtWidgets import QMessageBox
+from PySide2 import QtWidgets
 from PySide2 import QtCore
 
 import FreeCAD
@@ -18,7 +18,7 @@ class CheckWorker(QtCore.QThread):
     def __init__(self, software='civilTools'):
         QtCore.QThread.__init__(self)
         self.software = software
-
+    
     def run(self):
         try:
             import git
@@ -37,11 +37,9 @@ class CheckWorker(QtCore.QThread):
                     gitrepo.fetch()
                     status = gitrepo.status()
                     if "git add" in status:
-                        # pass
                         restart_freecad()
                     elif "git pull" in status:
                         updates.append(directory)
-                        # return
                 except:
                     # can fail for any number of reasons, ex. not being online
                     pass
@@ -61,13 +59,12 @@ def show_message(avail):
         if len(avail) == 2:
             message += ' and %s' % software % avail[1].name
         message += ', Do you want to update?</html>'
-        if QMessageBox.question(
+        if QtWidgets.QMessageBox.question(
             None,
             'Updata Available',
             message,
-            ) == QMessageBox.Yes:
+            ) == QtWidgets.QMessageBox.Yes:
             update(avail)
-            # FreeCADGui.runCommand("Std_AddonMgr")
     else:
         FreeCAD.Console.PrintLog("No update available\n")
     if hasattr(FreeCAD,"software_update_checker"):
@@ -81,7 +78,7 @@ def update(repos_path: list):
         link = "<a href='{link}'>here</a>"
         text = '<span style=" font-size:9pt; font-weight:600; color:#0000ff;">%s</span>'
         message = '<html>Git not installed on your system, Please download and install it from %s' % text  % link
-        QMessageBox.warning(None, 'Install Git', message)
+        QtWidgets.QMessageBox.warning(None, 'Install Git', message)
         return
     final_args = ['git.exe', 'pull']
     old_dir = os.getcwd()
@@ -105,20 +102,21 @@ def update(repos_path: list):
             failed = True
     os.chdir(old_dir)
     if not failed:
-        msg = 'Update have been done Successfully. Restart FreeCAD to take changes effect.'
-        QMessageBox.information(None, "Successful", msg)
-        #     QtCore.QTimer.singleShot(1000, restart_freecad)
+        msg = '''Update have been done Successfully,
+        Restart FreeCAD to take changes effect.'''
+        QtWidgets.QMessageBox.information(None, "Successful", msg)
+        restart_freecad()
     else:
         msg = 'Update failed.'
-        QMessageBox.warning(None, "Failed", msg)
-
+        QtWidgets.QMessageBox.warning(None, "Failed", msg)
 
 def restart_freecad():
     # return
     """Shuts down and restarts FreeCAD"""
-    # args = QtWidgets.QApplication.arguments()[1:]
-    FreeCADGui.getMainWindow().deleteLater()
-        # QtCore.QProcess.startDetached(
-            # QtWidgets.QApplication.applicationFilePath(), args
-        # )
+    args = QtWidgets.QApplication.arguments()[1:]
+    # FreeCADGui.getMainWindow().deleteLater()
+    if FreeCADGui.getMainWindow().close():
+        QtCore.QProcess.startDetached(
+            QtWidgets.QApplication.applicationFilePath(), args
+        )
             
