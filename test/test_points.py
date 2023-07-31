@@ -10,6 +10,8 @@ if 'etabs' not in dir(__builtins__):
 
 @pytest.mark.getmethod
 def test_get_points_coords():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    etabs.set_current_unit('N', 'mm')
     points_coords = etabs.points.get_points_coords(['146', '147', '148'])
     assert list(points_coords.keys()) == ['146', '147', '148']
     assert pytest.approx(points_coords['146'], abs=1) == (12751.4, 3365.6, 5220)
@@ -30,3 +32,24 @@ def test_add_point_on_beam():
     distance = etabs.frame_obj.get_length_of_frame(name) / 2
     etabs.points.add_point_on_beam('115', distance=distance)
     assert pytest.approx(coords[name], abs=1) == (1086.5, 0, 522)
+
+def test_get_points_coordinates():
+    import pandas as pd
+    open_model(etabs=etabs, filename='khiabany.EDB')
+    df = etabs.points.get_points_coordinates()
+    assert isinstance(df, pd.DataFrame)
+    assert df.dtypes.UniqueName == 'int32'
+    for i in ('X', 'Y', 'Z'):
+        assert df.dtypes[i] == 'float64'
+    assert len(df) == 181
+    df = etabs.points.get_points_coordinates(to_dict=True)
+    assert isinstance(df, dict)
+    for key, (x, y, z) in df.items():
+        assert isinstance(key, int)
+        assert isinstance(x, float)
+        assert isinstance(y, float)
+        assert isinstance(z, float)
+    assert len(df) == 181
+    df = etabs.points.get_points_coordinates(points=['1', '2', '3'])
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 3

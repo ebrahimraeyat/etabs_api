@@ -69,8 +69,23 @@ class Points:
         y = (y2 - y1) * rel + y1
         z = (z2 - z1) * rel + z1
         return self.add_point(x, y, z, unlock_model=unlock_model)
-        
-
-
-
-
+    
+    def get_points_coordinates(self,
+        points: list=[],
+        to_dict: bool=False,
+    ):
+        '''
+        return a dataframe with point_name and x, y, z coordinate,
+        or a dictionary like {'10': (0, 0, 0), ...}
+        '''
+        table_key = 'Point Object Connectivity'
+        cols = ['UniqueName', 'X', 'Y', 'Z']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if points:
+            filt = df['UniqueName'].isin(points)
+            df = df.loc[filt]
+        df = df.astype({'UniqueName': int, 'X': float, 'Y': float, 'Z': float})
+        if to_dict:
+            return df.set_index("UniqueName").apply(tuple, axis=1).to_dict()
+        else:
+            return df
