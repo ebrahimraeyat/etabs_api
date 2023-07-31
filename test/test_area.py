@@ -6,7 +6,7 @@ etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
 if 'etabs' not in dir(__builtins__):
-    from shayesteh import *
+    from shayesteh import etabs, open_model, version
 
 FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
 sys.path.append(FREECADPATH)

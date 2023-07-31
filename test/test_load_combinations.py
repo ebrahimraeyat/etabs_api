@@ -5,7 +5,8 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh, two_earthquakes, khiabani
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import etabs, open_model, version
 
 # from load_combinations import generate_concrete_load_combinations
 

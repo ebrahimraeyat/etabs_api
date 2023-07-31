@@ -5,7 +5,8 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import etabs, open_model, version
 
 @pytest.mark.getmethod
 def test_get_points_coords():

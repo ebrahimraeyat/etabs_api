@@ -5,7 +5,8 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh, khiabani, two_earthquakes
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import etabs, open_model, version, khiabani, two_earthquakes
 
 @pytest.mark.getmethod
 def test_get_load_patterns_in_XYdirection():

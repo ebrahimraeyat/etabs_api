@@ -6,7 +6,7 @@ etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
 if 'etabs' not in dir(__builtins__):
-    from shayesteh import *
+    from shayesteh import etabs, open_model, version
 
 @pytest.mark.getmethod
 def test_get_xy_period():
@@ -101,6 +101,4 @@ def test_get_point_displacement_nonlinear_cases():
         item_type_elm=1,
         )
     assert V == pytest.approx(( -0.1472, -0.0336, -0.2336), abs=.001)
-
-
     
