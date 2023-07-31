@@ -5,7 +5,8 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import shayesteh, madadi
+if 'etabs' not in dir(__builtins__):
+    from shayesteh import etabs, open_model, version
 
 def test_set_concrete_framing_type():
     etabs.design.set_concrete_framing_type()
@@ -57,23 +58,26 @@ def test_get_rho():
     rho, _ = etabs.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
 
-def test_get_deflection_of_beam(madadi):
-    dead = madadi.load_patterns.get_special_load_pattern_names(1)
-    supper_dead = madadi.load_patterns.get_special_load_pattern_names(2)
-    l1 = madadi.load_patterns.get_special_load_pattern_names(3)
-    l2 = madadi.load_patterns.get_special_load_pattern_names(4)
-    l3 = madadi.load_patterns.get_special_load_pattern_names(11)
+def test_get_deflection_of_beam():
+    open_model(etabs=etabs, filename='madadi.EDB')
+    dead = etabs.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
+    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
+    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
+    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
     lives = l1 + l2 + l3
-    madadi.design.get_deflection_of_beam(
+    def1, def2, _ = etabs.design.get_deflection_of_beam(
         dead=dead,
         supper_dead=supper_dead,
         lives=lives,
         beam_name='157',
         distance_for_calculate_rho='middle',
     )
-    assert True
+    assert pytest.approx(def1, abs=.001) == 1.5722
+    assert pytest.approx(def2, abs=.001) == 2.25477
 
 def test_get_deflection_of_beam_console():
+    open_model(etabs=etabs, filename='madadi.EDB')
     dead = etabs.load_patterns.get_special_load_pattern_names(1)
     supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
     l1 = etabs.load_patterns.get_special_load_pattern_names(3)
@@ -92,6 +96,7 @@ def test_get_deflection_of_beam_console():
     assert True
 
 def test_get_deflection_check_result():
+    open_model(etabs=etabs, filename='madadi.EDB')
     import design
     text = design.get_deflection_check_result(
         -1.8,

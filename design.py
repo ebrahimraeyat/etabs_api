@@ -287,10 +287,6 @@ class Design:
         if is_console:
             def1 = p2_def1 - p1_def1
             def2 = p2_def2 - p1_def2
-            if def1 > 0:
-                def1 *= -1
-            if def2 > 0:
-                def2 *= -1
         else:
             def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=index)[2]
             def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection2', type_='Combo', index=index)[2]
@@ -298,17 +294,13 @@ class Design:
             def1 = def_def1 - (p1_def1 + p2_def1) / 2
             def2 = def_def2 - (p1_def2 + p2_def2) / 2
         print(f'\n{def1=}, {def2=}')
-        return def1, def2, text
+        return abs(def1), abs(def2), text
     
 def get_deflection_check_result(
     def1: float,
     def2: float,
     ln: float,
     ):
-    if def1 < 0:
-        def1 *= -1
-    if def2 < 0:
-        def2 *= -1
     allow_def1 = ln / 360
     allow_def2 = ln / 480
     ret = f'Ln = {ln:.0f} Cm\n'
