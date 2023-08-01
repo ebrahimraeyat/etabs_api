@@ -89,3 +89,10 @@ class Points:
             return df.set_index("UniqueName").apply(tuple, axis=1).to_dict()
         else:
             return df
+        
+    def get_maximum_point_number_in_model(self):
+        df = self.get_points_coordinates()
+        max_number = df.UniqueName.max()
+        return max_number
+    
+    

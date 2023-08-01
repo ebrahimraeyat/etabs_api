@@ -53,3 +53,8 @@ def test_get_points_coordinates():
     df = etabs.points.get_points_coordinates(points=['1', '2', '3'])
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 3
+
+def test_get_maximum_point_number_in_model():
+    # open_model(etabs=etabs, filename='khiabany.EDB')
+    n = etabs.points.get_maximum_point_number_in_model()
+    assert n == 201
