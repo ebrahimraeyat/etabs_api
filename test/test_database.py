@@ -319,6 +319,14 @@ def test_set_cracking_analysis_option():
     df = etabs.database.read(table_key, to_dataframe=True)
     assert list(df.iloc[0]) == ['User and Designed', str(min_tension_ratio), str(min_compression_ratio)]
 
+def test_get_map_mesh_points():
+    # open_model(etabs=etabs, filename='khiabany.EDB')
+    maped = etabs.database.get_map_mesh_points()
+    assert isinstance(maped, dict)
+    table_key = 'Objects and Elements - Joints'
+    df = etabs.database.read(table_key=table_key, to_dataframe=True)
+    df = df[df['ObjType'] == 'Shell']
+    assert len(df) == len(maped)
 
 
 

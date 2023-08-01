@@ -1336,6 +1336,27 @@ class DatabaseTables:
                 lambda x: dict(zip(x['ElmName'], zip(x['ElmJt1'], x['ElmJt2'], x['ElmJt3'], x['ElmJt4'])))).to_dict()
         return d3, d4
 
+    def get_map_mesh_points(self,
+            shell_names: list = [],
+            start_value: int=0,
+            ) -> tuple:
+        '''
+        start_value: the numbers that point numbers starts from it
+        return joint numbers of 3 and 4 elements nodes
+        '''
+        self.etabs.run_analysis()
+        table_key = 'Objects and Elements - Joints'
+        df = self.read(table_key=table_key, to_dataframe=True)
+        df = df[df['ObjType'] == 'Shell']
+        if shell_names:
+            df = df[df['ObjName'].isin(shell_names)]
+        unique_values = df['ElmName'].unique()
+        if start_value == 0:
+            start_value = self.etabs.points.get_maximum_point_number_in_model()
+        maped_points = {point_id: i for i, point_id in enumerate(unique_values, start=start_value + 1)}
+        return maped_points
+
+        
 
 
 if __name__ == '__main__':
