@@ -90,6 +90,30 @@ class Points:
         else:
             return df
         
+    def get_objects_and_elements_joints_coordinate(self,
+            types: list=[], # [Joint, Shell]
+            unit: str = 'mm',
+            to_dict: bool=True,
+            ) -> dict:
+        '''
+        Return all joints coordinates in FEM, include mesh joints
+        '''
+        force, length = self.etabs.get_current_unit()
+        self.etabs.set_current_unit(force, unit)
+        self.etabs.run_analysis()
+        table_key = 'Objects and Elements - Joints'
+        cols = ['ObjType', 'ElmName', 'GlobalX', 'GlobalY', 'GlobalZ']
+        df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=cols)
+        if types:
+            df = df[df['ObjType'].isin(types)]
+            del df['ObjType']
+        df = df.astype({'GlobalX': float, 'GlobalY': float, 'GlobalZ': float, })
+        self.etabs.set_current_unit(force, length)
+        if to_dict:
+            return df.set_index("ElmName").apply(tuple, axis=1).to_dict()
+        else:
+            return df
+        
     def get_maximum_point_number_in_model(self):
         df = self.get_points_coordinates()
         max_number = df.UniqueName.max()

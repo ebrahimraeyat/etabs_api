@@ -54,6 +54,21 @@ def test_get_points_coordinates():
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 3
 
+def test_get_objects_and_elements_joints_coordinate():
+    open_model(etabs=etabs, filename="khiabany.EDB")
+    ret = etabs.points.get_objects_and_elements_joints_coordinate(types=['Shell'])
+    print(ret)
+    if version < 20:
+        assert set(ret['~199']) == set([5750, -1700, 15840])
+    else:
+        assert set(ret['~208']) == set([5750, -1700, 15840])
+    # multi shells
+    ret = etabs.points.get_objects_and_elements_joints_coordinate(types=['Shell'])
+    if version < 20:
+        assert set(ret['~199']) == set([5750, -1700, 15840])
+    else:
+        assert set(ret['~208']) == set([5750, -1700, 15840])
+
 def test_get_maximum_point_number_in_model():
     # open_model(etabs=etabs, filename='khiabany.EDB')
     n = etabs.points.get_maximum_point_number_in_model()

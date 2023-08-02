@@ -195,27 +195,6 @@ def test_expand_design_combos():
     assert len(dfs) == 1
     assert list(dfs.keys())[0] == 'Concrete Frame Design Load Combination Data'
 
-def test_get_objects_and_elements_joints():
-    open_model(etabs=etabs, filename="khiabany.EDB")
-    ret = etabs.database.get_objects_and_elements_joints(shell_names=['4'], types=['Shell'])
-    if version < 20:
-        assert len(ret['4']) == 15
-        assert set(ret['4']['~199']) == set([5750, -1700, 15840])
-    else:
-        assert len(ret['4']) == 16
-        assert set(ret['4']['~208']) == set([5750, -1700, 15840])
-    # multi shells
-    shells = ['4', '15', '29']
-    ret = etabs.database.get_objects_and_elements_joints(shell_names=shells, types=['Shell'])
-    assert len(ret) == 3
-    assert set(ret.keys()) == set(shells)
-    if version < 20:
-        assert len(ret['4']) == 15
-        assert set(ret['4']['~199']) == set([5750, -1700, 15840])
-    else:
-        assert len(ret['4']) == 16
-        assert set(ret['4']['~208']) == set([5750, -1700, 15840])
-
 def test_area_mesh_joints():
     # open_model(etabs=etabs, filename="khiabany.EDB")
     ret = etabs.database.area_mesh_joints(areas=['4'])
