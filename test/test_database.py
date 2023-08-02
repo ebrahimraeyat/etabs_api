@@ -224,6 +224,16 @@ def test_area_mesh_joints():
     # else:
     #     assert len(ret['4']) == 16
     #     assert set(ret['4']['~208']) == set([5750, -1700, 15840])
+    # Get map points
+    map_dict = etabs.database.get_map_mesh_points()
+    ret = etabs.database.area_mesh_joints(areas=['4'], map_dict=map_dict)
+    assert len(ret) == 2
+    if version < 20:
+        assert len(ret[0]) == 0
+        assert len(ret[1]['4'].keys()) == 13
+        for value in ret[1]['4'].values():
+            assert len(value) == 4
+        assert set(ret[1]['4'][1]) == set([99, 220, 221, 219])
 
 
 def test_apply_expand_design_combos():

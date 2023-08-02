@@ -1294,9 +1294,11 @@ class DatabaseTables:
     
     def area_mesh_joints(self,
             areas: list = [],
-            types: list = ['Floor']
+            types: list = ['Floor'],
+            map_dict: dict={},
             ) -> tuple:
         '''
+        map_dict: A dictionary for mapping mesh points name to int point name
         return joint numbers of 3 and 4 elements nodes
         '''
         self.etabs.run_analysis()
@@ -1306,9 +1308,18 @@ class DatabaseTables:
             df = df[df['ObjType'].isin(types)]
         if areas:
             df = df[df['ObjName'].isin(areas)]
+        if map_dict:
+            df['ElmName'] = range(1, len(df) + 1)
+            df['ElmName'] = df['ElmName'].astype(int)
+            for col in ('ElmJt1', 'ElmJt2', 'ElmJt3', 'ElmJt4'):
+                df[col] = df[col].map(map_dict).fillna(df[col])
+            for col in ('ElmJt1', 'ElmJt2', 'ElmJt3'):
+                df[col] = df[col].astype(int)
         filt = df.ElmJt4.isnull()
         df3 = df[filt]
         df4 = df[~filt]
+        if map_dict:
+            df4['ElmJt4'] = df4['ElmJt4'].astype(int)
         d3 = {}
         d4 = {}
         if not df3.empty:
