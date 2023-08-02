@@ -1308,6 +1308,8 @@ class DatabaseTables:
             df = df[df['ObjType'].isin(types)]
         if areas:
             df = df[df['ObjName'].isin(areas)]
+        # get unique joints values
+        un = pd.unique(df[['ElmJt1', 'ElmJt2', 'ElmJt3', 'ElmJt4']].values.ravel('K'))
         if map_dict:
             df['ElmName'] = range(1, len(df) + 1)
             df['ElmName'] = df['ElmName'].astype(int)
@@ -1328,7 +1330,7 @@ class DatabaseTables:
         if not df4.empty:
             d4 = df4.groupby('ObjName').apply(
                 lambda x: dict(zip(x['ElmName'], zip(x['ElmJt1'], x['ElmJt2'], x['ElmJt3'], x['ElmJt4'])))).to_dict()
-        return d3, d4
+        return d3, d4, un
 
     def get_map_mesh_points(self,
             shell_names: list = [],

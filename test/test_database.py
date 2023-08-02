@@ -198,7 +198,7 @@ def test_expand_design_combos():
 def test_area_mesh_joints():
     # open_model(etabs=etabs, filename="khiabany.EDB")
     ret = etabs.database.area_mesh_joints(areas=['4'])
-    assert len(ret) == 2
+    assert len(ret) == 3
     if version < 20:
         assert len(ret[0]) == 0
         assert len(ret[1]['4'].keys()) == 13
@@ -211,7 +211,7 @@ def test_area_mesh_joints():
     # # multi shells
     areas = ['4', '15', '29']
     ret = etabs.database.area_mesh_joints(areas=areas)
-    assert len(ret) == 2
+    assert len(ret) == 3
     if version < 20:
         assert len(ret[0]) == 0
         assert len(ret[1]['4'].keys()) == 13
@@ -227,7 +227,7 @@ def test_area_mesh_joints():
     # Get map points
     map_dict = etabs.database.get_map_mesh_points()
     ret = etabs.database.area_mesh_joints(areas=['4'], map_dict=map_dict)
-    assert len(ret) == 2
+    assert len(ret) == 3
     if version < 20:
         assert len(ret[0]) == 0
         assert len(ret[1]['4'].keys()) == 13
