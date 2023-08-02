@@ -1292,8 +1292,9 @@ class DatabaseTables:
             df.columns = ['Reinforcement Source', 'Minimum Tension Ratio', 'Minimum Compression Ratio']
         self.etabs.database.write(table_key, df)
 
-    def get_shell_joints(self,
+    def get_objects_and_elements_joints(self,
             shell_names: list = [],
+            types: list=[], # [Joint, Shell]
             unit: str = 'mm',
             ) -> dict:
         force, _ = self.etabs.get_current_unit()
@@ -1301,7 +1302,8 @@ class DatabaseTables:
         self.etabs.run_analysis()
         table_key = 'Objects and Elements - Joints'
         df = self.read(table_key=table_key, to_dataframe=True)
-        df = df[df['ObjType'] == 'Shell']
+        if types:
+            df = df[df['ObjType'].isin(types)]
         if shell_names:
             df = df[df['ObjName'].isin(shell_names)]
         df = df.astype({'GlobalX': float, 'GlobalY': float, 'GlobalZ': float, })
