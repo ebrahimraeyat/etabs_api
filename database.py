@@ -1301,6 +1301,7 @@ class DatabaseTables:
         map_dict: A dictionary for mapping mesh points name to int point name
         return joint numbers of 3 and 4 elements nodes
         '''
+        import numpy as np
         self.etabs.run_analysis()
         table_key = 'Objects and Elements - Areas'
         df = self.read(table_key=table_key, to_dataframe=True)
@@ -1310,6 +1311,7 @@ class DatabaseTables:
             df = df[df['ObjName'].isin(areas)]
         # get unique joints values
         un = pd.unique(df[['ElmJt1', 'ElmJt2', 'ElmJt3', 'ElmJt4']].values.ravel('K'))
+        un = un[un != np.array(None)]
         if map_dict:
             df['ElmName'] = range(1, len(df) + 1)
             df['ElmName'] = df['ElmName'].astype(int)

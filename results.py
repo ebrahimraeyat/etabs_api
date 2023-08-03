@@ -76,15 +76,22 @@ class Results:
             type_: str='Case', # 'Combo
             index: int=0,
             item_type_elm: int=0,
+            map_dict: dict={},
             ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         displacements = {}
         for point_name in point_names:
             results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
+            if results[0] == 0:
+                results = self.SapModel.Results.JointDispl(point_name, 0)
+            index = len(results[6]) - 1
+            print(10 * '*', '\n', point_name, results)
             x = results[6][index]
             y = results[7][index]
             z = results[8][index]
+            if map_dict:
+                point_name = int(map_dict.get(point_name, point_name))
             displacements[point_name] = (x, y, z)
         return displacements
     

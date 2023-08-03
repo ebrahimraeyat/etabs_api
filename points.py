@@ -94,8 +94,11 @@ class Points:
             types: list=[], # [Joint, Shell]
             unit: str = 'mm',
             to_dict: bool=True,
+            map_dict: dict={},
+            joints: Iterable=[],
             ) -> dict:
         '''
+        map_dict: A dictionary for mapping mesh points name to int point name
         Return all joints coordinates in FEM, include mesh joints
         '''
         force, length = self.etabs.get_current_unit()
@@ -104,11 +107,17 @@ class Points:
         table_key = 'Objects and Elements - Joints'
         cols = ['ObjType', 'ElmName', 'GlobalX', 'GlobalY', 'GlobalZ']
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=cols)
+        if joints:
+            df = df[df['ElmName'].isin(joints)]
         if types:
             df = df[df['ObjType'].isin(types)]
-            del df['ObjType']
+        del df['ObjType']
         df = df.astype({'GlobalX': float, 'GlobalY': float, 'GlobalZ': float, })
         self.etabs.set_current_unit(force, length)
+        if map_dict:
+            col = 'ElmName'
+            df[col] = df[col].map(map_dict).fillna(df[col])
+            df[col] = df[col].astype(int)
         if to_dict:
             return df.set_index("ElmName").apply(tuple, axis=1).to_dict()
         else:
