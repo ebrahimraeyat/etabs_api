@@ -171,52 +171,89 @@ class Area:
             name = ret[3]
             self.SapModel.AreaObj.SetOpening(name, True)
 
-    def export_freecad_strips(self, doc : 'App.Document' = None):
-        self.etabs.set_current_unit('kN', 'mm')
+    def export_freecad_strips(self,
+                              doc : 'App.Document' = None,
+                              story: str='',
+                              ):
+        self.etabs.set_current_unit('N', 'mm')
+        if not story:
+            story = self.SapModel.Story.GetStories()[1][0]
+        z_level = self.SapModel.Story.GetElevation(story)[0]
         if doc is None:
             doc = FreeCAD.ActiveDocument
-        foun = doc.Foundation
         data = []
-        if foun.foundation_type == 'Strip':
-            slabs = foun.tape_slabs
-            i = j = 0
-            for slab in slabs:
-                p1 = slab.start_point
-                p2 = slab.end_point
-                p = self.SapModel.PointObj.AddCartesian(p1.x, p1.y, p1.z)
-                p1_name = p[0]
-                p = self.SapModel.PointObj.AddCartesian(p2.x, p2.y, p2.z)
-                p2_name = p[0]
-                swl = ewl = slab.width.Value / 2 + slab.offset
-                swr = ewr = slab.width.Value / 2 - slab.offset
-                dx = abs(p1.x - p2.x)
-                dy = abs(p1.y - p2.y)
-                if dx > dy:
-                    layer = 'A'
-                    i += 1
-                    name = f'CS{layer}{i}'
-                else:
-                    layer = 'B'
-                    j += 1
-                    name = f'CS{layer}{j}'
-                data.extend((
-                    name,
-                    '1',
-                    f'{p1_name}',
-                    f'{p2_name}',
-                    f'{swl}',
-                    f'{swr}',
-                    f'{ewl}',
-                    f'{ewr}',
-                    'NO',
-                    f'{layer}',
-                    ))
+        for o in doc.Objects:
+            if hasattr(o, 'Proxy') and \
+                hasattr(o.Proxy, 'Type') and \
+                    o.Proxy.Type == 'Strip':
+                layer = o.layer
+                strip_name = o.Label
+                points = o.Base.Points
+                sl = o.left_width.Value
+                sr = o.right_width.Value
+                swl = ewl = sl
+                swr = ewr = sr
+                placement = o.Placement.Base + o.Base.Placement.Base
+                for j, point in enumerate(points):
+                    if j == 0:
+                        p1 = self.SapModel.PointObj.AddCartesian(
+                            point.x + placement.x,
+                            point.y + placement.y,
+                            z_level,
+                            )
+                        p1_name = p1[0]
+                        p2 = self.SapModel.PointObj.AddCartesian(
+                            points[1].x + placement.x,
+                            points[1].y + placement.y,
+                            z_level,
+                            )
+                        p2_name = p2[0]
+                        data.extend((
+                            strip_name,
+                            story,
+                            f'{p1_name}',
+                            f'{p2_name}',
+                            f'{swl}',
+                            f'{swr}',
+                            f'{ewl}',
+                            f'{ewr}',
+                            'No',
+                            layer,
+                            ))
+                    elif j > 1:
+                        p = self.SapModel.PointObj.AddCartesian(
+                            point.x + placement.x,
+                            point.y + placement.y,
+                            z_level,
+                            )
+                        p_name = p[0]
+                        data.extend((
+                            strip_name,
+                            story,
+                            '',
+                            f'{p_name}',
+                            f'{swl}',
+                            f'{swr}',
+                            f'{ewl}',
+                            f'{ewr}',
+                            'No',
+                            '',
+                            ))
+
         table_key = 'Strip Object Connectivity'
-        fields = ['Name', 'NumSegs', 'StartPoint', 'EndPoint', 'WStartLeft',
-            'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
+        fields = [
+            'Name',
+            'Strip Start Point',
+            'Segment End Point',
+            'Start Width Left',
+            'Start Width Right',
+            'End Width Left',
+            'End Width Right',
+            'Auto Widen',
+            'Layer',
+        ]
         if self.etabs.software == 'ETABS':
             fields.insert(1, 'Story')
-        assert len(fields) == len(data) / len(slabs)
         self.etabs.database.apply_data(table_key, data, fields)
 
     def export_freecad_stiff_elements(self, doc : 'App.Document' = None):

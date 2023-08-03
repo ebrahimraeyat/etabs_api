@@ -12,9 +12,9 @@ FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
 sys.path.append(FREECADPATH)
 import FreeCAD
 
-filename = Path(__file__).absolute().parent / 'files' / 'freecad' / 'strip.FCStd'
+roof = Path(__file__).absolute().parent / 'files' / 'freecad' / 'roof.FCStd'
 filename_mat = Path(__file__).absolute().parent / 'files' / 'freecad' / 'mat.FCStd'
-document= FreeCAD.openDocument(str(filename))
+roof_document= FreeCAD.openDocument(str(roof))
 
 def test_get_names_of_areas_of_type():
     area_names = etabs.area.get_names_of_areas_of_type(type_='floor')
@@ -70,6 +70,23 @@ def test_calculate_rho():
     )
     assert pytest.approx(rho_top, abs=.00001) == .00138
     assert pytest.approx(rho_bot, abs=.00001) == .002096
+
+def test_export_freecad_strips():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    story_name = etabs.SapModel.Story.GetStories()[1][-1]
+    etabs.area.export_freecad_strips(doc=roof_document, story=story_name)
+    table_key = 'Strip Object Connectivity'
+    df = etabs.database.read(table_key=table_key, to_dataframe=True)
+    strips = []
+    for o in roof_document.Objects:
+        if hasattr(o, 'Proxy') and \
+            hasattr(o.Proxy, 'Type') and \
+                o.Proxy.Type == 'Strip':
+            strips.append(o.Label)
+    assert len(df.Name.unique()) == len(strips)
+    assert set(df.Name.unique()) == set(strips)
+
+
 
 if __name__ == '__main__':
     test_calculate_slab_weight_per_area()
