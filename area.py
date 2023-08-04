@@ -532,6 +532,14 @@ class Area:
         self.etabs.database.apply_data(table_key, df)
         self.etabs.database.apply_data('Area Load Assignments - Uniform Load Sets', df2)
         return True
+    
+    def reset_slab_sections_modifiers(self,
+            slabs: list=[],
+            ):
+        if not slabs:
+            slabs = self.get_all_slab_types().keys()
+        for slab in slabs:
+            self.SapModel.PropArea.SetModifiers(slab, 10*[1])
 
 def deck_plate_equivalent_height_according_to_volume(
         s,

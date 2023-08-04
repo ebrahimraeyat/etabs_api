@@ -86,6 +86,14 @@ def test_export_freecad_strips():
     assert len(df.Name.unique()) == len(strips)
     assert set(df.Name.unique()) == set(strips)
 
+def test_reset_slab_sections_modifiers():
+    etabs.area.reset_slab_sections_modifiers()
+    slabs = etabs.area.get_all_slab_types()
+    for slab in slabs:
+        modifiers = etabs.SapModel.PropArea.GetModifiers(slab)[0]
+        assert modifiers == 10 * (1,)
+
+
 
 
 if __name__ == '__main__':
