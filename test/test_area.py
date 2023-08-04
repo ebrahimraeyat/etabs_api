@@ -98,6 +98,14 @@ def test_get_slab_names():
     slabs = etabs.area.get_slab_names()
     assert len(slabs) == 193
 
+def test_assign_slab_modifiers():
+    etabs.area.assign_slab_modifiers([], * 10 * [1])
+    slab_names = etabs.area.get_slab_names()
+    for slab in slab_names:
+        modifiers = etabs.SapModel.AreaObj.GetModifiers(slab)[0]
+        assert modifiers == 10 * (1,)
+
+
 
 
 
