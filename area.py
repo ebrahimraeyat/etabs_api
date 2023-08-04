@@ -573,7 +573,7 @@ class Area:
         '''
         if reset:
             self.reset_slab_sections_modifiers()
-        if not slab_names:
+        if len(slab_names) == 0:
             slab_names = self.get_slab_names()
         mod_names = [f11, f22, f12, m11, m22, m12, v13, v23, mass, weight]
         for name in slab_names:

@@ -58,4 +58,10 @@ class SelectObj:
         for name in columns:
             self.SapModel.FrameObj.SetSelected(name, True)
 
+    def get_selected_floors(self):
+        all_selected_areas = self.get_selected_obj_type(n=5)
+        all_floors = self.etabs.area.get_names_of_areas_of_type(type_='floor')
+        selected_floors = set(all_selected_areas).intersection(all_floors)
+        return selected_floors
+
     
