@@ -93,6 +93,12 @@ def test_reset_slab_sections_modifiers():
         modifiers = etabs.SapModel.PropArea.GetModifiers(slab)[0]
         assert modifiers == 10 * (1,)
 
+def test_get_slab_names():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    slabs = etabs.area.get_slab_names()
+    assert len(slabs) == 193
+
+
 
 
 

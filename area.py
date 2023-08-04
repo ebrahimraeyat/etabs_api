@@ -40,6 +40,19 @@ class Area:
             if self.SapModel.AreaObj.GetDesignOrientation(name)[0] == type_:
                 names.append(name)
         return names
+    
+    def get_slab_names(self,
+        types: list=['Slab', 'Waffle'],
+        ):
+        '''
+        get slab names with type in types
+        '''
+        table_key = "Area Assignments - Section Properties"
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if types:
+            filt = df['PropType'].isin(types)
+            df = df.loc[filt]
+        return df['UniqueName']
 
     def export_freecad_slabs(self,
         doc : 'App.Document' = None,
@@ -540,6 +553,33 @@ class Area:
             slabs = self.get_all_slab_types().keys()
         for slab in slabs:
             self.SapModel.PropArea.SetModifiers(slab, 10*[1])
+
+    def assign_slab_modifiers(self,
+            slab_names: list,
+            f11: Union[None, float]=None,
+            f22: Union[None, float]=None,
+            f12: Union[None, float]=None,
+            m11: Union[None, float]=None,
+            m22: Union[None, float]=None,
+            m12: Union[None, float]=None,
+            v13: Union[None, float]=None,
+            v23: Union[None, float]=None,
+            mass: Union[None, float]=None,
+            weight: Union[None, float]=None,
+            reset: bool=False,
+            ):
+        '''
+        reset means to set all slab section properties set to 1
+        '''
+        if reset:
+            self.reset_slab_sections_modifiers()
+        mod_names = [f11, f22, f12, m11, m22, m12, v13, v23, mass, weight]
+        for name in slab_names:
+            modifiers = list(self.SapModel.AreaObj.GetModifiers(name)[0])
+            for i, mod in enumerate(mod_names):    
+                if mod:
+                    modifiers[i] = mod
+            self.SapModel.AreaObj.SetModifiers(name, modifiers)
 
 def deck_plate_equivalent_height_according_to_volume(
         s,
