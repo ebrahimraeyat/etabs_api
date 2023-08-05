@@ -184,6 +184,9 @@ def test_get_type_of_structure():
     typ = etabs.get_type_of_structure()
     assert typ == 'steel'
 
+def test_start_slab_design():
+    etabs.start_slab_design()
+
 
 if __name__ == '__main__':
     import pandas as pd

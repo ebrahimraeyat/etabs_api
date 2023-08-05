@@ -216,6 +216,11 @@ class EtabsModel:
         print(f"Starting Design {type_}")
         exec(f"self.SapModel.Design{type_}.StartDesign()")
 
+    def start_slab_design(self):
+        self.run_analysis()
+        print("Starting Design Slabs")
+        self.SapModel.DesignConcreteSlab.StartSlabDesign()
+
     def set_current_unit(self, force, length):
         # force_enum = EtabsModel.force_units[force]
         # len_enum = EtabsModel.length_units[length]
