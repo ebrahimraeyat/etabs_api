@@ -582,6 +582,57 @@ class Area:
                 if mod:
                     modifiers[i] = mod
             self.SapModel.AreaObj.SetModifiers(name, modifiers)
+    
+    def save_as_deflection_filename(self,
+            filename: str='',
+            ):
+        if not filename:
+            filename1 = 'deflection_areas.EDB'
+        else:
+            filename1 = filename
+        print(f'Save file as {filename1} ...')
+        file_path = self.etabs.get_filepath()
+        deflection_path = file_path / 'deflections'
+        if not deflection_path.exists():
+            import os
+            os.mkdir(str(deflection_path))
+        self.SapModel.File.Save(str(deflection_path / filename1))
+        if not filename:
+            label, story, _ = self.SapModel.AreaObj.GetLabelFromName(area_name)
+            filename = f'deflection_{label}_{story}.EDB'
+            print(f'Save file as {filename} ...')
+            self.SapModel.File.Save(str(deflection_path / filename))
+
+    def design_slabs(self,
+                    slab_names: list,
+                    s: float,
+                    d: float,
+                    tw: float,
+                    hc: float,
+                    as_top: float,
+                    as_bot: float,
+                    fill: bool=False,
+                    two_way: bool=True,
+                    design: bool=True,
+    ):
+        kwargs = {'slab_names': slab_names,
+                     'f11': 1,
+                     'f22': 1,
+                     'f12': 1,
+                     'm11': 0.25,
+                     'm22': 0.25,
+                     'm12': 0.25,
+                     'v13': 1,
+                     'v23': 1,
+                     'mass': 1,
+                     'weight': 1,
+                     'reset': True,
+        }
+        self.assign_slab_modifiers(**kwargs)
+        min_rho, max_rho = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=fill, two_way=two_way)
+        self.etabs.database.set_cracking_analysis_option(min_rho, max_rho)
+        if design:
+            self.etabs.start_slab_design()
 
 def deck_plate_equivalent_height_according_to_volume(
         s,

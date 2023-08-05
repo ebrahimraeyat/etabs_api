@@ -105,6 +105,21 @@ def test_assign_slab_modifiers():
         modifiers = etabs.SapModel.AreaObj.GetModifiers(slab)[0]
         assert modifiers == 10 * (1,)
 
+def test_design_slabs():
+    open_model(etabs=etabs, filename='khiabany.EDB')
+    etabs.area.design_slabs(
+        slab_names=['4'],
+        s = 80,
+        d = 30,
+        tw = 13,
+        hc = 5,
+        as_top = 1.5,
+        as_bot = 2,
+        fill = True,
+        two_way = True,
+        design = True,
+        )
+
 
 
 

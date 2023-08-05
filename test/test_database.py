@@ -6,7 +6,7 @@ FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
 sys.path.append(FREECADPATH)
 import FreeCAD
 
-filename = Path(__file__).absolute().parent / 'files' / 'freecad' / 'strip.FCStd'
+filename = Path(__file__).absolute().parent / 'files' / 'freecad' / 'roof.FCStd'
 filename_mat = Path(__file__).absolute().parent / 'files' / 'freecad' / 'mat.FCStd'
 document= FreeCAD.openDocument(str(filename))
 
@@ -306,7 +306,11 @@ def test_set_cracking_analysis_option():
         )
     table_key = 'Analysis Options - Cracking Analysis Options'
     df = etabs.database.read(table_key, to_dataframe=True)
-    assert list(df.iloc[0]) == ['User and Designed', str(min_tension_ratio), str(min_compression_ratio)]
+    data = ['User and Designed',
+            str(min_tension_ratio),
+            str(min_compression_ratio)
+            ]
+    assert list(df.iloc[0]) == data
 
 def test_get_map_mesh_points():
     open_model(etabs=etabs, filename='khiabany.EDB')
