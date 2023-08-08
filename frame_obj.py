@@ -211,17 +211,12 @@ class FrameObj:
         story_frames.remove(name)
         print('get columns pmm and beams rebars')
         columns_pmm, beams_rebars = self.get_columns_pmm_and_beams_rebars(story_frames)
-        # self.etabs.unlock_model()
-        # self.etabs.lock_and_unlock_model()
         asli_file_path = Path(self.SapModel.GetModelFilename())
         if isinstance(weakness_filename, Path) and weakness_filename.exists():
             self.SapModel.File.OpenFile(str(weakness_filename))
         else:
             print(f"Saving file as {weakness_filename}\n")
-            # if asli_file_path.suffix.lower() != '.edb':
-            #     asli_file_path = asli_file_path.with_suffix(".EDB")
-            dir_path = asli_file_path.parent.absolute()
-            weakness_file_path = dir_path / weakness_filename
+            weakness_file_path = asli_file_path.with_name(weakness_filename)
             self.SapModel.File.Save(str(weakness_file_path))
             self.etabs.lock_and_unlock_model()
             print('multiply earthquake factor with 0.67')
