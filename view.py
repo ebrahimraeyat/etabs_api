@@ -42,3 +42,6 @@ class View:
             self.SapModel.FrameObj.SetSelected(name, True)
         self.SapModel.View.RefreshView()
         return True
+    
+    def refresh_view(self):
+        self.SapModel.View.RefreshView()

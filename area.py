@@ -223,7 +223,6 @@ class Area:
                         p2_name = p2[0]
                         data.extend((
                             strip_name,
-                            story,
                             f'{p1_name}',
                             f'{p2_name}',
                             f'{swl}',
@@ -242,18 +241,15 @@ class Area:
                         p_name = p[0]
                         data.extend((
                             strip_name,
-                            story,
                             '',
                             f'{p_name}',
                             f'{swl}',
                             f'{swr}',
                             f'{ewl}',
                             f'{ewr}',
-                            'No',
+                            '',
                             '',
                             ))
-
-        table_key = 'Strip Object Connectivity'
         fields = [
             'Name',
             'Strip Start Point',
@@ -265,9 +261,14 @@ class Area:
             'Auto Widen',
             'Layer',
         ]
+        df = self.etabs.database.reshape_data_to_df(fields, data)
         if self.etabs.software == 'ETABS':
-            fields.insert(1, 'Story')
-        self.etabs.database.apply_data(table_key, data, fields)
+            df.insert(loc=1, column='Story', value=story)
+        if self.etabs.etabs_main_version > 19:
+            df.columns = ['Name', 'Story', 'StartPoint', 'EndPoint', 'WStartLeft',
+                          'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
+        table_key = 'Strip Object Connectivity'
+        self.etabs.database.write(table_key, df)
 
     def export_freecad_stiff_elements(self, doc : 'App.Document' = None):
         self.etabs.set_current_unit('kN', 'mm')
