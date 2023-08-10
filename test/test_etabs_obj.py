@@ -187,6 +187,19 @@ def test_get_type_of_structure():
 def test_start_slab_design():
     etabs.start_slab_design()
 
+def test_angles_response_spectrums_analysis():
+    open_model(etabs=etabs, filename='zibaei.EDB')
+    scales = etabs.angles_response_spectrums_analysis(
+        ex_name='EX',
+        ey_name='EY',
+        specs=['SPECT0', 'SPECT105', 'SPECT120', 'SPECT135', 'SPECT15', 'SPECT150', 'SPECT165', 'SPECT30', 'SPECT45', 'SPECT60', 'SPECT75', 'SPECT90'],
+        section_cuts=['SEC0', 'SEC105', 'SEC120', 'SEC135', 'SEC15', 'SEC150', 'SEC165', 'SEC30', 'SEC45', 'SEC60', 'SEC75', 'SEC90'],
+        analyze=False,
+    )
+    for scale in scales:
+        assert pytest.approx(scale, abs=.001) == 1
+
+
 
 if __name__ == '__main__':
     import pandas as pd

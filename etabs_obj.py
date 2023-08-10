@@ -862,6 +862,7 @@ class EtabsModel:
         reset_scale : bool = True,
         analyze : bool = True,
         ):
+        print(f"{ex_name=}, {ey_name=}, {specs=}, {section_cuts=}")
         self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=specs)
@@ -878,14 +879,16 @@ class EtabsModel:
             spec_sec_angle = df[df['OutputCase'] == df['angle_spec']]
             scales = []
             spec_scales = {}
+            df['F1'] = df['F1'].astype(float)
             for i, row in spec_sec_angle.iterrows():
                 spec = row['OutputCase']
                 section_cut = row['SectionCut']
                 angle = row['angle']
                 df_angle_section = df[(df['SectionCut'] == section_cut) & (df['angle'] == angle)][['F1', 'OutputCase']]
-                f_ex = abs(float(df_angle_section[df['OutputCase'] == ex_name]['F1']))
-                f_ey = abs(float(df_angle_section[df['OutputCase'] == ey_name]['F1']))
-                f_spec = abs(float(df_angle_section[df['OutputCase'] == spec]['F1']))
+                df_angle_section.set_index('OutputCase', inplace=True)
+                f_ex = abs(df_angle_section.loc[ex_name, 'F1'])
+                f_ey = abs(df_angle_section.loc[ey_name, 'F1'])
+                f_spec = abs(df_angle_section.loc[spec, 'F1'])
                 scale = scale_factor * math.sqrt(f_ex ** 2 + f_ey ** 2) / f_spec
                 spec_scales[spec] = scale
                 scales.append(scale)
@@ -901,6 +904,7 @@ class EtabsModel:
         self.analyze.set_load_cases_to_analyze()
         if analyze:
             self.run_analysis()
+        return scales
 
     def create_joint_shear_file(self,
         file_name: Union[str, Path]= 'js.EDB',
