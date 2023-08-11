@@ -116,6 +116,8 @@ class Design:
         ):
         text = ''
         self.etabs.set_current_unit('N', 'cm')
+        self.etabs.run_analysis()
+        self.etabs.start_design()
         beam_rebars = self.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
         if location == 'top':
             areas = beam_rebars[4]
@@ -197,8 +199,6 @@ class Design:
         '''
         text = ''
         if rho is None:
-            self.etabs.run_analysis()
-            self.etabs.start_design()
             print('Getting Rho ...')
             rho, text = self.get_rho(
                 beam_name,

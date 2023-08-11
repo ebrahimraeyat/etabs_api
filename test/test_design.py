@@ -55,6 +55,7 @@ def test_set_phi_joint_shear_aci08():
     assert ret[0] == phi_joint_shear
 
 def test_get_rho():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     rho, _ = etabs.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
 
@@ -73,8 +74,8 @@ def test_get_deflection_of_beam():
         beam_name='157',
         distance_for_calculate_rho='middle',
     )
-    assert pytest.approx(def1, abs=.001) == 1.5722
-    assert pytest.approx(def2, abs=.001) == 2.25477
+    assert pytest.approx(def1, abs=.001) == 0.3975
+    assert pytest.approx(def2, abs=.001) == 2.21168
 
 def test_get_deflection_of_beam_console():
     open_model(etabs=etabs, filename='madadi.EDB')
