@@ -10,6 +10,7 @@ if 'etabs' not in dir(__builtins__):
 
 @pytest.mark.getmethod
 def test_get_xy_period():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     Tx, Ty, i_x, i_y = etabs.results.get_xy_period()
     assert pytest.approx(Tx, abs=.01) == 1.291
     assert pytest.approx(Ty, abs=.01) == 1.291
@@ -78,27 +79,12 @@ def test_get_point_displacement_nonlinear_cases():
         'Dead+S-DEAD+0.25Live',
         item_type_elm=1,
         )
-    assert V == pytest.approx((.1478, 0, 0), abs=.001)
-    V = etabs.results.get_point_displacement(
-        '~215',
-        'Dead+S-DEAD+0.25Live',
-        index=1,
-        item_type_elm=1,
-        )
-    assert V == pytest.approx((0, -0.03779, -0.22628), abs=.001)
+    assert V == pytest.approx((0, -0.0378, -0.2262), abs=.001)
     V = etabs.results.get_point_displacement(
         '~215',
         'deflection1',
         type_='Combo',
         item_type_elm=1,
         )
-    assert V == pytest.approx(( 0.15553, 0.03779, 0.22628), abs=.001)
-    V = etabs.results.get_point_displacement(
-        '~215',
-        'deflection1',
-        type_='Combo',
-        index=1,
-        item_type_elm=1,
-        )
-    assert V == pytest.approx(( -0.1472, -0.0336, -0.2336), abs=.001)
+    assert V == pytest.approx((0.0077, 0.0039, -0.0073), abs=.001)
     

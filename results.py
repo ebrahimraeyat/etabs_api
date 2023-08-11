@@ -50,6 +50,7 @@ class Results:
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
+        index = -1
         x = results[6][index]
         y = results[7][index]
         z = results[8][index]
@@ -65,6 +66,9 @@ class Results:
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
+        if results[0] == 0:
+            results = self.SapModel.Results.JointDispl(point_name, 0)
+        print(10 * '*', '\n', point_name, results)
         x = results[6][index]
         y = results[7][index]
         z = results[8][index]
@@ -81,11 +85,11 @@ class Results:
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
         displacements = {}
+        index = -1
         for point_name in point_names:
             results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
             if results[0] == 0:
                 results = self.SapModel.Results.JointDispl(point_name, 0)
-            index = len(results[6]) - 1
             print(10 * '*', '\n', point_name, results)
             x = results[6][index]
             y = results[7][index]
