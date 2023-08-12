@@ -713,6 +713,47 @@ class Area:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         self.etabs.run_analysis()
         return text
+    
+    def get_mesh_results(self,
+                         slabs: list,
+                         case_name: str='deflection1',
+                         type_: str='Combo'
+                         ) -> dict:
+        '''
+        returns mesh result suitable for show in FreeCAD
+        '''
+    
+        map_dict = self.etabs.database.get_map_mesh_points()
+        mesh_joint = self.etabs.database.area_mesh_joints(slabs, ['Floor'], map_dict=map_dict)
+        points = self.etabs.points.get_objects_and_elements_joints_coordinate(map_dict=map_dict, joints=list(mesh_joint[2]))
+        disps = self.etabs.results.get_points_displacement(list(mesh_joint[2]), lp_name=case_name, type_=type_, item_type_elm=1, map_dict=map_dict)
+        results = [{'time': 1, 'disp': disps}]
+
+        el3 = {}
+        if len(mesh_joint[0]) > 0:
+            for value in mesh_joint[0].values():
+                el3.update(value)
+        el4 = {}
+        if len(mesh_joint[1]) > 0:
+            for value in mesh_joint[1].values():
+                el4.update(value)
+        m = {
+            "Nodes": points,
+            "Seg2Elem": {},
+            "Seg3Elem": {},
+            "Tria3Elem": el3,
+            "Tria6Elem": {},
+            "Quad4Elem": el4,
+            "Quad8Elem": {},
+            "Tetra4Elem": {},
+            "Tetra10Elem": {},
+            "Hexa8Elem": {},
+            "Hexa20Elem": {},
+            "Penta6Elem": {},
+            "Penta15Elem": {},
+            "Results": results
+            }
+        return m
 
 def deck_plate_equivalent_height_according_to_volume(
         s,

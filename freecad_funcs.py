@@ -191,3 +191,185 @@ def clone_repos(repos: list):
     else:
         msg = 'Install failed.'
         QMessageBox.warning(None, "Failed", msg)
+
+
+def import_etabs_mesh_results(
+    m,
+    result_name_prefix="",
+    result_analysis_type=""
+):
+    from FreeCAD import Console
+    import ObjectsFem
+    from feminout import importToolsFem
+    from femresult import resulttools
+    from femtools import femutils
+
+    doc = FreeCAD.newDocument()
+
+    result_mesh_object = None
+    res_obj = None
+
+    if len(m["Nodes"]) > 0:
+        mesh = importToolsFem.make_femmesh(m)
+        res_mesh_is_compacted = False
+        nodenumbers_for_compacted_mesh = []
+
+        number_of_increments = len(m["Results"])
+        Console.PrintLog(
+            "Increments: " + str(number_of_increments) + "\n"
+        )
+        if len(m["Results"]) > 0:
+            for result_set in m["Results"]:
+                if "number" in result_set:
+                    eigenmode_number = result_set["number"]
+                else:
+                    eigenmode_number = 0
+                step_time = result_set["time"]
+                step_time = round(step_time, 2)
+                if eigenmode_number > 0:
+                    results_name = (
+                        "{}EigenMode_{}_Results"
+                        .format(result_name_prefix, eigenmode_number)
+                    )
+                elif number_of_increments > 1:
+                    if result_analysis_type == "buckling":
+                        results_name = (
+                            "{}BucklingFactor_{}_Results"
+                            .format(result_name_prefix, step_time)
+                        )
+                    else:
+                        results_name = (
+                            "{}Time_{}_Results"
+                            .format(result_name_prefix, step_time)
+                        )
+                else:
+                    results_name = (
+                        "{}Results"
+                        .format(result_name_prefix)
+                    )
+
+                res_obj = ObjectsFem.makeResultMechanical(doc, results_name)
+                # create result mesh
+                result_mesh_object = ObjectsFem.makeMeshResult(doc, results_name + "_Mesh")
+                result_mesh_object.FemMesh = mesh
+                res_obj.Mesh = result_mesh_object
+                res_obj = importToolsFem.fill_femresult_mechanical(res_obj, result_set)
+
+                # more result object calculations
+                if not res_obj.MassFlowRate:
+                    # information 1:
+                    # only compact result if not Flow 1D results
+                    # compact result object, workaround for bug 2873
+                    # https://www.freecad.org/tracker/view.php?id=2873
+                    # information 2:
+                    # if the result data has multiple result sets there will be multiple result objs
+                    # they all will use one mesh obj
+                    # on the first res obj fill: the mesh obj will be compacted, thus
+                    # it does not need to be compacted on further result sets
+                    # but NodeNumbers need to be compacted for every result set (res object fill)
+                    # example frd file: https://forum.freecad.org/viewtopic.php?t=32649#p274291
+                    if res_mesh_is_compacted is False:
+                        # first result set, compact FemMesh and NodeNumbers
+                        res_obj = resulttools.compact_result(res_obj)
+                        res_mesh_is_compacted = True
+                        nodenumbers_for_compacted_mesh = res_obj.NodeNumbers
+                    else:
+                        # all other result sets, do not compact FemMesh, only set NodeNumbers
+                        res_obj.NodeNumbers = nodenumbers_for_compacted_mesh
+
+                # fill DisplacementLengths
+                res_obj = resulttools.add_disp_apps(res_obj)
+                # fill vonMises
+                res_obj = resulttools.add_von_mises(res_obj)
+                # fill principal stress
+                # if material reinforced object use add additional values to the res_obj
+                if res_obj.getParentGroup():
+                    has_reinforced_mat = False
+                    for obj in res_obj.getParentGroup().Group:
+                        if femutils.is_of_type(obj, "Fem::MaterialReinforced"):
+                            has_reinforced_mat = True
+                            Console.PrintLog(
+                                "Reinforced material object detected, "
+                                "reinforced principal stresses and standard principal "
+                                "stresses will be added.\n"
+                            )
+                            resulttools.add_principal_stress_reinforced(res_obj)
+                            break
+                    if has_reinforced_mat is False:
+                        Console.PrintLog(
+                            "No reinforced material object detected, "
+                            "standard principal stresses will be added.\n"
+                        )
+                        # fill PrincipalMax, PrincipalMed, PrincipalMin, MaxShear
+                        res_obj = resulttools.add_principal_stress_std(res_obj)
+                else:
+                    Console.PrintLog(
+                        "No Analysis detected, standard principal stresses will be added.\n"
+                    )
+                    # if a pure frd file was opened no analysis and thus no parent group
+                    # fill PrincipalMax, PrincipalMed, PrincipalMin, MaxShear
+                    res_obj = resulttools.add_principal_stress_std(res_obj)
+                # fill Stats
+                res_obj = resulttools.fill_femresult_stats(res_obj)
+
+                # create a results pipeline if not already existing
+                # pipeline_name = "Pipeline_" + results_name
+                # pipeline_obj = doc.getObject(pipeline_name)
+                # if pipeline_obj is None:
+                #     pipeline_obj = ObjectsFem.makePostVtkResult(doc, res_obj, results_name)
+                #     pipeline_visibility = True
+                # else:
+                #     if FreeCAD.GuiUp:
+                #         # store pipeline visibility because pipeline_obj.load makes the
+                #         # pipeline always visible
+                #         pipeline_visibility = pipeline_obj.ViewObject.Visibility
+                #     pipeline_obj.load(res_obj)
+                # # update the pipeline
+                # pipeline_obj.recomputeChildren()
+                # pipeline_obj.recompute()
+                # if FreeCAD.GuiUp:
+
+                    # pipeline_obj.ViewObject.updateColorBars()
+                    # make results mesh invisible, will be made visible
+                    # later in task_solver_ccxtools.py
+                    # res_obj.Mesh.ViewObject.Visibility = False
+                    # restore pipeline visibility
+                    # pipeline_obj.ViewObject.Visibility = pipeline_visibility
+
+        else:
+            error_message = (
+                "Nodes, but no results found in frd file. "
+                "It means there only is a mesh but no results in frd file. "
+                "Usually this happens for: \n"
+                "- analysis type 'NOANALYSIS'\n"
+                "- if CalculiX returned no results "
+                "(happens on nonpositive jacobian determinant in at least one element)\n"
+                "- just no frd results where requestet in input file "
+                "(neither 'node file' nor 'el file' in output section')\n"
+            )
+            Console.PrintWarning(error_message)
+
+        # create a result obj, even if we have no results but a result mesh in frd file
+        # see error message above for more information
+        if not res_obj:
+            if result_name_prefix:
+                results_name = "{}_Results".format(result_name_prefix)
+            else:
+                results_name = "Results"
+            res_obj = ObjectsFem.makeResultMechanical(doc, results_name)
+            res_obj.Mesh = result_mesh_object
+            # TODO, node numbers in result obj could be set
+
+        if FreeCAD.GuiUp:
+            doc.recompute()
+
+    else:
+        Console.PrintError(
+            "Problem on frd file import. No nodes found in frd file.\n"
+        )
+        # None will be returned
+        # or would it be better to raise an exception if there are not even nodes in frd file?
+    FreeCADGui.activeDocument().activeView().viewIsometric()
+    FreeCADGui.SendMsgToActiveView("ViewFit")
+    FreeCAD.ActiveDocument.getObject('Results').ViewObject.doubleClicked()
+    return res_obj
