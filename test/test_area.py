@@ -119,6 +119,33 @@ def test_design_slabs():
         two_way = True,
         design = True,
         )
+    
+def test_save_as_deflection_filename():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    slab_name = '179'
+    etabs.area.save_as_deflection_filename(slab_name=slab_name)
+    label, story, _ = etabs.SapModel.AreaObj.GetLabelFromName(slab_name)
+    filename = f'deflection_{label}_{story}.EDB'
+    assert etabs.get_filename_with_suffix() == filename
+    
+def test_get_deflection_of_slab():
+    open_model(etabs=etabs, filename='khiabany.EDB')
+    etabs.area.get_deflection_of_slab(
+    dead=['Dead'],
+    supper_dead=['S-DEAD'],
+    lives=['Live', 'Live-0.5', 'LROOF'],
+    slab_name='4',
+    s=800,
+    d=300,
+    tw=130,
+    hc=50,
+    as_top=130,
+    as_bot=200,
+    # fill=,
+    two_way=True,
+    lives_percentage=0.25,
+    filename='',
+    )
 
 
 

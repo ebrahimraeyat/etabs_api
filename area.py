@@ -585,21 +585,16 @@ class Area:
             self.SapModel.AreaObj.SetModifiers(name, modifiers)
     
     def save_as_deflection_filename(self,
-            filename: str='',
-            ):
-        if not filename:
-            filename1 = 'deflection_areas.EDB'
-        else:
-            filename1 = filename
-        print(f'Save file as {filename1} ...')
+                                    slab_name: str,
+                                    filename: str='',
+    ):
         file_path = self.etabs.get_filepath()
         deflection_path = file_path / 'deflections'
         if not deflection_path.exists():
             import os
             os.mkdir(str(deflection_path))
-        self.SapModel.File.Save(str(deflection_path / filename1))
         if not filename:
-            label, story, _ = self.SapModel.AreaObj.GetLabelFromName(area_name)
+            label, story, _ = self.SapModel.AreaObj.GetLabelFromName(slab_name)
             filename = f'deflection_{label}_{story}.EDB'
             print(f'Save file as {filename} ...')
             self.SapModel.File.Save(str(deflection_path / filename))
@@ -630,10 +625,94 @@ class Area:
                      'reset': True,
         }
         self.assign_slab_modifiers(**kwargs)
-        min_rho, max_rho = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=fill, two_way=two_way)
-        self.etabs.database.set_cracking_analysis_option(min_rho, max_rho)
+        rho_top, rho_bot = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=fill, two_way=two_way)
+        self.etabs.database.set_cracking_analysis_option(rho_bot, rho_top)
         if design:
             self.etabs.start_slab_design()
+
+    def get_deflection_of_slab(self,
+        dead: list,
+        supper_dead: list,
+        lives: list,
+        slab_name: str,
+        s: float,
+        d: float,
+        tw: float,
+        hc: float,
+        as_top: float,
+        as_bot: float,
+        two_way: bool=True,
+        lives_percentage: float = 0.25,
+        filename: str='',
+        ):
+        '''
+        dead: a list of Dead loads
+        supper_dead: a list of supper Dead loads
+        lives: a list of live loads
+        beam_name: The name of beam for calculating deflection
+        distance_for_calculate_rho: A string or float length for calculating rho, string can be 'middle', 'start' and 'end'
+        location: location for getting rebar area, 'top' and 'bot'
+        torsion_area: area of torsion rebars, if it None, automatically 1/2 of torsion area added to flextural rebar area
+        frame_area: The area of concrete section, when it is None, obtain automatically
+        cover: cover of beam
+        lives_percentage: live load percentage for considering to calculate short term cracking deflection
+        filename: The etabs file name for creating deflection model
+        point_for_get_deflection: The name of the point for calculate deflection on it, if it is None, for console it is 'start'
+                and for contiues beam it is 'middle'
+        is_console: If beam is console
+        rho: As / bd
+        additional_rebars: Add this to rebar area for calculating rho
+        s: Spacing of Ribs that are Parallel to Slab 1-Axis
+        d: Overall Depth
+        tw: Average Stem Width
+        hc: Slab Thickness
+        as_top: Area of top rebars
+        as_bot: Area of bottom rebars
+        fill: calculate rho according to fill slab or not
+        '''
+        text = ''
+        self.save_as_deflection_filename(slab_name=slab_name, filename=filename)
+        self.design_slabs(slab_name, s, d, tw, hc, as_top, as_bot, True, two_way, True)
+        self.etabs.unlock_model()
+        print("Set frame stiffness modifiers ...")
+        beams, columns = self.etabs.frame_obj.get_beams_columns()
+        self.etabs.frame_obj.assign_frame_modifiers(
+            frame_names=beams + columns,
+            i22=1,
+            i33=1,
+        )
+        print("Set Slab stiffness modifiers ...")
+        self.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)
+        print("Set floor cracking for floors ...")
+        # self.etabs.database.set_floor_cracking(type_='Frame')
+        self.etabs.database.set_floor_cracking(names=[slab_name], type_='Area')
+        # calculate rho and lambda
+        _, rho = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=False, two_way=two_way)
+        landa = 2 / (1 + 50 * rho)
+        text += f'lambda = 2 / (1 + 50 x rho) = 2 / (1 + 50 x {rho:.4f}) = {landa:.2f}'
+        print(f'\n{rho=}\n{landa=}')
+        print("Create nonlinear load cases ...")
+        lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(
+            dead=dead,
+            supper_dead=supper_dead,
+            lives=lives,
+            lives_percentage=lives_percentage,
+            )
+        print("Create deflection load combinations ...")
+        self.SapModel.RespCombo.Add('deflection1', 0)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc1, -1)
+        self.SapModel.RespCombo.Add('deflection2', 0)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc2, 1)
+        self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc1, landa - 1)
+        if supper_dead:
+            # scale factor set to 0.5 due to xi for 3 month equal to 1.0
+            self.SapModel.RespCombo.SetCaseList('deflection2', 0, lc3, -0.5)
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
+        else:
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
+        self.etabs.run_analysis()
+        return text
 
 def deck_plate_equivalent_height_according_to_volume(
         s,
@@ -686,7 +765,7 @@ def calculate_rho(
         as_bot: float,
         fill: bool=False,
         two_way: bool=True,
-    ):
+    ) -> tuple:
     '''
     s: Spacing of Ribs that are Parallel to Slab 1-Axis
     d: Overall Depth
@@ -695,7 +774,7 @@ def calculate_rho(
     as_top: Area of top rebars
     as_bot: Area of bottom rebars
     fill: calculate rho according to fill slab or not
-    return the equivalent height of slab
+    return the (rho_top, rho_bot)
     '''
     if fill:
         h = d
