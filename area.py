@@ -189,9 +189,9 @@ class Area:
                               story: str='',
                               ):
         self.etabs.set_current_unit('N', 'mm')
-        if not story:
-            story = self.SapModel.Story.GetStories()[1][0]
-        z_level = self.SapModel.Story.GetElevation(story)[0]
+        z_level = 0
+        if story:
+            z_level = self.SapModel.Story.GetElevation(story)[0]
         if doc is None:
             doc = FreeCAD.ActiveDocument
         data = []
@@ -262,11 +262,11 @@ class Area:
             'Layer',
         ]
         df = self.etabs.database.reshape_data_to_df(fields, data)
+        if self.etabs.etabs_main_version > 19:
+            df.columns = ['Name', 'StartPoint', 'EndPoint', 'WStartLeft',
+                        'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
         if self.etabs.software == 'ETABS':
             df.insert(loc=1, column='Story', value=story)
-        if self.etabs.etabs_main_version > 19:
-            df.columns = ['Name', 'Story', 'StartPoint', 'EndPoint', 'WStartLeft',
-                          'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
         table_key = 'Strip Object Connectivity'
         self.etabs.database.write(table_key, df)
 

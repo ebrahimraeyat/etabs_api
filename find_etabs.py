@@ -27,6 +27,7 @@ def find_etabs(
     backup=False,
     filename=None,
     show_warning: bool = True,
+    software: str='etabs',
     ):
     '''
     try to find etabs in this manner:
@@ -38,7 +39,7 @@ def find_etabs(
     '''
 
     # try to connect to opening etabs software
-    etabs = etabs_obj.EtabsModel(backup=backup)
+    etabs = etabs_obj.EtabsModel(backup=backup, software=software)
 
     # if not etabs.success:
     #     pass
@@ -49,8 +50,8 @@ def find_etabs(
     elif show_warning:
         QMessageBox.warning(
         None,
-        'ETABS',
-        'Please Open ETABS Software. If ETABS is now open, try register etabs first.'
+        software,
+        f'Please Open {software} Software. If {software} is now open, try register etabs first.'
         )
     if (
         filename is None and
@@ -59,7 +60,7 @@ def find_etabs(
         ):
         filename = open_browse()
     if filename is None and etabs.success and show_warning:
-        QMessageBox.warning(None, 'ETABS', 'Please Open ETABS Model and Run this command again.')
+        QMessageBox.warning(None, software, f'Please Open {software} Model and Run this command again.')
     elif (
         hasattr(etabs, 'success') and
         etabs.success and
@@ -76,10 +77,10 @@ def find_etabs(
         ):
         QMessageBox.information(
             None,
-            'Run ETABS Model',
+            f'Run {software} Model',
             'Model did not run and needs to be run. It takes some times.')
         progressbar = FreeCAD.Base.ProgressIndicator()
-        progressbar.start("Run ETABS Model ... ", 2)
+        progressbar.start(f"Run {software} Model ... ", 2)
         progressbar.next(True)
         etabs.run_analysis()
         progressbar.stop()
