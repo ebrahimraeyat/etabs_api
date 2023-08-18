@@ -373,3 +373,12 @@ def import_etabs_mesh_results(
     FreeCADGui.SendMsgToActiveView("ViewFit")
     FreeCAD.ActiveDocument.getObject('Results').ViewObject.doubleClicked()
     return res_obj
+
+def install_package(package_name:str):
+    if QMessageBox.question(
+        None,
+        'Install Package', f'Package {package_name} must be installed, Do you want to install it?',
+        ) == QMessageBox.No:
+            return
+    import subprocess
+    subprocess.check_call(['python', "-m", "pip", "install", package_name])
