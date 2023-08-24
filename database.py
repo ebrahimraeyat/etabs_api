@@ -1155,7 +1155,12 @@ class DatabaseTables:
         self.etabs.set_current_unit('kgf', 'mm')
         self.apply_data(table_key, data, fields)
 
-    def get_hight_pressure_columns(self,
+    def get_hight_pressure_columns(self):
+        return self.get_axial_pressure_columns()
+
+
+    def get_axial_pressure_columns(self,
+                                   limit: float= 0.3,
         ):
         self.etabs.set_current_unit('N', 'mm')
         cols = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P']
@@ -1186,10 +1191,11 @@ class DatabaseTables:
         column_forces['fc'] = column_forces.Material.map(d)
         for col in ('t2', 't3', 'fc'):
             column_forces[col] = pd.to_numeric(column_forces[col])
-        column_forces['0.3*Ag*fc'] = 0.3 * column_forces['t2'] * column_forces['t3'] * column_forces['fc']
+        limit_ag_fc = 'limit*Ag*fc'
+        column_forces[limit_ag_fc] = limit * column_forces['t2'] * column_forces['t3'] * column_forces['fc']
         import numpy as np
-        column_forces['high pressure'] = np.where(column_forces['P'] > column_forces['0.3*Ag*fc'], True, False)
-        fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', '0.3*Ag*fc', 'high pressure')
+        column_forces['Result'] = np.where(column_forces['P'] > column_forces[limit_ag_fc], True, False)
+        fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', limit_ag_fc, 'Result')
         return column_forces, fields
     
     def set_floor_cracking(self,
