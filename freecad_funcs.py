@@ -7,6 +7,8 @@ import FreeCAD
 import FreeCADGui
 import Part
 
+import pandas as pd
+
 def rectangle_face(
     bx: Union[float, int],
     by: Union[float, int],
@@ -382,3 +384,7 @@ def install_package(package_name:str):
             return
     import subprocess
     subprocess.check_call(['python', "-m", "pip", "install", package_name])
+
+def add_to_clipboard(text):
+    df=pd.DataFrame([text])
+    df.to_clipboard(index=False,header=False)
