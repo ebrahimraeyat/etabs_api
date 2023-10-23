@@ -1,3 +1,4 @@
+import os, sys, subprocess
 from typing import Union
 from pathlib import Path
 
@@ -388,3 +389,10 @@ def install_package(package_name:str):
 def add_to_clipboard(text):
     df=pd.DataFrame([text])
     df.to_clipboard(index=False,header=False)
+
+def open_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
