@@ -35,6 +35,25 @@ def test_generate_concrete_load_combinations_asd():
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
     assert data
 
+def test_generate_concrete_load_combinations_two_systems_in_height():
+    equal_loads = {'Dead' : ['Dead'],
+                    'L' : ['Live'],
+                    'EX': ['ex'],
+                    'EXP': ['exp'],
+                    'EXN': ['exn'],
+                    'EY': ['ey'],
+                    'EYP': ['eyp'],
+                    'EYN': ['eyn'],
+                    'EX1': ['ex1'],
+                    'EXP1': ['exp1'],
+                    'EXN1': ['exn1'],
+                    'EY1': ['ey1'],
+                    'EYP1': ['eyp1'],
+                    'EYN1': ['eyn1'],
+                    }
+    data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, rho_x1=1.2)
+    assert data
+
 @pytest.mark.getmethod
 def test_generate_concrete_load_combinations_separate_direction_asd():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
@@ -130,5 +149,5 @@ def test_apply_linear_load_combinations():
 if __name__ == '__main__':
     import etabs_obj
     two_earthquakes = etabs_obj.EtabsModel(backup=True)
-    ret = test_expand_linear_load_combinations():
+    ret = test_expand_linear_load_combinations()
     print('wow')
