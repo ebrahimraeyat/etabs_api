@@ -59,6 +59,11 @@ def test_get_rho():
     rho, _ = etabs.design.get_rho('130', distance=0)
     assert pytest.approx(rho, abs=.0001) == .01517
 
+def test_get_rho_of_beams():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    rhos, _ = etabs.design.get_rho_of_beams(['130'], distances=[0])
+    assert pytest.approx(rhos[0], abs=.0001) == .01517
+
 def test_get_deflection_of_beam():
     open_model(etabs=etabs, filename='madadi.EDB')
     dead = etabs.load_patterns.get_special_load_pattern_names(1)
@@ -94,6 +99,65 @@ def test_get_deflection_of_beam_console():
         is_console=True,
         rho=0.00579,
     )
+    assert True
+
+def test_get_deflection_of_beams():
+    open_model(etabs=etabs, filename='madadi.EDB')
+    dead = etabs.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
+    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
+    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
+    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
+    lives = l1 + l2 + l3
+    defs1, defs2, _ = etabs.design.get_deflection_of_beams(
+        dead=dead,
+        supper_dead=supper_dead,
+        lives=lives,
+        beam_names=['157'],
+        distances_for_calculate_rho=['middle'],
+    )
+    assert pytest.approx(defs1[0], abs=.001) == 0.3975
+    assert pytest.approx(defs2[0], abs=.001) == 2.21168
+
+def test_get_deflection_of_beams_console():
+    open_model(etabs=etabs, filename='madadi.EDB')
+    dead = etabs.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
+    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
+    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
+    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
+    lives = l1 + l2 + l3
+    etabs.design.get_deflection_of_beams(
+        dead=dead,
+        supper_dead=supper_dead,
+        lives=lives,
+        beam_names=['129'],
+        distances_for_calculate_rho=['end'], #The frame is reverse
+        is_consoles=[True],
+        rhos=0.00579,
+    )
+    assert True
+
+def test_get_deflection_of_beams_console2():
+    # open_model(etabs=etabs, filename='rashidzadeh.EDB')
+    dead = etabs.load_patterns.get_special_load_pattern_names(1)
+    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
+    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
+    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
+    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
+    lives = l1 + l2 + l3
+    beam_names=['97', '80', '63', '46', '29', '12', '11', '28', '45', '62', '79', '96']
+    defs1, defs2, texts = etabs.design.get_deflection_of_beams(
+        dead=dead,
+        supper_dead=supper_dead,
+        lives=lives,
+        beam_names=beam_names,
+        distances_for_calculate_rho='start', #The frame is reverse
+        is_consoles=True,
+    )
+    print(f'{defs1=}\n\n\n')
+    print(f'{defs2=}')
+    # print(f'{texts=}')
     assert True
 
 def test_get_deflection_check_result():

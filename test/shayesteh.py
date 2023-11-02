@@ -5,18 +5,18 @@ import etabs_obj
 
 global etabs
 global open_model
-version = 20
+version = 21
 
 def etabs_model(
         edb: str="shayesteh.EDB",
-        version: int=0, # 19, 20
+        version: int=0, # 19, 20, 21
         ):
     '''
     version 0 means that we can connect to register and openning etabs, it is not
     matter what version it is
     '''
-    if version == 21:
-        return None, None
+    # if version == 21:
+    #     return None, None
     suffix = edb.split('.')[1]
     if suffix == 'EDB':
         software = 'ETABS'

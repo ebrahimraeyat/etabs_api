@@ -1,6 +1,12 @@
+'''
+Design Module
+'''
+
+
+
 from pathlib import Path
 import sys
-from typing import Iterable, Union
+from typing import Union
 
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -35,7 +41,6 @@ class Design:
             code = self.get_code(type_=type_)
         code = code.replace(" ", "")
         i = code.find('-')
-        # code = code.replace("-", "ـ")
         code = code[:i] + '_' + code[i + 1:]
         if 'ACI318_08' in code:
             code += '_IBC2009'
@@ -162,6 +167,87 @@ class Design:
         text += f'Rho = As / bd = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
         return rho, text
     
+    def get_rho_of_beams(
+            self,
+            names: "list[str]",
+            distances: "list[Union[float, str], float, str]"='middle', # start, end
+            locations: "Union[list[str], str]" = 'top',
+            torsion_areas: "Union[list[float], bool]" = None,
+            frame_areas: "Union[list[float], bool]" = None,
+            covers: "list[float]"= [6],
+            additionals_rebars: "Union[list[float], float]"=0,
+    ) -> "tuple(list, list)":
+        from scipy.interpolate import interp1d
+        rhos = []
+        texts = []
+        self.etabs.set_current_unit('N', 'cm')
+        self.etabs.run_analysis()
+        self.etabs.start_design()
+        if torsion_areas is None:
+            torsion_areas = len(names) * [None]
+        if frame_areas is None:
+            frame_areas = len(names) * [None]
+        if isinstance(covers, (int, float)):
+            covers = len(names) * [covers]
+        if isinstance(distances, (float, int, str)):
+            distances = len(names) * [distances]
+        if isinstance(locations, (float, int, str)):
+            locations = len(names) * [locations]
+        if isinstance(additionals_rebars, (int, float)):
+            additionals_rebars = len(names) * [additionals_rebars]
+        for i, name in enumerate(names):
+            location = locations[i]
+            distance = distances[i]
+            torsion_area = torsion_areas[i]
+            frame_area = frame_areas[i]
+            cover = covers[i]
+            additional_rebars = additionals_rebars[i]
+            text = ''
+            beam_rebars = self.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
+            if location == 'top':
+                areas = beam_rebars[4]
+            elif location == 'bot':
+                areas = beam_rebars[6]
+            first_dist = beam_rebars[2][0]
+            last_dist = beam_rebars[2][-1]
+            text += f'The area of main rebar of beam name {name} at {location} in '
+            if isinstance(distance, str):
+                text += f'{distance} of beam = '
+                if distance == 'start':
+                    distance = first_dist
+                elif distance == 'end':
+                    distance = last_dist
+                elif distance == 'middle':
+                    distance = (last_dist - first_dist) / 2
+            else:
+                text += f'{distance:.1f} cm = '
+            if distance < first_dist:
+                area = areas[0]
+                if torsion_area is None:
+                    torsion_area = beam_rebars[10][0] / 2
+            elif distance > last_dist:
+                area = areas[-1]
+                if torsion_area is None:
+                    torsion_area = beam_rebars[10][-1] / 2
+            else:
+                f = interp1d(beam_rebars[2], areas)
+                area = f(distance)
+                if torsion_area is None:
+                    f = interp1d(beam_rebars[2], beam_rebars[10])
+                    torsion_area = f(distance) / 2
+            text += f'{area:.1f} Cm2\n'
+            text += f'Torsion area = {torsion_area:0.1f} Cm2\n'
+            area += torsion_area
+            if frame_area is None:
+                frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
+            area += additional_rebars
+            rho = area / frame_area
+            text += f'b x d = {frame_area:.1f} Cm2\n'
+            text += f'Rho = As / bd = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
+            rhos.append(rho)
+            texts.append(text)
+        return rhos, texts
+    
     def get_deflection_of_beam(self,
         dead: list,
         supper_dead: list,
@@ -227,7 +313,7 @@ class Design:
         if (
             point_for_get_deflection is None and \
             not is_console and \
-            type(distance_for_calculate_rho) == str
+            isinstance(distance_for_calculate_rho, str)
             ):
             point_for_get_deflection = self.etabs.points.add_point_on_beam(
                 name=beam_name,
@@ -296,6 +382,163 @@ class Design:
         print(f'\n{def1=}, {def2=}')
         return abs(def1), abs(def2), text
     
+    def get_deflection_of_beams(self,
+        dead: list,
+        supper_dead: list,
+        lives: list,
+        beam_names: "list[str]",
+        distances_for_calculate_rho: "list[Union[float, str], float, str]"='middle', # start, end
+        locations: "Union[list[str], str]" = 'top',
+        torsion_areas: "Union[list[float], bool]" = None,
+        frame_areas: "Union[list[float], bool]" = None,
+        covers: "Union[list[float, int], float, int]"= 6,
+        lives_percentage: float = 0.25,
+        filename: str='',
+        points_for_get_deflection: "Union[list[str], bool]" = None,
+        is_consoles: "Union[list[bool], bool]"=False,
+        rhos: "Union[list[float, bool], bool]" = None,
+        additionals_rebars: "Union[list[float, int], int, float]"=0,
+        ):
+        '''
+        dead: a list of Dead loads
+        supper_dead: a list of supper Dead loads
+        lives: a list of live loads
+        beam_name: The name of beam for calculating deflection
+        distance_for_calculate_rho: A string or float length for calculating rho, string can be 'middle', 'start' and 'end'
+        location: location for getting rebar area, 'top' and 'bot'
+        torsion_area: area of torsion rebars, if it None, automatically 1/2 of torsion area added to flextural rebar area
+        frame_area: The area of concrete section, when it is None, obtain automatically
+        cover: cover of beam
+        lives_percentage: live load percentage for considering to calculate short term cracking deflection
+        filename: The etabs file name for creating deflection model
+        point_for_get_deflection: The name of the point for calculate deflection on it, if it is None, for console it is 'start'
+                and for contiues beam it is 'middle'
+        is_console: If beam is console
+        rho: As / bd
+        additional_rebars: Add this to rebar area for calculating rho
+        '''
+        if isinstance(distances_for_calculate_rho, (float, int, str)):
+            distances = len(beam_names) * [distances_for_calculate_rho]
+        else:
+            distances = distances_for_calculate_rho
+        if points_for_get_deflection is None:
+            points_for_get_deflection = len(beam_names) * [None]
+        if isinstance(is_consoles, bool):
+            is_consoles = len(beam_names) * [is_consoles]
+        # Get rhos of beams
+        if rhos is None:
+            rhos, texts = self.get_rho_of_beams(
+                beam_names,
+                distances=distances,
+                locations=locations,
+                torsion_areas=torsion_areas,
+                frame_areas=frame_areas,
+                covers = covers,
+                additionals_rebars=additionals_rebars,
+            )
+        # Save As etabs model with filename
+        if not filename:
+            filename = 'deflection_beams_' + '_'.join(beam_names) + '.EDB'
+        print(f'Save file as {filename} ...')
+        file_path = self.etabs.get_filepath()
+        deflection_path = file_path / 'deflections'
+        if not deflection_path.exists():
+            import os
+            os.mkdir(str(deflection_path))
+        self.SapModel.File.Save(str(deflection_path / filename))
+        # Set frame stiffness modifiers
+        print("Set frame stiffness modifiers ...")
+        beams, columns = self.etabs.frame_obj.get_beams_columns()
+        self.etabs.frame_obj.assign_frame_modifiers(
+            frame_names=beams + columns,
+            i22=1,
+            i33=1,
+        )
+        print("Set floor cracking for beams and floors ...")
+        self.etabs.database.set_floor_cracking(type_='Frame')
+        self.etabs.database.set_floor_cracking(type_='Area')
+        print("Create nonlinear load cases ...")
+        lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(
+            dead=dead,
+            supper_dead=supper_dead,
+            lives=lives,
+            lives_percentage=lives_percentage,
+            )
+        print("Create deflection load combinations ...")
+        self.SapModel.RespCombo.Add('deflection1', 0)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
+        self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc1, -1)
+        if supper_dead:
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2, lc3))
+        else:
+            self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
+        new_points_for_get_deflection = []
+        if self.etabs.etabs_main_version < 20:
+            index = 1
+        else:
+            index = 0
+        beams_points = []
+        deflections1 = []
+        deflections2 = []
+        for i, beam_name in enumerate(beam_names):
+            print(20 * '=' + '\n')
+            print(f'Calculating Deflection for {beam_name=}\n')
+
+            point_for_get_deflection = points_for_get_deflection[i]
+            is_console = is_consoles[i]
+            distance = distances[i]
+            rho = rhos[i]
+            landa = 2 / (1 + 50 * rho)
+            texts[i] += f'lambda = 2 / (1 + 50 x rho) = 2 / (1 + 50 x {rho:.4f}) = {landa:.2f}'
+            print(f'\n{rho=}\n{landa=}')
+            p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
+            beams_points.append([p1_name, p2_name])
+            if (
+                point_for_get_deflection is None and \
+                not is_console and \
+                type(distance) == str
+                ):
+                point_for_get_deflection = self.etabs.points.add_point_on_beam(
+                    name=beam_name,
+                    distance=distance,
+                    unlock_model=False,
+                    )
+            if (
+                point_for_get_deflection is None and \
+                is_console
+                ):
+                point_for_get_deflection = p2_name
+            new_points_for_get_deflection.append(point_for_get_deflection)
+            print("Create deflection load combinations ...")
+            self.SapModel.RespCombo.Add(f'deflection2_beam{beam_name}', 0)
+            self.SapModel.RespCombo.SetCaseList(f'deflection2_beam{beam_name}', 0, lc2, 1)
+            self.SapModel.RespCombo.SetCaseList(f'deflection2_beam{beam_name}', 0, lc1, landa - 1)
+            if supper_dead:
+                # scale factor set to 0.5 due to xi for 3 month equal to 1.0
+                self.SapModel.RespCombo.SetCaseList(f'deflection2_beam{beam_name}', 0, lc3, -0.5)
+        
+        self.etabs.run_analysis()
+        for i, beam_name in enumerate(beam_names):
+            p1_name, p2_name = beams_points[i]
+            p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=index)[2]
+            p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+            p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=index)[2]
+            p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+            print(f'\n{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
+            if is_console:
+                def1 = p2_def1 - p1_def1
+                def2 = p2_def2 - p1_def2
+            else:
+                def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=index)[2]
+                def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+                print(f'\n{def_def1=}, {def_def2=}')
+                def1 = def_def1 - (p1_def1 + p2_def1) / 2
+                def2 = def_def2 - (p1_def2 + p2_def2) / 2
+            print(f'\n{def1=}, {def2=}')
+            deflections1.append(abs(def1))
+            deflections2.append(abs(def2))
+        return deflections1, deflections2, texts
+        
 def get_deflection_check_result(
     def1: float,
     def2: float,
