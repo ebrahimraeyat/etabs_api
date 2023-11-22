@@ -203,6 +203,7 @@ class Design:
             cover = covers[i]
             additional_rebars = additionals_rebars[i]
             text = ''
+            print(f'{name=}\n')
             beam_rebars = self.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
             if location == 'top':
                 areas = beam_rebars[4]
@@ -543,51 +544,24 @@ def get_deflection_check_result(
     def1: float,
     def2: float,
     ln: float,
+    short_term: float=360,
+    long_term: float=480,
     ):
-    allow_def1 = ln / 360
-    allow_def2 = ln / 480
+    allow_def1 = ln / short_term
+    allow_def2 = ln / long_term
     ret = f'Ln = {ln:.0f} Cm\n'
     ret += 20 * '-'
     ret += f'\ncombo1 deflection = {def1:.3f} Cm '
     if def1 <= allow_def1:
-        ret += f'< Ln / 360 = {allow_def1:.2f} Cm ==> OK'
+        ret += f'< Ln / {short_term} = {allow_def1:.2f} Cm ==> OK'
     else:
-        ret += f'> Ln / 360 = {allow_def1:.2f} Cm ==> Not OK'
+        ret += f'> Ln / {short_term} = {allow_def1:.2f} Cm ==> Not OK'
     # combo 2
     ret += f'\ncombo2 deflection = {def2:.3f} Cm '
     if def2 <= allow_def2:
-        ret += f'< Ln / 480 = {allow_def2:.2f} Cm ==> OK\n'
+        ret += f'< Ln / {long_term} = {allow_def2:.2f} Cm ==> OK\n'
     else:
-        ret += f'> Ln / 480 = {allow_def2:.2f} Cm ==> Not OK\n'
-    ret += 20 * '-'
-    ret += '\n'
-    ret += 20 * '-'
-    ret += f'\ncombo1 deflection = {def1:.3f} Cm '
-    if def1 <= allow_def1 * 2:
-        ret += f'< Ln / 180 = {allow_def1 * 2:.2f} Cm ==> OK'
-    else:
-        ret += f'> Ln / 180 = {allow_def1 * 2:.2f} Cm ==> Not OK'
-    # combo 2
-    ret += f'\ncombo2 deflection = {def2:.3f} Cm '
-    if def2 <= allow_def2 * 2:
-        ret += f'< Ln / 240 = {allow_def2 * 2:.2f} Cm ==> OK\n'
-    else:
-        ret += f'> Ln / 240 = {allow_def2 * 2:.2f} Cm ==> Not OK\n'
-    ret += 20 * '-'
-    ret += '\n'
-    ret += 20 * '-'
-    ret += '\nIn Common Structures\n'
-    ret += f'\ncombo1 deflection = {def1:.3f} Cm '
-    if def1 <= allow_def1:
-        ret += f'< Ln / 360 = {allow_def1:.2f} Cm ==> OK'
-    else:
-        ret += f'> Ln / 360 = {allow_def1:.2f} Cm ==> Not OK'
-    # combo 2
-    ret += f'\ncombo2 deflection = {def2:.3f} Cm '
-    if def2 <= allow_def2 * 2:
-        ret += f'< Ln / 240 = {allow_def2 * 2:.2f} Cm ==> OK\n'
-    else:
-        ret += f'> Ln / 240 = {allow_def2 * 2:.2f} Cm ==> Not OK\n'
+        ret += f'> Ln / {long_term} = {allow_def2:.2f} Cm ==> Not OK\n'
     ret += 20 * '-'
     return ret
 
