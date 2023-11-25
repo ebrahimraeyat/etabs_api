@@ -15,6 +15,14 @@ def test_get_beams_columns():
     assert len(beams) == 92
     assert len(columns) == 48
 
+def test_get_beams_columns_on_stories():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    ret = etabs.frame_obj.get_beams_columns_on_stories()
+    assert len(ret) == 5
+    for story in etabs.SapModel.Story.GetNameList()[1]:
+        assert len(ret[story]) == 2
+    assert len(ret['STORY5'][1]) == 4 # Columns of Ridge
+
 def test_get_beams_columns_in_stories():
     # frame_names = '116', '253']
     # etabs.frame_obj.set_frame_obj_selected(frame_names)

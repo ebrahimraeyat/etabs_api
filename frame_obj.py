@@ -105,6 +105,29 @@ class FrameObj:
                             others.append(label)
         return beams, columns
     
+    def get_beams_columns_on_stories(
+            self,
+            ) -> dict:
+        '''
+        type_: 1=steel and 2=concrete
+        return a dict with story names as key and a list with beams and columns as values
+        {'Story1': [beams, columns]}
+        '''
+        d = {}
+        # Beams
+        table_key = "Beam Object Connectivity"
+        df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
+        groups = df.groupby('Story')
+        for story, group in groups:
+            d[story] = [group['UniqueName']]
+        # Columns
+        table_key = "Column Object Connectivity"
+        df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
+        groups = df.groupby('Story')
+        for story, group in groups:
+            d[story].append(group['UniqueName'])
+        return d
+    
     def get_unique_frames(self,
         frame_names: list,
         ):
@@ -292,7 +315,6 @@ class FrameObj:
     def get_unit_weight_of_beams(self,
                     beams_names = None,
                     ) -> dict:
-        import math
         if beams_names is None:
             beams_names, _ = self.get_beams_columns(types=[1,2,3])
         table_key = "Frame Assignments - Property Modifiers"
