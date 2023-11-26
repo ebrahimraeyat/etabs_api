@@ -275,6 +275,9 @@ class EtabsModel:
         return new_path
 
     def get_filename(self) -> Path:
+        '''
+        return WindowsPath('H:/1402/montazer/rashidzadeh/etabs/test.EDB')
+        '''
         return Path(self.SapModel.GetModelFilename())
     
     def get_filepath(self) -> Path:
@@ -333,7 +336,7 @@ class EtabsModel:
 
     def get_drift_periods(
                 self,
-                t_filename: str="T.EDB",
+                t_filename: str="",
                 open_main_file: bool=True,
                 ):
         '''
@@ -349,6 +352,8 @@ class EtabsModel:
         if asli_file_path.suffix.lower() != '.edb':
             asli_file_path = asli_file_path.with_suffix(".EDB")
         dir_path = asli_file_path.parent.absolute()
+        if not t_filename:
+            t_filename = self.get_file_name_without_suffix() + "_T.EDB"
         t_file_path = dir_path / t_filename
         print(f"Saving file as {t_file_path}\n")
         self.SapModel.File.Save(str(t_file_path))
