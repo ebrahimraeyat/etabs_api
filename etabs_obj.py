@@ -351,10 +351,15 @@ class EtabsModel:
         asli_file_path = Path(self.SapModel.GetModelFilename())
         if asli_file_path.suffix.lower() != '.edb':
             asli_file_path = asli_file_path.with_suffix(".EDB")
-        dir_path = asli_file_path.parent.absolute()
         if not t_filename:
             t_filename = self.get_file_name_without_suffix() + "_T.EDB"
-        t_file_path = dir_path / t_filename
+        
+        file_path = self.get_filepath()
+        period_path = file_path / 'periods'
+        if not period_path.exists():
+            import os
+            os.mkdir(str(period_path))
+        t_file_path = period_path / t_filename
         print(f"Saving file as {t_file_path}\n")
         self.SapModel.File.Save(str(t_file_path))
         print("get frame property modifiers and change I values\n")
