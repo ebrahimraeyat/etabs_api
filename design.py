@@ -479,8 +479,6 @@ class Design:
         else:
             index = 0
         beams_points = []
-        deflections1 = []
-        deflections2 = []
         for i, beam_name in enumerate(beam_names):
             print(20 * '=' + '\n')
             print(f'Calculating Deflection for {beam_name=}\n')
@@ -517,8 +515,9 @@ class Design:
             if supper_dead:
                 # scale factor set to 0.5 due to xi for 3 month equal to 1.0
                 self.SapModel.RespCombo.SetCaseList(f'deflection2_beam{beam_name}', 0, lc3, -0.5)
-        
         self.etabs.run_analysis()
+        deflections1 = []
+        deflections2 = []
         for i, beam_name in enumerate(beam_names):
             p1_name, p2_name = beams_points[i]
             p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=index)[2]
@@ -530,8 +529,8 @@ class Design:
                 def1 = p2_def1 - p1_def1
                 def2 = p2_def2 - p1_def2
             else:
-                def_def1 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, 'deflection1', type_='Combo', index=index)[2]
-                def_def2 = self.etabs.results.get_point_abs_displacement(point_for_get_deflection, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+                def_def1 = self.etabs.results.get_point_abs_displacement(new_points_for_get_deflection[i], 'deflection1', type_='Combo', index=index)[2]
+                def_def2 = self.etabs.results.get_point_abs_displacement(new_points_for_get_deflection[i], f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
                 print(f'\n{def_def1=}, {def_def2=}')
                 def1 = def_def1 - (p1_def1 + p2_def1) / 2
                 def2 = def_def2 - (p1_def2 + p2_def2) / 2
