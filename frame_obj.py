@@ -125,7 +125,11 @@ class FrameObj:
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
         groups = df.groupby('Story')
         for story, group in groups:
-            d[story].append(group['UniqueName'])
+            story_frames = d.get(story, [])
+            story_frames.append(group['UniqueName'])
+            if len(story_frames) == 1: # Beams not exists on this story
+                story_frames.insert(0, [])
+                d[story] = story_frames
         return d
     
     def get_unique_frames(self,
