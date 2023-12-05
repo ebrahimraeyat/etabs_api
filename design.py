@@ -387,7 +387,7 @@ class Design:
         dead: list,
         supper_dead: list,
         lives: list,
-        beam_names: "list[str]",
+        beam_names: "Union[list[str], pd.DataFrame]",
         distances_for_calculate_rho: "list[Union[float, str], float, str]"='middle', # start, end
         locations: "Union[list[str], str]" = 'top',
         torsion_areas: "Union[list[float], bool]" = None,
@@ -418,14 +418,46 @@ class Design:
         rho: As / bd
         additional_rebars: Add this to rebar area for calculating rho
         '''
-        if isinstance(distances_for_calculate_rho, (float, int, str)):
-            distances = len(beam_names) * [distances_for_calculate_rho]
+            # prepare inputs for calculate deflections
+        if isinstance(beam_names, pd.DataFrame):
+            def add_beam_prop_to_df(row):
+                torsion_rebar = 'Torsion Rebar'
+                print(row)
+                if row[torsion_rebar]:
+                    row[torsion_rebar] = None
+                else:
+                    row[torsion_rebar] = 0
+                if row['Console']:
+                    row['location'] = 'bot'
+                    row['distance_for_calculate_rho'] = 'start'
+                else:
+                    row['location'] = 'top'
+                    row['distance_for_calculate_rho'] = 'middle'
+                cover = row['Cover']
+                b = row['Width']
+                h = row['Height']
+                row['d'] = h - cover
+                row['frame_area'] = b * row['d']
+                return row
+            
+            df = beam_names.apply(add_beam_prop_to_df, axis=1)
+            beam_names = df['Name']
+            torsion_areas = df['Torsion Rebar']
+            is_consoles = df['Console']
+            locations = df['location']
+            distances = df['distance_for_calculate_rho']
+            covers = df['Cover']
+            frame_areas = df['frame_area']
+            additionals_rebars = df['Add Rebar']
         else:
-            distances = distances_for_calculate_rho
+            if isinstance(distances_for_calculate_rho, (float, int, str)):
+                distances = len(beam_names) * [distances_for_calculate_rho]
+            else:
+                distances = distances_for_calculate_rho
+            if isinstance(is_consoles, bool):
+                is_consoles = len(beam_names) * [is_consoles]
         if points_for_get_deflection is None:
             points_for_get_deflection = len(beam_names) * [None]
-        if isinstance(is_consoles, bool):
-            is_consoles = len(beam_names) * [is_consoles]
         # Get rhos of beams
         if rhos is None:
             rhos, texts = self.get_rho_of_beams(
