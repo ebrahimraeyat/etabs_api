@@ -1195,8 +1195,9 @@ class DatabaseTables:
         column_forces[limit_ag_fc] = limit * column_forces['t2'] * column_forces['t3'] * column_forces['fc']
         import numpy as np
         column_forces['Result'] = np.where(column_forces['P'] > column_forces[limit_ag_fc], True, False)
-        fields = ('Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', limit_ag_fc, 'Result')
-        return column_forces, fields
+        fields = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', limit_ag_fc, 'Result']
+        df = column_forces[fields]
+        return df
     
     def set_floor_cracking(self,
         names: Union[list, bool]=None,

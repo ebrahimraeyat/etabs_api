@@ -321,6 +321,13 @@ def test_get_map_mesh_points():
     df = df[df['ObjType'] == 'Shell']
     assert len(df) == len(maped)
 
+def test_get_axial_pressure_columns():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    df = etabs.database.get_axial_pressure_columns()
+    limit_ag_fc = 'limit*Ag*fc'
+    fields = set(['Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', limit_ag_fc, 'Result'])
+    assert set(df.columns) == fields
+
 
 
 
