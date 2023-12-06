@@ -239,6 +239,8 @@ class FrameObj:
         print('get columns pmm and beams rebars')
         columns_pmm, beams_rebars = self.get_columns_pmm_and_beams_rebars(story_frames)
         asli_file_path = Path(self.SapModel.GetModelFilename())
+        if asli_file_path.suffix.lower() != '.edb':
+            asli_file_path = asli_file_path.with_suffix(".EDB")
         if isinstance(weakness_filename, Path) and weakness_filename.exists():
             self.SapModel.File.OpenFile(str(weakness_filename))
         else:
