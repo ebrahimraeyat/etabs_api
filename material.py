@@ -38,7 +38,7 @@ class Material:
         S400 = []
         for rebar in rebars:
             fy, _ = self.get_rebar_fy_fu(rebar)
-            if 390 < fy < 410:
+            if 390 < fy < 430:
                 S400.append(rebar)
             elif 290 < fy < 350:
                 S340.append(rebar)
