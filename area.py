@@ -683,9 +683,9 @@ class Area:
         )
         print("Set Slab stiffness modifiers ...")
         self.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)
-        print("Set floor cracking for floors ...")
-        # self.etabs.database.set_floor_cracking(type_='Frame')
-        self.etabs.database.set_floor_cracking(names=[slab_name], type_='Area')
+        print("Set floor cracking for beams and floors ...")
+        self.etabs.database.set_floor_cracking(type_='Frame')
+        self.etabs.database.set_floor_cracking(type_='Area')
         # calculate rho and lambda
         _, rho = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=False, two_way=two_way)
         landa = 2 / (1 + 50 * rho)

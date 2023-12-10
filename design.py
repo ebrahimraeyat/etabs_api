@@ -487,6 +487,8 @@ class Design:
             i22=1,
             i33=1,
         )
+        print("Set Slab stiffness modifiers ...")
+        self.etabs.area.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)
         print("Set floor cracking for beams and floors ...")
         self.etabs.database.set_floor_cracking(type_='Frame')
         self.etabs.database.set_floor_cracking(type_='Area')
