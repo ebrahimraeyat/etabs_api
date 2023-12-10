@@ -359,6 +359,12 @@ class EtabsModel:
         if not period_path.exists():
             import os
             os.mkdir(str(period_path))
+        if not open_main_file:
+            # for steel structure
+            t_steel_filename = self.get_file_name_without_suffix() + "_drift.EDB"
+            period_path = file_path / 'periods'
+            drift_file_path = period_path / t_steel_filename
+            shutil.copy(asli_file_path, drift_file_path)
         t_file_path = period_path / t_filename
         print(f"Saving file as {t_file_path}\n")
         self.SapModel.File.Save(str(t_file_path))
@@ -410,6 +416,10 @@ class EtabsModel:
         if open_main_file:
             print("opening the main file\n")
             self.SapModel.File.OpenFile(str(asli_file_path))
+        else:
+            # for steel structure
+            self.SapModel.File.OpenFile(str(drift_file_path))
+            self.SapModel.DesignSteel.SetCode('AISC ASD 89')
         return Tx_drift, Ty_drift, asli_file_path
 
     def get_diaphragm_max_over_avg_drifts(

@@ -72,7 +72,7 @@ def test_get_drift_periods_steel():
     assert pytest.approx(Tx_drift, .01) == 0.789
     assert pytest.approx(Ty_drift, .01) == 0.449
     # did not open main file after get tx, ty
-    assert etabs.get_filename_with_suffix() == 'T.EDB'
+    assert etabs.get_filename_with_suffix() == 'test21_drift.EDB'
 
 @pytest.mark.slow
 def test_apply_cfactor_to_edb():
