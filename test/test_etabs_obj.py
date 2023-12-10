@@ -174,9 +174,8 @@ def test_add_prefix_suffix_name():
 def test_create_joint_shear_bcc_file():
     from shayesteh import get_temp_filepath
     filename = get_temp_filepath(filename='js_bc')
-    df_js, df_bc = etabs.create_joint_shear_bcc_file(file_name=filename.name, open_main_file=True)
-    assert len(df_js) > 0
-    assert len(df_bc) > 0
+    df = etabs.create_joint_shear_bcc_file(file_name=filename.name, open_main_file=True)
+    assert len(df) > 0
 
 
 def test_get_type_of_structure():

@@ -940,15 +940,9 @@ class EtabsModel:
         table_key = f"Concrete Joint Design Summary - {code}"
         cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio', 'BCMajRatio', 'BCMinRatio']
         df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
-        ratio_labels = ['JSMajRatio', 'JSMinRatio']
-        df_js = df.dropna(subset=ratio_labels)
-        df_js = df_js.astype({i: float for i in ratio_labels})
-        ratio_labels = ['BCMajRatio', 'BCMinRatio']
-        df_bc = df.dropna(subset=ratio_labels)
-        df_bc = df_bc.astype({i: float for i in ratio_labels})
         if open_main_file:
             self.SapModel.File.OpenFile(str(main_file_path))
-        return df_js, df_bc
+        return df
     
     def get_type_of_structure(self):
         '''
