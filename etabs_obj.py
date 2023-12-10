@@ -365,21 +365,26 @@ class EtabsModel:
         print("get frame property modifiers and change I values\n")
         IMod_beam = 0.5
         IMod_col_wall = 1
+        IMod_Floors = 0.25 * 1.5
         for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
             if self.SapModel.FrameObj.GetDesignProcedure(label)[0] == 2:  # concrete
                 modifiers = list(self.SapModel.FrameObj.GetModifiers(label)[0])
                 if self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 1: # Column
-                    IMod = IMod_col_wall
-                    modifiers[:6] = 6 * [IMod]
+                    modifiers[:6] = 6 * [IMod_col_wall]
                 elif self.SapModel.FrameObj.GetDesignOrientation(label)[0] == 2:  # Beam
-                    IMod = IMod_beam
-                    modifiers[4:6] = [IMod, IMod]
+                    modifiers[4:6] = [IMod_beam, IMod_beam]
                 self.SapModel.FrameObj.SetModifiers(label, modifiers)
+        # Area Objects
+        self.area.reset_slab_sections_modifiers()
         for label in self.SapModel.AreaObj.GetLabelNameList()[1]:
+            modifiers = list(self.SapModel.AreaObj.GetModifiers(label)[0])
             if self.SapModel.AreaObj.GetDesignOrientation(label)[0] == 1: # Wall
-                modifiers = list(self.SapModel.AreaObj.GetModifiers(label)[0])
                 modifiers[:6] = 6 * [IMod_col_wall]
-                self.SapModel.AreaObj.SetModifiers(label, modifiers)
+            elif self.SapModel.AreaObj.GetDesignOrientation(label)[0] == 2: # Floor
+                weight_factor = modifiers[-1]
+                for i in range(3, 6):
+                    modifiers[i] = IMod_Floors * weight_factor
+            self.SapModel.AreaObj.SetModifiers(label, modifiers)
         # for steel structure
         self.SapModel.DesignSteel.SetCode('AISC ASD 89')
         # run model (this will create the analysis model)
@@ -402,8 +407,8 @@ class EtabsModel:
         Tx_drift = periods[ux_max_i]
         Ty_drift = periods[uy_max_i]
         print(f"Tx_drift = {Tx_drift}, Ty_drift = {Ty_drift}\n")
-        print("opening the main file\n")
         if open_main_file:
+            print("opening the main file\n")
             self.SapModel.File.OpenFile(str(asli_file_path))
         return Tx_drift, Ty_drift, asli_file_path
 
