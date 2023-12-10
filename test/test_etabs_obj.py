@@ -172,8 +172,15 @@ def test_add_prefix_suffix_name():
     assert path.name == 'asli_test_x.EDB'
 
 def test_create_joint_shear_file():
+    from shayesteh import get_temp_filepath
     filename = get_temp_filepath(filename='js')
     df = etabs.create_joint_shear_file(file_name=filename.name, open_main_file=True)
+    assert len(df) > 0
+
+def test_create_beam_column_capacity_file():
+    from shayesteh import get_temp_filepath
+    filename = get_temp_filepath(filename='bbc')
+    df = etabs.create_beam_column_capacity_file(file_name=filename.name, open_main_file=True)
     assert len(df) > 0
 
 def test_get_type_of_structure():

@@ -926,6 +926,31 @@ class EtabsModel:
         structure_type: str = 'Sway Intermediate',
         open_main_file: bool =  False,
         ):
+        return self.create_joint_shear_bcc_file(
+            file_name,
+            structure_type,
+            open_main_file,
+            ratio_labels= ['JSMajRatio', 'JSMinRatio']
+        )
+    
+    def create_beam_column_capacity_file(self,
+        file_name: Union[str, Path]= 'js.EDB',
+        structure_type: str = 'Sway Intermediate',
+        open_main_file: bool =  False,
+        ):
+        return self.create_joint_shear_bcc_file(
+            file_name,
+            structure_type,
+            open_main_file,
+            ratio_labels= ['BCMajRatio', 'BCMinRatio']
+        )
+
+    def create_joint_shear_bcc_file(self,
+        file_name: Union[str, Path]= 'js.EDB',
+        structure_type: str = 'Sway Intermediate',
+        open_main_file: bool =  False,
+        ratio_labels= ['JSMajRatio', 'JSMinRatio'],
+        ):
         # get main file path
         main_file_path = Path(self.SapModel.GetModelFilename())
         main_file_path = main_file_path.with_suffix(".EDB")
@@ -938,10 +963,10 @@ class EtabsModel:
         self.start_design()
         code = self.design.get_code()
         table_key = f"Concrete Joint Design Summary - {code}"
-        cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio']
+        cols = ['Story', 'Label', 'UniqueName' ] + ratio_labels
         df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
-        df.dropna(subset=['JSMajRatio', 'JSMinRatio'], inplace=True)
-        df = df.astype({'JSMajRatio':float, 'JSMinRatio': float})
+        df.dropna(subset=ratio_labels, inplace=True)
+        df = df.astype({i: float for i in ratio_labels})
         if open_main_file:
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
