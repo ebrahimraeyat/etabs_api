@@ -2,12 +2,13 @@ import sys
 from pathlib import Path
 import pytest
 from unittest.mock import Mock
+import tempfile
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
 if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version
+    from shayesteh import etabs, open_model, version, get_temp_filepath
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -57,6 +58,12 @@ def test_get_from_list_table():
     assert list(result) == [['STORY5', 'QX', 'LinStatic', None, None, None, 'Bottom', '0', '0'],
             ['STORY4', 'QX', 'LinRespSpec', 'Max', None, None, 'Bottom', '0', '25065.77']]
 
+def test_get_main_periods():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    tx_drift, ty_drift = etabs.get_main_periods()
+    assert pytest.approx(tx_drift, .001) == 1.291
+    assert pytest.approx(ty_drift, .001) == 1.291
+
 @pytest.mark.slow
 def test_get_drift_periods():
     open_model(etabs=etabs, filename='shayesteh.EDB')
@@ -72,8 +79,11 @@ def test_get_drift_periods_steel():
     assert pytest.approx(Tx_drift, .01) == 0.789
     assert pytest.approx(Ty_drift, .01) == 0.449
     # did not open main file after get tx, ty
-    assert etabs.get_filename_with_suffix() == 'test21_drift.EDB'
+    assert etabs.get_filename_with_suffix() == f'test{version}_drift.EDB'
+    drift_file_path = Path(tempfile.gettempdir()) / 'periods' / f'test{version}_drift.EDB'
+    assert drift_file_path.exists()
 
+    
 @pytest.mark.slow
 def test_apply_cfactor_to_edb():
     building = create_building()

@@ -334,6 +334,26 @@ class EtabsModel:
         json_file = Path(self.SapModel.GetModelFilepath()) / json_name
         self.save_to_json(json_file, data)
 
+
+    def get_main_periods(self,
+                         modal_case: str='',
+                         ):
+        print("start running T file analysis")
+        if not modal_case:
+            modal_case = self.load_cases.get_modal_loadcase_name()
+        self.analyze.set_load_cases_to_analyze(modal_case)
+        self.SapModel.Analyze.RunAnalysis()
+        table_key = "Modal Participating Mass Ratios"
+        df = self.database.read(table_key=table_key, to_dataframe=True)
+        df = df.astype({'UX': float, 'UY': float})
+        self.SapModel.SetModelIsLocked(False)
+        max_value_index = df['UX'].idxmax()
+        tx_drift = df.loc[max_value_index, 'Period']
+        max_value_index = df['UY'].idxmax()
+        ty_drift = df.loc[max_value_index, 'Period']
+        print(f"Tx_drift = {tx_drift}, Ty_drift = {ty_drift}\n")
+        return float(tx_drift), float(ty_drift)
+
     def get_drift_periods(
                 self,
                 t_filename: str="",
@@ -351,23 +371,25 @@ class EtabsModel:
         asli_file_path = Path(self.SapModel.GetModelFilename())
         if asli_file_path.suffix.lower() != '.edb':
             asli_file_path = asli_file_path.with_suffix(".EDB")
-        if not t_filename:
-            t_filename = self.get_file_name_without_suffix() + "_T.EDB"
-        
+        # Create periods folder if not exists
         file_path = self.get_filepath()
         period_path = file_path / 'periods'
         if not period_path.exists():
             import os
             os.mkdir(str(period_path))
-        if not open_main_file:
-            # for steel structure
-            t_steel_filename = self.get_file_name_without_suffix() + "_drift.EDB"
-            period_path = file_path / 'periods'
-            drift_file_path = period_path / t_steel_filename
-            shutil.copy(asli_file_path, drift_file_path)
+        filename_without_suffix = self.get_file_name_without_suffix()
+        if not t_filename:
+            t_filename = filename_without_suffix + "_T.EDB"
         t_file_path = period_path / t_filename
         print(f"Saving file as {t_file_path}\n")
         self.SapModel.File.Save(str(t_file_path))
+        # for steel structure
+        self.SapModel.DesignSteel.SetCode('AISC ASD 89')
+        # for steel structures create a copy of main file
+        if not open_main_file:
+            t_steel_filename = filename_without_suffix + "_drift.EDB"
+            drift_file_path = period_path / t_steel_filename
+            shutil.copy(t_file_path, drift_file_path)
         print("get frame property modifiers and change I values\n")
         IMod_beam = 0.5
         IMod_col_wall = 1
@@ -391,36 +413,16 @@ class EtabsModel:
                 for i in range(3, 6):
                     modifiers[i] = IMod_Floors * weight_factor
             self.SapModel.AreaObj.SetModifiers(label, modifiers)
-        # for steel structure
-        self.SapModel.DesignSteel.SetCode('AISC ASD 89')
         # run model (this will create the analysis model)
-        print("start running T file analysis")
-        modal_case = self.load_cases.get_modal_loadcase_name()
-        self.analyze.set_load_cases_to_analyze(modal_case)
-        self.SapModel.Analyze.RunAnalysis()
-
-        TableKey = "Modal Participating Mass Ratios"
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
-        self.SapModel.SetModelIsLocked(False)
-        ux_i = FieldsKeysIncluded.index("UX")
-        uy_i = FieldsKeysIncluded.index("UY")
-        period_i = FieldsKeysIncluded.index("Period")
-        uxs = [float(TableData[i]) for i in range(ux_i, len(TableData), len(FieldsKeysIncluded))]
-        uys = [float(TableData[i]) for i in range(uy_i, len(TableData), len(FieldsKeysIncluded))]
-        periods = [float(TableData[i]) for i in range(period_i, len(TableData), len(FieldsKeysIncluded))]
-        ux_max_i = uxs.index(max(uxs))
-        uy_max_i = uys.index(max(uys))
-        Tx_drift = periods[ux_max_i]
-        Ty_drift = periods[uy_max_i]
-        print(f"Tx_drift = {Tx_drift}, Ty_drift = {Ty_drift}\n")
+        tx_drift, ty_drift = self.get_main_periods()
         if open_main_file:
             print("opening the main file\n")
             self.SapModel.File.OpenFile(str(asli_file_path))
         else:
             # for steel structure
+            print("opening the Drift file\n")
             self.SapModel.File.OpenFile(str(drift_file_path))
-            self.SapModel.DesignSteel.SetCode('AISC ASD 89')
-        return Tx_drift, Ty_drift, asli_file_path
+        return tx_drift, ty_drift, asli_file_path
 
     def get_diaphragm_max_over_avg_drifts(
                     self,
