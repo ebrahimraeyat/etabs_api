@@ -357,7 +357,7 @@ class EtabsModel:
     def get_drift_periods(
                 self,
                 t_filename: str="",
-                open_main_file: bool=True,
+                structure_type: str='concrete',
                 ):
         '''
         This function creates an Etabs file called T.EDB from current open Etabs file,
@@ -386,7 +386,7 @@ class EtabsModel:
         # for steel structure
         self.SapModel.DesignSteel.SetCode('AISC ASD 89')
         # for steel structures create a copy of main file
-        if not open_main_file:
+        if structure_type == 'steel':
             t_steel_filename = filename_without_suffix + "_drift.EDB"
             drift_file_path = period_path / t_steel_filename
             shutil.copy(t_file_path, drift_file_path)
@@ -415,7 +415,7 @@ class EtabsModel:
             self.SapModel.AreaObj.SetModifiers(label, modifiers)
         # run model (this will create the analysis model)
         tx_drift, ty_drift = self.get_main_periods()
-        if open_main_file:
+        if structure_type == 'concrete':
             print("opening the main file\n")
             self.SapModel.File.OpenFile(str(asli_file_path))
         else:

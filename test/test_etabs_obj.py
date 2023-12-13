@@ -74,7 +74,7 @@ def test_get_drift_periods():
 
 def test_get_drift_periods_steel():
     open_model(etabs=etabs, filename='steel.EDB')
-    Tx_drift, Ty_drift, file_name = etabs.get_drift_periods(open_main_file=False)
+    Tx_drift, Ty_drift, file_name = etabs.get_drift_periods(structure_type='steel')
     assert file_name.name == f"test{version}.EDB"
     assert pytest.approx(Tx_drift, .01) == 0.789
     assert pytest.approx(Ty_drift, .01) == 0.449
