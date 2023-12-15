@@ -557,14 +557,37 @@ class EtabsModel:
         print("Applying cfactor to edb\n")
         self.SapModel.SetModelIsLocked(False)
         self.load_patterns.select_all_load_patterns()
-        TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.database.read_table(TableKey)
-        # if is_auto_load_yes_in_seismic_load_patterns(TableData, FieldsKeysIncluded):
-        #     return 1
-        TableData = self.apply_cfactor_to_tabledata(TableData, FieldsKeysIncluded, building, bot_story, top_story)
-        NumFatalErrors, ret = self.database.write_seismic_user_coefficient(TableKey, FieldsKeysIncluded, TableData)
-        print(f"NumFatalErrors, ret = {NumFatalErrors}, {ret}")
-        return NumFatalErrors
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        [_, _, fields_keys_included, _, table_data, _] = self.database.read_table(table_key)
+        table_data = self.apply_cfactor_to_tabledata(table_data, fields_keys_included, building, bot_story, top_story)
+        num_fatal_errors, ret = self.database.write_seismic_user_coefficient(table_key, fields_keys_included, table_data)
+        print(f"num_fatal_errors, ret = {num_fatal_errors}, {ret}")
+        return num_fatal_errors
+    
+    def apply_cfactors_to_edb(
+            self,
+            data: list,
+            ):
+        '''
+        data is a list contain lists, each list contain two list, first
+        list is list of earthquakes names and second list is in format
+        ['TopStory', 'BotStory', 'C', 'K']
+        example:
+        data = [
+                (['QX', 'QXN'], ["STORY5", "STORY1", '0.128', '1.37']),
+                (['QY', 'QYN'], ["STORY4", "STORY2", '0.228', '1.39']),
+                ]
+        '''
+        print("Applying cfactor to edb\n")
+        self.SapModel.SetModelIsLocked(False)
+        self.load_patterns.select_all_load_patterns()
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        df = self.database.read(table_key, to_dataframe=True)
+        for earthquakes, new_factors in data:
+            df.loc[df.Name.isin(earthquakes), ['TopStory', 'BotStory', 'C', 'K']] = new_factors
+        num_fatal_errors, ret = self.database.write_seismic_user_coefficient_df(df)
+        print(f"num_fatal_errors, ret = {num_fatal_errors}, {ret}")
+        return num_fatal_errors
 
     def is_etabs_running(self):
         try:
