@@ -44,7 +44,7 @@ class LoadPatterns:
             self.SapModel = SapModel
 
     def get_load_patterns(self):
-        return self.SapModel.LoadPatterns.GetNameList(0, [])[1]
+        return self.SapModel.LoadPatterns.GetNameList()[1]
 
     def get_special_load_pattern_names(self, n=5):
         '''
@@ -233,6 +233,17 @@ class LoadPatterns:
                 elif direction == 'U2':
                     y_names.append(name)
         return x_names, y_names
+    
+    def get_all_seismic_load_patterns(self):
+        '''
+        returns a list of seismic load pattern names in seismic table
+        '''
+        ret = set()
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if df is not None:
+            ret = set(df.Name.unique())
+        return ret
 
     def get_ex_ey_earthquake_name(self):
         x_names, y_names = self.get_load_patterns_in_XYdirection()
@@ -284,7 +295,7 @@ class LoadPatterns:
         new_rows = []
         for _, row in df.iterrows():
             name = row['Name']
-            load_type = 37 if name in drift_load_names else 5
+            load_type = self.etabs.seismic_drift_load_type if name in drift_load_names else 5
             if row['XDir'] in (0, 1):
                 row_dirs=row[cols.keys()]
             
