@@ -5,6 +5,7 @@ from typing import Tuple, Union
 import shutil
 import math
 import sys
+import json
 
 
 from load_patterns import LoadPatterns
@@ -567,6 +568,7 @@ class EtabsModel:
     def apply_cfactors_to_edb(
             self,
             data: list,
+            d: dict={},
             ):
         '''
         data is a list contain lists, each list contain two list, first
@@ -577,12 +579,10 @@ class EtabsModel:
                 (['QX', 'QXN'], ["STORY5", "STORY1", '0.128', '1.37']),
                 (['QY', 'QYN'], ["STORY4", "STORY2", '0.228', '1.39']),
                 ]
+        d: dictionary of etabs config file
         '''
+        df = self.check_seismic_names(d=d)
         print("Applying cfactor to edb\n")
-        self.SapModel.SetModelIsLocked(False)
-        self.load_patterns.select_all_load_patterns()
-        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        df = self.database.read(table_key, to_dataframe=True)
         for earthquakes, new_factors in data:
             df.loc[df.Name.isin(earthquakes), ['TopStory', 'BotStory', 'C', 'K']] = new_factors
         num_fatal_errors, ret = self.database.write_seismic_user_coefficient_df(df)
@@ -996,6 +996,97 @@ class EtabsModel:
         elif len(concrete_beams) < len(steel_beams):
             return steel
         return 'unknown'
+    
+    def get_settings_from_model(self):
+        d = {}
+        info = self.SapModel.GetProjectInfo()
+        json_str = info[2][0]
+        try:
+            company_name = json.loads(json_str)
+        except json.JSONDecodeError:
+            return d
+        if isinstance(company_name, dict):
+            d = company_name
+        return d
+        
+    def get_first_system_seismic(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        ex = d.get('ex_combobox', 'EX')
+        exn = d.get('exn_combobox', 'EXN')
+        exp = d.get('exp_combobox', 'EXP')
+        ey = d.get('ey_combobox', 'EY')
+        eyn = d.get('eyn_combobox', 'EYN')
+        eyp = d.get('eyp_combobox', 'EYP')
+        return ex, exn, exp, ey, eyn, eyp
+
+    def get_second_system_seismic(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        ex = d.get('ex1_combobox', 'EX1')
+        exn = d.get('exn1_combobox', 'EXN1')
+        exp = d.get('exp1_combobox', 'EXP1')
+        ey = d.get('ey1_combobox', 'EY1')
+        eyn = d.get('eyn1_combobox', 'EYN1')
+        eyp = d.get('eyp1_combobox', 'EYP1')
+        return ex, exn, exp, ey, eyn, eyp
+
+    def get_top_bot_stories(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        bot_1 = d.get('bot_x_combo', '')
+        top_1 = d.get('top_x_combo', '')
+        bot_2 = d.get('bot_x1_combo', '')
+        top_2 = d.get('top_x1_combo', '')
+        return bot_1, top_1, bot_2, top_2
+
+    def check_seismic_names(
+            self,
+            d: dict={},
+            apply: bool=False,
+            ):
+        import pandas as pd
+        import copy
+        if not d:
+            d = self.get_settings_from_model()
+        seismic_loads = self.load_patterns.get_seismic_load_patterns()
+        first_system_seismic = self.get_first_system_seismic(d)
+        self.SapModel.SetModelIsLocked(False)
+        self.load_patterns.select_all_load_patterns()
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        df = self.database.read(table_key, to_dataframe=True)
+        row = df.iloc[0]
+        seismic_columns = ['XDir', 'XDirMinusE', 'XDirPlusE', 'YDir', 'YDirMinusE', 'YDirPlusE']
+        row[seismic_columns] = 'No'
+        if 'Ecc Overwrite Story' in df.columns:
+            row[['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length']] = None
+        new_rows = []
+        not_es = []
+        # First system
+        for es, e, col in zip(seismic_loads, first_system_seismic, seismic_columns):
+            if e not in es:
+                not_es.append(e)
+                new_row = copy.deepcopy(row)
+                new_row[col] = 'Yes'
+                new_row['Name'] = e
+                new_rows.append(new_row)
+        # Second system
+        if d.get('activate_second_system', False):
+            second_system_seismic = self.get_second_system_seismic(d)
+            for es, e, col in zip(seismic_loads, second_system_seismic, seismic_columns):
+                if e not in es:
+                    not_es.append(e)
+                    new_row = copy.deepcopy(row)
+                    new_row[col] = 'Yes'
+                    new_row['Name'] = e
+                    new_rows.append(new_row)
+        if len(not_es) > 0:
+            self.load_patterns.add_load_patterns(not_es, 'Seismic')
+        df2 = pd.DataFrame(new_rows)
+        df = pd.concat([df, df2])
+        if apply:
+            self.database.write_seismic_user_coefficient_df(df)
+        return df
         
         
 

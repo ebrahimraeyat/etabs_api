@@ -99,11 +99,28 @@ def test_apply_cfactors_to_edb():
     data = [
         (['QX', 'QXN'], ["STORY5", "STORY1", '0.128', '1.37']),
         (['QY', 'QYN'], ["STORY4", "STORY2", '0.228', '1.39']),
+        (['QX1', 'QXN1', 'QXP1'], ["STORY5", "BASE", '0.128', '1.37']),
+        (['QY1', 'QYN1', 'QYP1'], ["STORY4", "BASE", '0.228', '1.39']),
         ]
-    errors = etabs.apply_cfactors_to_edb(data)
+    d = {}
+    d['ex_combobox'] = 'QX'
+    d['exn_combobox'] = 'QXN'
+    d['exp_combobox'] = 'QXP'
+    d['ey_combobox'] = 'QY'
+    d['eyn_combobox'] = 'QYN'
+    d['eyp_combobox'] = 'QYP'
+    d['ex1_combobox'] = 'QX1'
+    d['exn1_combobox'] = 'QXN1'
+    d['exp1_combobox'] = 'QXP1'
+    d['ey1_combobox'] = 'QY1'
+    d['eyn1_combobox'] = 'QYN1'
+    d['eyp1_combobox'] = 'QYP1'
+    d['activate_second_system'] = True
+    errors = etabs.apply_cfactors_to_edb(data, d)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
     df = etabs.database.read(table_key, to_dataframe=True)
     for earthquake, new_data in data:
+        assert len(df.loc[df.Name.isin(earthquake)]) == len(earthquake)
         ret = df.loc[df.Name.isin(earthquake), ['TopStory', 'BotStory', 'C', 'K']] == new_data
         assert ret.all().all()
     assert errors == 0
@@ -228,11 +245,32 @@ def test_angles_response_spectrums_analysis():
     for scale in scales:
         assert pytest.approx(scale, abs=.001) == 1
 
+def test_check_seismic_names():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    n1 = len(etabs.load_patterns.get_load_patterns())
+    d = {}
+    d['ex_combobox'] = 'QX'
+    d['exn_combobox'] = 'QXN'
+    d['exp_combobox'] = 'QXP'
+    d['ey_combobox'] = 'QY'
+    d['eyn_combobox'] = 'QYN'
+    d['eyp_combobox'] = 'QYP'
+    d['ex1_combobox'] = 'QX1'
+    d['exn1_combobox'] = 'QXN1'
+    d['exp1_combobox'] = 'QXP1'
+    d['ey1_combobox'] = 'QY1'
+    d['eyn1_combobox'] = 'QYN1'
+    d['eyp1_combobox'] = 'QYP1'
+    d['activate_second_system'] = True
+    df = etabs.check_seismic_names(d)
+    assert len(df) == 14
+    n2 = len(etabs.load_patterns.get_load_patterns())
+    assert (n2 - n1) == 6
+    assert set(df.Name) == set(({'EXDRIFT', 'QX', 'QXN', 'QXP', 'EYDRIFT', 'QY', 'QYN', 'QYP', 'QX1', 'QXN1', 'QXP1', 'QY1', 'QYN1', 'QYP1'}))
+
 
 
 if __name__ == '__main__':
-    import pandas as pd
-    etabs = etabs_obj.EtabsModel(backup=False)
-    etabs.test_write_aj()
+    test_check_seismic_names()
 
 
