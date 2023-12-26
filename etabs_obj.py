@@ -1057,7 +1057,7 @@ class EtabsModel:
         self.load_patterns.select_all_load_patterns()
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         df = self.database.read(table_key, to_dataframe=True)
-        row = df.iloc[0]
+        row = copy.deepcopy(df.iloc[0])
         seismic_columns = ['XDir', 'XDirMinusE', 'XDirPlusE', 'YDir', 'YDirMinusE', 'YDirPlusE']
         row[seismic_columns] = 'No'
         if 'Ecc Overwrite Story' in df.columns:
