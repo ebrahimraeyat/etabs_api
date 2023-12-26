@@ -968,7 +968,9 @@ class EtabsModel:
         self.design.set_concrete_framing_type(1, beams=False)
         if structure_type == 'Sway Intermediate':
             phi = 0.75
-            self.design.set_phi_joint_shear(phi)
+        else:
+            phi = 0.85
+        self.design.set_phi_joint_shear(phi)
         self.run_analysis()
         self.start_design()
         code = self.design.get_code()
