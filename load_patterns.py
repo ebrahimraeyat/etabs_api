@@ -109,7 +109,9 @@ class LoadPatterns:
             
         return names_x, names_y
 
-    def get_seismic_load_patterns(self):
+    def get_seismic_load_patterns(self,
+                                  drifts: bool=False,
+                                  ):
         '''
         return lists of load pattern names, x, +x, -x, y, +y and -y separately
         '''
@@ -133,44 +135,61 @@ class LoadPatterns:
         ydir_minus = set()
         for earthquake in data:
             name = earthquake[i_name]
-            if name in drift_lp_names:
-                continue
-            if all((
-                earthquake[i_xdir] == 'Yes',
-                earthquake[i_xdir_minus] == 'No',
-                earthquake[i_xdir_plus] == 'No',
-                )):
-                xdir.add(name)
-            elif all((
-                earthquake[i_xdir] == 'No',
-                earthquake[i_xdir_minus] == 'Yes',
-                earthquake[i_xdir_plus] == 'No',
-                )):
-                xdir_minus.add(name)
-            elif all((
-                earthquake[i_xdir] == 'No',
-                earthquake[i_xdir_minus] == 'No',
-                earthquake[i_xdir_plus] == 'Yes',
-                )):
-                xdir_plus.add(name)
-            elif all((
-                earthquake[i_ydir] == 'Yes',
-                earthquake[i_ydir_minus] == 'No',
-                earthquake[i_ydir_plus] == 'No',
-                )):
-                ydir.add(name)
-            elif all((
-                earthquake[i_ydir] == 'No',
-                earthquake[i_ydir_minus] == 'Yes',
-                earthquake[i_ydir_plus] == 'No',
-                )):
-                ydir_minus.add(name)
-            elif all((
-                earthquake[i_ydir] == 'No',
-                earthquake[i_ydir_minus] == 'No',
-                earthquake[i_ydir_plus] == 'Yes',
-                )):
-                ydir_plus.add(name)
+            if (drifts and name in drift_lp_names) or (not drifts and name not in drift_lp_names):
+                if all((
+                    earthquake[i_xdir] == 'Yes',
+                    earthquake[i_xdir_minus] == 'No',
+                    earthquake[i_xdir_plus] == 'No',
+                    earthquake[i_ydir] == 'No',
+                    earthquake[i_ydir_minus] == 'No',
+                    earthquake[i_ydir_plus] == 'No',
+                    )):
+                    xdir.add(name)
+                elif all((
+                    earthquake[i_xdir] == 'No',
+                    earthquake[i_xdir_minus] == 'Yes',
+                    earthquake[i_xdir_plus] == 'No',
+                    earthquake[i_ydir] == 'No',
+                    earthquake[i_ydir_minus] == 'No',
+                    earthquake[i_ydir_plus] == 'No',
+                    )):
+                    xdir_minus.add(name)
+                elif all((
+                    earthquake[i_xdir] == 'No',
+                    earthquake[i_xdir_minus] == 'No',
+                    earthquake[i_xdir_plus] == 'Yes',
+                    earthquake[i_ydir] == 'No',
+                    earthquake[i_ydir_minus] == 'No',
+                    earthquake[i_ydir_plus] == 'No',
+                    )):
+                    xdir_plus.add(name)
+                elif all((
+                    earthquake[i_xdir] == 'No',
+                    earthquake[i_xdir_minus] == 'No',
+                    earthquake[i_xdir_plus] == 'No',
+                    earthquake[i_ydir] == 'Yes',
+                    earthquake[i_ydir_minus] == 'No',
+                    earthquake[i_ydir_plus] == 'No',
+                    )):
+                    ydir.add(name)
+                elif all((
+                    earthquake[i_xdir] == 'No',
+                    earthquake[i_xdir_minus] == 'No',
+                    earthquake[i_xdir_plus] == 'No',
+                    earthquake[i_ydir] == 'No',
+                    earthquake[i_ydir_minus] == 'Yes',
+                    earthquake[i_ydir_plus] == 'No',
+                    )):
+                    ydir_minus.add(name)
+                elif all((
+                    earthquake[i_xdir] == 'No',
+                    earthquake[i_xdir_minus] == 'No',
+                    earthquake[i_xdir_plus] == 'No',
+                    earthquake[i_ydir] == 'No',
+                    earthquake[i_ydir_minus] == 'No',
+                    earthquake[i_ydir_plus] == 'Yes',
+                    )):
+                    ydir_plus.add(name)
         return xdir, xdir_minus, xdir_plus, ydir, ydir_minus, ydir_plus
 
     def get_EX_EY_load_pattern(self):

@@ -89,6 +89,16 @@ def test_get_seismic_load_patterns():
     assert names[4] == {'QYN'}
     assert names[5] == {'QYP'}
 
+def test_get_seismic_load_patterns_drifts():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    names = etabs.load_patterns.get_seismic_load_patterns(drifts=True)
+    assert names[0] == {'EXDRIFT'}
+    assert names[1] == set()
+    assert names[2] == set()
+    assert names[3] == {'EYDRIFT'}
+    assert names[4] == set()
+    assert names[5] == set()
+
 def test_get_expanded_seismic_load_patterns():
     open_model(etabs=etabs, filename='two_earthquakes.EDB')
     df, loads, loads_type = etabs.load_patterns.get_expanded_seismic_load_patterns()
