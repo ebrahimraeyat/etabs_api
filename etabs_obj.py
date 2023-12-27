@@ -1032,6 +1032,28 @@ class EtabsModel:
         eyn = d.get('eyn1_combobox', 'EYN1')
         eyp = d.get('eyp1_combobox', 'EYP1')
         return ex, exn, exp, ey, eyn, eyp
+    
+    def get_first_system_seismic_drift(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        ex = d.get('ex_drift_combobox', 'EX(Drift)')
+        exn = d.get('exn_drift_combobox', 'EXN(Drift)')
+        exp = d.get('exp_drift_combobox', 'EXP(Drift)')
+        ey = d.get('ey_drift_combobox', 'EY(Drift)')
+        eyn = d.get('eyn_drift_combobox', 'EYN(Drift)')
+        eyp = d.get('eyp_drift_combobox', 'EYP(Drift)')
+        return ex, exn, exp, ey, eyn, eyp
+
+    def get_second_system_seismic_drift(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        ex = d.get('ex1_drift_combobox', 'EX1(Drift)')
+        exn = d.get('exn1_drift_combobox', 'EXN1(Drift)')
+        exp = d.get('exp1_drift_combobox', 'EXP1(Drift)')
+        ey = d.get('ey1_drift_combobox', 'EY1(Drift)')
+        eyn = d.get('eyn1_drift_combobox', 'EYN1(Drift)')
+        eyp = d.get('eyp1_drift_combobox', 'EYP1(Drift)')
+        return ex, exn, exp, ey, eyn, eyp
 
     def get_top_bot_stories(self, d: dict={}):
         if not d:
@@ -1052,7 +1074,7 @@ class EtabsModel:
         if not d:
             d = self.get_settings_from_model()
         seismic_loads = self.load_patterns.get_seismic_load_patterns()
-        first_system_seismic = self.get_first_system_seismic(d)
+        seismic_loads_drifts = self.load_patterns.get_seismic_load_patterns(drifts=True)
         self.SapModel.SetModelIsLocked(False)
         self.load_patterns.select_all_load_patterns()
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
@@ -1064,10 +1086,22 @@ class EtabsModel:
             row[['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length']] = None
         new_rows = []
         not_es = []
+        not_es_drifts = []
         # First system
+        first_system_seismic = self.get_first_system_seismic(d)
         for es, e, col in zip(seismic_loads, first_system_seismic, seismic_columns):
             if e not in es:
                 not_es.append(e)
+                new_row = copy.deepcopy(row)
+                new_row[col] = 'Yes'
+                new_row['Name'] = e
+                new_rows.append(new_row)
+        # Drift seismic loads
+        first_system_seismic = self.get_first_system_seismic_drift(d)
+        # First system Drifts
+        for es, e, col in zip(seismic_loads_drifts, first_system_seismic, seismic_columns):
+            if e not in es:
+                not_es_drifts.append(e)
                 new_row = copy.deepcopy(row)
                 new_row[col] = 'Yes'
                 new_row['Name'] = e
@@ -1082,8 +1116,20 @@ class EtabsModel:
                     new_row[col] = 'Yes'
                     new_row['Name'] = e
                     new_rows.append(new_row)
+            # Drift seismic loads
+            second_system_seismic = self.get_second_system_seismic_drift(d)
+            # First system Drifts
+            for es, e, col in zip(seismic_loads_drifts, second_system_seismic, seismic_columns):
+                if e not in es:
+                    not_es_drifts.append(e)
+                    new_row = copy.deepcopy(row)
+                    new_row[col] = 'Yes'
+                    new_row['Name'] = e
+                    new_rows.append(new_row)
         if len(not_es) > 0:
             self.load_patterns.add_load_patterns(not_es, 'Seismic')
+        if len(not_es_drifts) > 0:
+            self.load_patterns.add_load_patterns(not_es_drifts, self.seismic_drift_text)
         df2 = pd.DataFrame(new_rows)
         df = pd.concat([df, df2])
         if apply:

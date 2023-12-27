@@ -15,6 +15,8 @@ class LoadPatterns:
             8 : 'Other',
             11 : 'ROOF Live',
             12 : 'Notional',
+            37: 'Seismic (Drift)',
+            61: 'QuakeDrift',
         }
 
     map_pattern_to_number = {
@@ -30,6 +32,8 @@ class LoadPatterns:
             'MASS' : 8,
             'ROOF Live' : 11,
             'Notional' : 12,
+            'Seismic (Drift)' : 37,
+            'QuakeDrift' : 61,
         }
 
     def __init__(

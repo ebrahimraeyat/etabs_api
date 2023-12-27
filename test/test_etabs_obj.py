@@ -101,6 +101,7 @@ def test_apply_cfactors_to_edb():
         (['QY', 'QYN'], ["STORY4", "STORY2", '0.228', '1.39']),
         (['QX1', 'QXN1', 'QXP1'], ["STORY5", "BASE", '0.128', '1.37']),
         (['QY1', 'QYN1', 'QYP1'], ["STORY4", "BASE", '0.228', '1.39']),
+        (['QY1drift', 'QYN1drift', 'QYP1drift'], ["STORY4", "BASE", '0.208', '1.29']),
         ]
     d = {}
     d['ex_combobox'] = 'QX'
@@ -115,6 +116,9 @@ def test_apply_cfactors_to_edb():
     d['ey1_combobox'] = 'QY1'
     d['eyn1_combobox'] = 'QYN1'
     d['eyp1_combobox'] = 'QYP1'
+    d['ey1_drift_combobox'] = 'QY1drift'
+    d['eyn1_drift_combobox'] = 'QYN1drift'
+    d['eyp1_drift_combobox'] = 'QYP1drift'
     d['activate_second_system'] = True
     errors = etabs.apply_cfactors_to_edb(data, d)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
@@ -123,6 +127,10 @@ def test_apply_cfactors_to_edb():
         assert len(df.loc[df.Name.isin(earthquake)]) == len(earthquake)
         ret = df.loc[df.Name.isin(earthquake), ['TopStory', 'BotStory', 'C', 'K']] == new_data
         assert ret.all().all()
+    for lp in ('QX', 'QXN', 'QXP', 'QY', 'QYN', 'QYP', 'QX1', 'QXN1', 'QXP1', 'QY1', 'QYN1', 'QYP1'):
+        assert etabs.SapModel.LoadPatterns.GetLoadType(lp)[0] == 5
+    for lp in ('QY1drift', 'QYN1drift', 'QYP1drift'):
+        assert etabs.SapModel.LoadPatterns.GetLoadType(lp)[0] == etabs.seismic_drift_load_type
     assert errors == 0
 
 
@@ -263,10 +271,37 @@ def test_check_seismic_names():
     d['eyp1_combobox'] = 'QYP1'
     d['activate_second_system'] = True
     df = etabs.check_seismic_names(d)
-    assert len(df) == 14
+    assert len(df) == 26
     n2 = len(etabs.load_patterns.get_load_patterns())
     assert (n2 - n1) == 6
-    assert set(df.Name) == set(({'EXDRIFT', 'QX', 'QXN', 'QXP', 'EYDRIFT', 'QY', 'QYN', 'QYP', 'QX1', 'QXN1', 'QXP1', 'QY1', 'QYN1', 'QYP1'}))
+    assert set(df.Name) == set(({
+        'EXDRIFT',
+        'QX',
+        'QXN',
+        'QXP',
+        'EYDRIFT',
+        'QY',
+        'QYN',
+        'QYP',
+        'QX1',
+        'QXN1',
+        'QXP1',
+        'QY1',
+        'QYN1',
+        'QYP1',
+        'EX(Drift)',
+        'EXN(Drift)',
+        'EXP(Drift)',
+        'EY(Drift)',
+        'EYN(Drift)',
+        'EYP(Drift)',
+        'EX1(Drift)',
+        'EXN1(Drift)',
+        'EXP1(Drift)',
+        'EY1(Drift)',
+        'EYN1(Drift)',
+        'EYP1(Drift)',
+        }))
 
 
 
