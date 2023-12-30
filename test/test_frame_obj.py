@@ -248,6 +248,16 @@ def test_get_length_of_frame():
         )
     assert pytest.approx(length, abs=.01) == 5.997
 
+def test_set_end_length_offsets():
+    etabs.frame_obj.set_end_length_offsets(0.5)
+    table_key = 'Frame Assignments - End Length Offsets'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert set(df.RigidFact.unique()) == {'0.5'}
+
+
+if __name__ == '__main__':
+    test_set_end_length_offsets()
+
 
 
 

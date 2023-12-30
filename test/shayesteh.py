@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import tempfile
 
@@ -5,7 +6,7 @@ import etabs_obj
 
 global etabs
 global open_model
-version = 21
+version = os.environ.get('version', 21)
 
 def etabs_model(
         edb: str="shayesteh.EDB",

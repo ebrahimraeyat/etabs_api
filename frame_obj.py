@@ -48,6 +48,17 @@ class FrameObj:
         for frame in frame_names:
             self.set_section_name(frame, name)
 
+    def set_end_length_offsets(self,
+                               value: float=0.5,
+                               ):
+        cols = ['UniqueName', 'OffsetOpt', 'OffsetI', 'OffsetJ', 'RigidFact', 'SelfWtOpt']
+        table_key = 'Frame Assignments - End Length Offsets'
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df.RigidFact = str(value)
+        if self.etabs.etabs_main_version < 20:
+            df.columns = ['UniqueName', 'Offset Option', 'Offset I', 'Offset J', 'Rigid Factor', 'Self Weight Option']
+        self.etabs.database.write(table_key, df)
+
     def is_frame_on_story(self, frame, story=None):
         if story is None:
             return True
