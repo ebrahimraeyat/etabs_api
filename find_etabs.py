@@ -45,7 +45,7 @@ def find_etabs(
     #     pass
     if etabs.success:
         filename_path = etabs.get_filename()
-        if filename_path.exists():
+        if filename_path and filename_path.exists():
             filename = str(filename_path)
     elif show_warning:
         QMessageBox.warning(

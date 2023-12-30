@@ -275,11 +275,14 @@ class EtabsModel:
             self.SapModel.File.Save(str(new_path))
         return new_path
 
-    def get_filename(self) -> Path:
+    def get_filename(self) -> Union[Path, None]:
         '''
-        return WindowsPath('H:/1402/montazer/rashidzadeh/etabs/test.EDB')
+        return: WindowsPath('H:/1402/montazer/rashidzadeh/etabs/test.EDB')
         '''
-        return Path(self.SapModel.GetModelFilename())
+        filename = self.SapModel.GetModelFilename()
+        if filename is None:
+            return None
+        return Path(filename)
     
     def get_filepath(self) -> Path:
         return Path(self.SapModel.GetModelFilename()).parent
