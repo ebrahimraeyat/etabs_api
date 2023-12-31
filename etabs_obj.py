@@ -25,6 +25,7 @@ from material import Material
 from area import Area
 from design import Design
 from prop_frame import PropFrame
+from diaphragm import Diaphragm
 
 __all__ = ['EtabsModel']
 
@@ -132,6 +133,7 @@ class EtabsModel:
             self.area = Area(self)
             self.design = Design(self)
             self.prop_frame = PropFrame(self)
+            self.diaphragm = Diaphragm(self)
             self.etabs_main_version = self.get_etabs_main_version()
             if self.etabs_main_version < 20:
                 self.seismic_drift_text = 'Seismic (Drift)'
