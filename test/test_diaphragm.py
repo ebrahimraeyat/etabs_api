@@ -19,5 +19,19 @@ def test_is_diaphragm_assigned():
     is_diaphragm_assigned = etabs.diaphragm.is_diaphragm_assigned()
     assert is_diaphragm_assigned
 
+def test_set_area_diaphragms():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    etabs.diaphragm.add_diaphragm('D2')
+    etabs.diaphragm.set_area_diaphragms('D2')
+    table_key = 'Area Assignments - Diaphragms'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert set(df.Diaphragm.unique()) == {'D2'}
+
+def test_add_diaphragm():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    etabs.diaphragm.add_diaphragm('D2')
+    assert 'D2' in etabs.diaphragm.names()
+    
+
 if __name__ == "__main__":
     test_is_diaphragm_assigned()

@@ -111,8 +111,9 @@ def update(repos_path: list):
         QtWidgets.QMessageBox.warning(None, "Failed", msg)
 
 def restart_freecad():
-    # return
-    """Shuts down and restarts FreeCAD"""
+    import os
+    if os.environ.get('TEST_CIVILTOOLS', 'No') in ('Yes', 'yes'):
+        return
     args = QtWidgets.QApplication.arguments()[1:]
     # FreeCADGui.getMainWindow().deleteLater()
     if FreeCADGui.getMainWindow().close():
