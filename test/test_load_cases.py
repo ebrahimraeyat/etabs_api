@@ -13,6 +13,12 @@ def test_get_load_cases():
     load_case_names = etabs.load_cases.get_load_cases()
     assert len(load_case_names) == 22
 
+def test_add_response_spectrum_loadcases():
+    names = ['XX', 'YY']
+    etabs.load_cases.add_response_spectrum_loadcases(names, .05)
+    for name in names:
+        assert etabs.SapModel.LoadCases.ResponseSpectrum.GetEccentricity(name)[0] == 0.05
+
 @pytest.mark.getmethod
 def test_get_modal_loadcase_name():
     name = etabs.load_cases.get_modal_loadcase_name()
@@ -62,6 +68,32 @@ def test_get_response_spectrum_xy_loadcases_names():
     x_names, y_names = etabs.load_cases.get_response_spectrum_xy_loadcases_names()
     assert set(x_names) == set(['SX', 'SPX'])
     assert set(y_names) == set(['SY', 'SPY'])
+
+def test_get_response_spectrum_sxye_loadcases_names():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    sx, sxe, sy, sye = etabs.load_cases.get_response_spectrum_sxye_loadcases_names()
+    assert sx == {'SX'}
+    assert sxe == {'SPX'}
+    assert sy == {'SY'}
+    assert sye == {'SPY'}
+    open_model(etabs=etabs, filename='khiabany.EDB')
+    sx, sxe, sy, sye = etabs.load_cases.get_response_spectrum_sxye_loadcases_names()
+    assert sx == {'SPX'}
+    assert sxe == {'SPXE'}
+    assert sy == {'SPY'}
+    assert sye == {'SPYE'}
+    open_model(etabs=etabs, filename='madadi.EDB')
+    sx, sxe, sy, sye = etabs.load_cases.get_response_spectrum_sxye_loadcases_names()
+    assert sx == {'SX', 'SX-drift'}
+    assert sxe == {'SXE', 'SXE-drift'}
+    assert sy == {'SY', 'SY-drift'}
+    assert sye == {'SYE', 'SYE-drift'}
+    open_model(etabs=etabs, filename='steel.EDB')
+    sx, sxe, sy, sye = etabs.load_cases.get_response_spectrum_sxye_loadcases_names()
+    assert sx == {'0.3.SX', 'SX-Base Shear'}
+    assert sxe == {'SXPN', 'SXPN-Drift'}
+    assert sy == {'0.3.SY', 'SY-Base Shear'}
+    assert sye == {'SYPN', 'SYPN-Drift'}
 
 @pytest.mark.getmethod
 def test_get_seismic_load_cases():

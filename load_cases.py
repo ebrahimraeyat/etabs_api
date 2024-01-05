@@ -1,4 +1,4 @@
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Tuple, Union, List
 
 from numpy import int16
 
@@ -23,6 +23,16 @@ class LoadCases:
     def select_load_cases(self, names):
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(names)
+
+    def add_response_spectrum_loadcases(self,
+                                       names: List[str],
+                                       eccentricity: float=0.05,
+                                       ):
+        for name in names:
+            self.etabs.SapModel.LoadCases.ResponseSpectrum.SetCase(name)
+            if eccentricity > 0:
+                self.etabs.SapModel.LoadCases.ResponseSpectrum.SetEccentricity(name, eccentricity) 
+        
 
     def get_loadcase_withtype(self, n) -> list:
         '''
@@ -89,6 +99,32 @@ class LoadCases:
                     elif float(angles[0]) == 0:
                         y_names.append(name)
         return x_names, y_names
+    
+    def get_response_spectrum_sxye_loadcases_names(self):
+        sx = set()
+        sy = set()
+        sxe = set()
+        sye = set()
+        table_key = 'Load Case Definitions - Response Spectrum'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if df is not None:
+            df['EccenRatio'] = df['EccenRatio'].astype(float)
+            filt_not_ecc = df['EccenRatio'] == 0
+            ecc_names = set(df.loc[~filt_not_ecc].Name)
+            for name in df.Name:
+                n, dirs, _, _, _, angles, _ = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                if n == 1:
+                    if (dirs[0] == 'U1' and float(angles[0]) == 0) or (dirs[0] == 'U2' and float(angles[0]) == 90):
+                        if name in ecc_names:
+                            sxe.add(name)
+                        else:
+                            sx.add(name)
+                    elif (dirs[0] == 'U2' and float(angles[0]) == 0) or (dirs[0] == 'U1' and float(angles[0]) == 90):
+                        if name in ecc_names:
+                            sye.add(name)
+                        else:
+                            sy.add(name)
+        return sx, sxe, sy, sye
 
     def multiply_response_spectrum_scale_factor(self,
             name : str,

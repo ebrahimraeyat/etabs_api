@@ -1059,6 +1059,24 @@ class EtabsModel:
         eyn = d.get('eyn1_drift_combobox', 'EYN1(Drift)')
         eyp = d.get('eyp1_drift_combobox', 'EYP1(Drift)')
         return ex, exn, exp, ey, eyn, eyp
+    
+    def get_dynamic_loadcases(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        sx = d.get('sx_combobox', 'SX')
+        sxe = d.get('sxe_combobox', 'SXE')
+        sy = d.get('sy_combobox', 'SY')
+        sye = d.get('sye_combobox', 'SYE')
+        return sx, sxe, sy, sye
+    
+    def get_dynamic_drift_loadcases(self, d: dict={}):
+        if not d:
+            d = self.get_settings_from_model()
+        sx = d.get('sx_drift_combobox', 'SX(Drift)')
+        sxe = d.get('sxe_drift_combobox', 'SXE(Drift)')
+        sy = d.get('sy_drift_combobox', 'SY(Drift)')
+        sye = d.get('sye_drift_combobox', 'SYE(Drift)')
+        return sx, sxe, sy, sye
 
     def get_top_bot_stories(self, d: dict={}):
         if not d:
