@@ -111,7 +111,7 @@ class LoadCases:
             df['EccenRatio'] = df['EccenRatio'].astype(float)
             filt_not_ecc = df['EccenRatio'] == 0
             ecc_names = set(df.loc[~filt_not_ecc].Name)
-            for name in df.Name:
+            for name in df.Name.unique():
                 n, dirs, _, _, _, angles, _ = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
                 if n == 1:
                     if (dirs[0] == 'U1' and float(angles[0]) == 0) or (dirs[0] == 'U2' and float(angles[0]) == 90):
