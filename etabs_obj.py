@@ -140,9 +140,48 @@ class EtabsModel:
             if self.etabs_main_version < 20:
                 self.seismic_drift_text = 'Seismic (Drift)'
                 self.seismic_drift_load_type = 37
+                self.ecc_overwrite_story = 'Ecc Overwrite Story'
+                self.auto_seismic_user_coefficient_columns_part1 = [
+                    'Name',
+                    'Is Auto Load',
+                    'X Dir?',
+                    'X Dir Plus Ecc?',
+                    'X Dir Minus Ecc?',
+                    'Y Dir?',
+                    'Y Dir Plus Ecc?',
+                    'Y Dir Minus Ecc?',
+                    'Ecc Ratio',
+                    'Top Story',
+                    'Bottom Story',
+                ]
+                self.auto_seismic_user_coefficient_columns_part2 = [
+                    self.ecc_overwrite_story,
+                    'Ecc Overwrite Diaphragm',
+                    'Ecc Overwrite Length',
+                ]
             else:
                 self.seismic_drift_text = 'QuakeDrift'
                 self.seismic_drift_load_type = 61
+                self.ecc_overwrite_story = 'OverStory'
+                self.auto_seismic_user_coefficient_columns_part1 = [
+                    'Name',
+                    'IsAuto',
+                    'XDir',
+                    'XDirPlusE',
+                    'XDirMinusE',
+                    'YDir',
+                    'YDirPlusE',
+                    'YDirMinusE',
+                    'EccRatio',
+                    'TopStory',
+                    'BotStory',
+                ]
+                self.auto_seismic_user_coefficient_columns_part2 = [
+                    self.ecc_overwrite_story,
+                    'OverDiaph',
+                    'OverEcc',
+                ]
+                
 
     def get_etabs_main_version(self):
         ver = self.SapModel.GetVersion()
@@ -1107,8 +1146,8 @@ class EtabsModel:
         row = copy.deepcopy(df.iloc[0])
         seismic_columns = ['XDir', 'XDirMinusE', 'XDirPlusE', 'YDir', 'YDirMinusE', 'YDirPlusE']
         row[seismic_columns] = 'No'
-        if 'Ecc Overwrite Story' in df.columns:
-            row[['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length']] = None
+        if self.ecc_overwrite_story in df.columns:
+            row[self.auto_seismic_user_coefficient_columns_part2] = None
         new_rows = []
         not_es = []
         not_es_drifts = []

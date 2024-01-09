@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 from typing import Iterable, Union
+import copy
 
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -142,15 +143,11 @@ class DatabaseTables:
             loads_type : dict = {},
             ):
         if self.etabs.etabs_main_version < 20:
-            new_columns = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
-                                'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
-                                'Ecc Ratio', 'Top Story', 'Bottom Story',
-                                ]
+            new_columns = copy.deepcopy(self.etabs.auto_seismic_user_coefficient_columns_part1)
             if len(df.columns) == len(new_columns) + 2:
                 new_columns.extend(['C', 'K'])
             else:
-                new_columns.extend(['Ecc Overwrite Story', 'Ecc Overwrite Diaphragm',
-                'Ecc Overwrite Length', 'C', 'K'])
+                new_columns.extend(self.etabs.auto_seismic_user_coefficient_columns_part2 + ['C', 'K'])
             assert len(df.columns) == len(new_columns)
             df.columns = new_columns
         # create new load patterns
@@ -556,15 +553,18 @@ class DatabaseTables:
         return story_mass
 
     def write_aj_user_coefficient(self, table_key, input_df, df):
-        if len(df) == 0: return
-        FieldsKeysIncluded1 = ['Name', 'Is Auto Load', 'X Dir?', 'X Dir Plus Ecc?', 'X Dir Minus Ecc?',
-                            'Y Dir?', 'Y Dir Plus Ecc?', 'Y Dir Minus Ecc?',
-                            'Ecc Ratio', 'Top Story', 'Bot Story', 'Ecc Overwrite Story',
-                            'Ecc Overwrite Diaphragm', 'Ecc Overwrite Length', 'C', 'K'
-                            ]
+        if len(df) == 0:
+            return
+        import copy
+        fields_keys_included1 = copy.deepcopy(
+            self.etabs.auto_seismic_user_coefficient_columns_part1 + 
+            self.etabs.auto_seismic_user_coefficient_columns_part2 +
+            ['C', 'K'], 
+            )
+        
         extra_fields = ('OverStory', 'OverDiaph', 'OverEcc')
-        if input_df.shape[1] < len(FieldsKeysIncluded1):
-            i_ecc_ow_story = FieldsKeysIncluded1.index('Ecc Overwrite Story')
+        if input_df.shape[1] < len(fields_keys_included1):
+            i_ecc_ow_story = fields_keys_included1.index(self.etabs.ecc_overwrite_story)
             indexes = range(i_ecc_ow_story, i_ecc_ow_story + 3)
             for i, header in zip(indexes, extra_fields):
                 input_df.insert(i, header, None)
@@ -598,7 +598,7 @@ class DatabaseTables:
         # input_df = input_df.append(pd.DataFrame.from_records(additional_rows, columns=FieldsKeysIncluded1))
         for row in additional_rows:
             input_df = input_df.append(row)
-        self.apply_data(table_key, input_df, FieldsKeysIncluded1)
+        self.apply_data(table_key, input_df, fields_keys_included1)
     
     
     def write_daynamic_aj_user_coefficient(self, df=None):

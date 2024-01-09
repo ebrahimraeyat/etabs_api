@@ -86,6 +86,8 @@ def test_write_seismic_user_coefficient_df_overwrite():
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'
     df = pd.read_pickle(filename)
+    open_model(etabs=etabs, filename="two_earthquakes.EDB")
+    seismic_drift_type = etabs.seismic_drift_load_type
     loads_type = {
         'EX1' : 5,
         'EX1P' : 5,
@@ -99,12 +101,11 @@ def test_write_seismic_user_coefficient_df_overwrite():
         'EY2' : 5,
         'EY2P' : 5,
         'EY2N' : 5,
-        'EDRIFTY' : 37,
-        'EDRIFTYN' : 37,
-        'EDRIFTYP' : 37,
-        'EDRIFTX' : 37,
+        'EDRIFTY' : seismic_drift_type,
+        'EDRIFTYN' : seismic_drift_type,
+        'EDRIFTYP' : seismic_drift_type,
+        'EDRIFTX' : seismic_drift_type,
         }
-    open_model(etabs=etabs, filename="two_earthquakes.EDB")
     etabs.database.write_seismic_user_coefficient_df(df, loads_type)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
     df = etabs.database.read(table_key, to_dataframe=True)
