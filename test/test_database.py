@@ -59,6 +59,14 @@ def test_write_aj_user_coefficient():
     ret = etabs.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 
+def test_write_daynamic_aj_user_coefficient():
+    open_model(etabs=etabs, filename="two_earthquakes.EDB")
+    etabs.database.write_daynamic_aj_user_coefficient()
+    assert set(etabs.load_cases.get_response_spectrum_loadcase_name()) == {'SPECX', 'SPECY', 'SPECXD', 'SPECYD'}
+    assert len(etabs.load_cases.get_load_cases()) == 19
+    assert True
+
+
 def test_write_seismic_user_coefficient_df():
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'

@@ -657,7 +657,8 @@ class DatabaseTables:
                         additional_rows.append(new_row)
         for row in additional_rows:
             df1 = df1.append(row)
-        df1 = df1.rename(col_map, axis=1)
+        if self.etabs.etabs_main_version  < 20:
+            df1 = df1.rename(col_map, axis=1)
         self.SapModel.SetModelIsLocked(False)
         self.apply_data(table_key, df1)
 
