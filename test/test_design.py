@@ -54,52 +54,10 @@ def test_set_phi_joint_shear_aci08():
     ret = etabs.SapModel.DesignConcrete.ACI318_08_IBC2009.GetPreference(10)
     assert ret[0] == phi_joint_shear
 
-def test_get_rho():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
-    rho, _ = etabs.design.get_rho('130', distance=0)
-    assert pytest.approx(rho, abs=.0001) == .01517
-
 def test_get_rho_of_beams():
     open_model(etabs=etabs, filename='shayesteh.EDB')
     rhos, _ = etabs.design.get_rho_of_beams(['130'], distances=[0])
     assert pytest.approx(rhos[0], abs=.0001) == .01517
-
-def test_get_deflection_of_beam():
-    open_model(etabs=etabs, filename='madadi.EDB')
-    dead = etabs.load_patterns.get_special_load_pattern_names(1)
-    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
-    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
-    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
-    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
-    lives = l1 + l2 + l3
-    def1, def2, _ = etabs.design.get_deflection_of_beam(
-        dead=dead,
-        supper_dead=supper_dead,
-        lives=lives,
-        beam_name='157',
-        distance_for_calculate_rho='middle',
-    )
-    assert pytest.approx(def1, abs=.001) == 0.3975
-    assert pytest.approx(def2, abs=.001) == 2.21168
-
-def test_get_deflection_of_beam_console():
-    open_model(etabs=etabs, filename='madadi.EDB')
-    dead = etabs.load_patterns.get_special_load_pattern_names(1)
-    supper_dead = etabs.load_patterns.get_special_load_pattern_names(2)
-    l1 = etabs.load_patterns.get_special_load_pattern_names(3)
-    l2 = etabs.load_patterns.get_special_load_pattern_names(4)
-    l3 = etabs.load_patterns.get_special_load_pattern_names(11)
-    lives = l1 + l2 + l3
-    etabs.design.get_deflection_of_beam(
-        dead=dead,
-        supper_dead=supper_dead,
-        lives=lives,
-        beam_name='129',
-        distance_for_calculate_rho='end', #The frame is reverse
-        is_console=True,
-        rho=0.00579,
-    )
-    assert True
 
 def test_get_deflection_of_beams():
     open_model(etabs=etabs, filename='madadi.EDB')
