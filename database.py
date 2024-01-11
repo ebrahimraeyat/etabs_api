@@ -785,6 +785,16 @@ class DatabaseTables:
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
         return type_combos
+    
+    def select_load_cases_combinations(self,
+                                       load_cases: list=[],
+                                       load_combinations: list=[],
+            ):
+        self.etabs.run_analysis()
+        self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay([])
+        self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay([])
+        self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(load_cases)
+        self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
 
     def get_beams_forces(self,
                         load_combinations : list = None,

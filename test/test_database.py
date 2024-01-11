@@ -59,6 +59,18 @@ def test_write_aj_user_coefficient():
     ret = etabs.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 
+def test_select_load_cases_combinations():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
+    load_cases = ['DEAD']
+    load_combinations=['COMB1', 'COMB2', 'COMB3']
+    etabs.database.select_load_cases_combinations(load_cases=load_cases, load_combinations=load_combinations)
+    ret = etabs.SapModel.DatabaseTables.GetLoadCasesSelectedForDisplay()
+    assert ret[0] == 1
+    assert set(ret[1]).intersection(load_cases) == set(load_cases)
+    ret = etabs.SapModel.DatabaseTables.GetLoadCombinationsSelectedForDisplay()
+    assert ret[0] == 3
+    assert set(ret[1]).intersection(load_combinations) == set(load_combinations)
+
 def test_write_daynamic_aj_user_coefficient():
     open_model(etabs=etabs, filename="two_earthquakes.EDB")
     etabs.database.write_daynamic_aj_user_coefficient()
