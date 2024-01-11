@@ -56,18 +56,40 @@ class Results:
         z = results[8][index]
         return x, y, z
     
+    def get_points_min_max_displacements(self,
+                                         points: list=[],
+                                         load_cases: list=[],
+                                         load_combinations: list=[],
+                                         ):
+        self.etabs.database.select_load_cases_combinations(load_cases=load_cases, load_combinations=load_combinations)
+        table_key = 'Joint Displacements'
+        cols = ['UniqueName', 'OutputCase', 'Ux', 'Uy', 'Uz']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if df is None:
+            return
+        convert_type = {
+                    'Ux' : float,
+                    'Uy' : float,
+                    'Uz' : float,
+                    }
+        df = df.astype(convert_type)
+        if points:
+            filt = df['UniqueName'].isin(points)
+            df = df.loc[filt]
+        return df.groupby(['UniqueName', 'OutputCase']).agg({'Ux': ['min', 'max'], 'Uy': ['min', 'max'], 'Uz': ['min', 'max']})
+
     def get_point_abs_displacement(self,
             point_name: str,
             lp_name: str,
             type_: str='Case', # 'Combo
-            index: int=0,
-            item_type_elm: int=0,
+            index: int=-1,
+            item_type_elm: int=1,
         ):
         self.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
         exec(f'self.SapModel.Results.Setup.Set{type_}SelectedForOutput("{lp_name}")')
-        results = self.SapModel.Results.JointDispl(point_name, item_type_elm)
+        results = self.SapModel.Results.JointDisplAbs(point_name, item_type_elm)
         if results[0] == 0:
-            results = self.SapModel.Results.JointDispl(point_name, 0)
+            results = self.SapModel.Results.JointDisplAbs(point_name, 0)
         print(10 * '*', '\n', point_name, results)
         x = results[6][index]
         y = results[7][index]
