@@ -134,7 +134,7 @@ def test_get_deflection_of_beams_console():
         beam_names=['129'],
         distances_for_calculate_rho=['end'], #The frame is reverse
         is_consoles=[True],
-        rhos=0.00579,
+        rhos=[0.00579],
     )
     assert True
 

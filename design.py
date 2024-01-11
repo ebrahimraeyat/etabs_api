@@ -508,10 +508,6 @@ class Design:
         else:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         new_points_for_get_deflection = []
-        if self.etabs.etabs_main_version < 20:
-            index = 1
-        else:
-            index = 0
         beams_points = []
         for i, beam_name in enumerate(beam_names):
             print(20 * '=' + '\n')
@@ -529,7 +525,7 @@ class Design:
             if (
                 point_for_get_deflection is None and \
                 not is_console and \
-                type(distance) == str
+                isinstance(distance, str)
                 ):
                 point_for_get_deflection = self.etabs.points.add_point_on_beam(
                     name=beam_name,
@@ -550,21 +546,25 @@ class Design:
                 # scale factor set to 0.5 due to xi for 3 month equal to 1.0
                 self.SapModel.RespCombo.SetCaseList(f'deflection2_beam{beam_name}', 0, lc3, -0.5)
         self.etabs.run_analysis()
+        import python_functions
+        pts = python_functions.flatten_list(beams_points) + new_points_for_get_deflection
+        combos = ['deflection1'] + [f'deflection2_beam{beam_name}' for beam_name in beam_names]
+        pts_displacements = self.etabs.results.get_points_min_max_displacements(points=pts, load_combinations=combos)
         deflections1 = []
         deflections2 = []
         for i, beam_name in enumerate(beam_names):
             p1_name, p2_name = beams_points[i]
-            p1_def1 = self.etabs.results.get_point_abs_displacement(p1_name, 'deflection1', type_='Combo', index=index)[2]
-            p1_def2 = self.etabs.results.get_point_abs_displacement(p1_name, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
-            p2_def1 = self.etabs.results.get_point_abs_displacement(p2_name, 'deflection1', type_='Combo', index=index)[2]
-            p2_def2 = self.etabs.results.get_point_abs_displacement(p2_name, f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+            p1_def1 = pts_displacements.loc[(p1_name, 'deflection1'), ('Uz', 'min')]
+            p2_def1 = pts_displacements.loc[(p2_name, 'deflection1'), ('Uz', 'min')]
+            p1_def2 = pts_displacements.loc[(p1_name, f'deflection2_beam{beam_name}'), ('Uz', 'min')]
+            p2_def2 = pts_displacements.loc[(p2_name, f'deflection2_beam{beam_name}'), ('Uz', 'min')]
             print(f'\n{p1_def1=}, {p1_def2=}, {p2_def1=}, {p2_def2=}')
-            if is_console:
+            if is_consoles[i]:
                 def1 = p2_def1 - p1_def1
                 def2 = p2_def2 - p1_def2
             else:
-                def_def1 = self.etabs.results.get_point_abs_displacement(new_points_for_get_deflection[i], 'deflection1', type_='Combo', index=index)[2]
-                def_def2 = self.etabs.results.get_point_abs_displacement(new_points_for_get_deflection[i], f'deflection2_beam{beam_name}', type_='Combo', index=index)[2]
+                def_def1 =  pts_displacements.loc[(new_points_for_get_deflection[i], 'deflection1'), ('Uz', 'min')]
+                def_def2 =  pts_displacements.loc[(new_points_for_get_deflection[i], f'deflection2_beam{beam_name}'), ('Uz', 'min')]
                 print(f'\n{def_def1=}, {def_def2=}')
                 def1 = def_def1 - (p1_def1 + p2_def1) / 2
                 def2 = def_def2 - (p1_def2 + p2_def2) / 2
