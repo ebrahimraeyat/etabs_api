@@ -48,7 +48,8 @@ class LoadPatterns:
             self.SapModel = SapModel
 
     def get_load_patterns(self):
-        return self.SapModel.LoadPatterns.GetNameList()[1]
+        all_load_patterns = self.SapModel.LoadPatterns.GetNameList()[1]
+        return [text for text in all_load_patterns if not text.startswith('~')]
 
     def get_special_load_pattern_names(self, n=5):
         '''

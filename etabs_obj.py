@@ -1149,6 +1149,7 @@ class EtabsModel:
         row = copy.deepcopy(df.iloc[0])
         seismic_columns = ['XDir', 'XDirMinusE', 'XDirPlusE', 'YDir', 'YDirMinusE', 'YDirPlusE']
         row[seismic_columns] = 'No'
+        row['EccRatio'] = '0.0'
         if self.ecc_overwrite_story in df.columns:
             row[self.auto_seismic_user_coefficient_columns_part2] = None
         new_rows = []
@@ -1162,6 +1163,8 @@ class EtabsModel:
                 new_row = copy.deepcopy(row)
                 new_row[col] = 'Yes'
                 new_row['Name'] = e
+                if 'usE' in col:
+                    new_row['EccRatio'] = '0.05'
                 new_rows.append(new_row)
         # Drift seismic loads
         first_system_seismic = self.get_first_system_seismic_drift(d)
@@ -1172,6 +1175,8 @@ class EtabsModel:
                 new_row = copy.deepcopy(row)
                 new_row[col] = 'Yes'
                 new_row['Name'] = e
+                if 'usE' in col:
+                    new_row['EccRatio'] = '0.05'
                 new_rows.append(new_row)
         # Second system
         if d.get('activate_second_system', False):
@@ -1182,6 +1187,8 @@ class EtabsModel:
                     new_row = copy.deepcopy(row)
                     new_row[col] = 'Yes'
                     new_row['Name'] = e
+                    if 'usE' in col:
+                        new_row['EccRatio'] = '0.05'
                     new_rows.append(new_row)
             # Drift seismic loads
             second_system_seismic = self.get_second_system_seismic_drift(d)
@@ -1192,6 +1199,8 @@ class EtabsModel:
                     new_row = copy.deepcopy(row)
                     new_row[col] = 'Yes'
                     new_row['Name'] = e
+                    if 'usE' in col:
+                        new_row['EccRatio'] = '0.05'
                     new_rows.append(new_row)
         if len(not_es) > 0:
             self.load_patterns.add_load_patterns(not_es, 'Seismic')

@@ -271,9 +271,6 @@ def test_check_seismic_names():
     d['eyp1_combobox'] = 'QYP1'
     d['activate_second_system'] = True
     df = etabs.check_seismic_names(d)
-    assert len(df) == 26
-    n2 = len(etabs.load_patterns.get_load_patterns())
-    assert (n2 - n1) == 6
     assert set(df.Name) == set(({
         'EXDRIFT',
         'QX',
@@ -302,6 +299,14 @@ def test_check_seismic_names():
         'EYN1(Drift)',
         'EYP1(Drift)',
         }))
+    filt = df.Name.isin(('QYN1', 'QXN1', 'QXP1', 'EXN(Drift)', 'EXP(Drift)', 'EYN(Drift)', 'EYP(Drift)'))
+    ecc = df.loc[filt]['EccRatio']
+    assert float(ecc.min()) == float(ecc.max()) == 0.05
+    assert len(df) == 26
+    n2 = len(etabs.load_patterns.get_load_patterns())
+    assert (n2 - n1) == 18
+    assert n1 == 17
+    assert n2 == 35
 
 
 

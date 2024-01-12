@@ -49,7 +49,6 @@ def test_get_drift_load_pattern_names():
 def test_get_load_patterns():
     open_model(etabs=etabs, filename='shayesteh.EDB')
     load_pattern_names = etabs.load_patterns.get_load_patterns()
-    print(load_pattern_names)
     assert len(load_pattern_names) == 17
 
 def test_get_xy_seismic_load_patterns():
