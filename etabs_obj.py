@@ -159,6 +159,7 @@ class EtabsModel:
                     'Ecc Overwrite Diaphragm',
                     'Ecc Overwrite Length',
                 ]
+                self.auto_notional_loads_columns = ['Load Pattern', 'Base Load Pattern', 'Load Ratio', 'Load Direction']
             else:
                 self.seismic_drift_text = 'QuakeDrift'
                 self.seismic_drift_load_type = 61
@@ -181,6 +182,7 @@ class EtabsModel:
                     'OverDiaph',
                     'OverEcc',
                 ]
+                self.auto_notional_loads_columns = ['LoadPattern', 'BasePattern', 'LoadRatio', 'LoadDir']
                 
 
     def get_etabs_main_version(self):

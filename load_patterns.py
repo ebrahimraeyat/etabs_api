@@ -380,7 +380,7 @@ class LoadPatterns:
         self.etabs.load_patterns.add_load_patterns(notional_loads, 'Notional')
         table_key = "Load Pattern Definitions - Auto Notional Loads"
         df = self.etabs.database.read(table_key, to_dataframe=True)
-        cols = ['Load Pattern', 'Base Load Pattern', 'Load Ratio', 'Load Direction']
+        cols = self.etabs.auto_notional_loads_columns
         df2 = []
         for load in loads:
             df2.extend([[f'N{load}X', load, '.002', 'X'], [f'N{load}Y', load, '.002', 'Y']])
