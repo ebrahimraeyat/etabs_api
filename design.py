@@ -139,7 +139,7 @@ class Design:
         texts = []
         self.etabs.set_current_unit('N', 'cm')
         self.etabs.run_analysis()
-        self.etabs.start_design()
+        self.etabs.start_design(check_designed=True)
         if torsion_areas is None:
             torsion_areas = len(names) * [None]
         if frame_areas is None:
