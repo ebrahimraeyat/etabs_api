@@ -127,4 +127,14 @@ def test_get_deflection_check_result():
         800,
     )
     print(text)
-    assert type(text) == str
+    assert isinstance(text, str)
+
+def test_model_designed():
+    open_model(etabs=etabs, filename='madadi.EDB')
+    assert not etabs.design.model_designed()
+    etabs.run_analysis()
+    assert not etabs.design.model_designed()
+    etabs.start_design()
+    assert etabs.design.model_designed()
+    assert not etabs.design.model_designed(type_='Steel')
+

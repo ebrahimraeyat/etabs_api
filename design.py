@@ -96,6 +96,21 @@ class Design:
             code = self.get_code_string(type_)
         exec(f"self.SapModel.Design{type_}.{code}.SetPreference({item}, {value})")
 
+    def model_designed(self,
+                       type_: str='Concrete',
+                       ):
+        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
+        import python_functions
+        if (
+            type_ == 'Concrete' and
+            python_functions.is_text_in_list_elements(all_table, 'Concrete Beam Design Summary')
+        ) or (
+            type_ == 'Steel' and
+            python_functions.is_text_in_list_elements(all_table, 'Steel Frame Design Summary')
+        ):
+            return True
+        return False
+
     def set_phi_joint_shear(self,
         value=0.75,
         code=None,

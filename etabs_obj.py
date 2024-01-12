@@ -256,7 +256,10 @@ class EtabsModel:
 
     def start_design(self,
         type_: str = 'Concrete', # Steel
+        check_designed: bool=False,
         ):
+        if check_designed and self.etabs.design.model_designed(type_=type_):
+            return
         print(f"Starting Design {type_}")
         exec(f"self.SapModel.Design{type_}.StartDesign()")
 
