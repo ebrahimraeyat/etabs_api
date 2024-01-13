@@ -250,10 +250,10 @@ class EtabsModel:
         if self.SapModel.GetModelIsLocked():
             if open_lock:
                 self.SapModel.SetModelIsLocked(False)
-                print('Run Alalysis ...')
+                print('Run Analysis ...')
                 self.SapModel.analyze.RunAnalysis()
         else:
-            print('Run Alalysis ...')
+            print('Run Analysis ...')
             self.SapModel.analyze.RunAnalysis()
 
     def start_design(self,

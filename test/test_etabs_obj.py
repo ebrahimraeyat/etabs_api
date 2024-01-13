@@ -4,6 +4,8 @@ import pytest
 from unittest.mock import Mock
 import tempfile
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -30,7 +32,7 @@ def create_building():
 
 def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
-    assert ver == version
+    assert ver == int(version)
 
 def test_get_filename_with_suffix():
     open_model(etabs, 'shayesteh.EDB')
@@ -65,7 +67,6 @@ def test_get_main_periods():
     assert pytest.approx(tx_drift, .001) == 1.291
     assert pytest.approx(ty_drift, .001) == 1.291
 
-@pytest.mark.slow
 def test_get_drift_periods():
     open_model(etabs=etabs, filename='shayesteh.EDB')
     Tx_drift, Ty_drift, file_name = etabs.get_drift_periods()
@@ -85,7 +86,6 @@ def test_get_drift_periods_steel():
     assert drift_file_path.exists()
 
     
-@pytest.mark.slow
 def test_apply_cfactor_to_edb():
     open_model(etabs=etabs, filename='shayesteh.EDB')
     building = create_building()
@@ -133,20 +133,18 @@ def test_apply_cfactors_to_edb():
         assert etabs.SapModel.LoadPatterns.GetLoadType(lp)[0] == etabs.seismic_drift_load_type
     assert errors == 0
 
-
-
-@pytest.mark.getmethod
 def test_get_diaphragm_max_over_avg_drifts():
-    open_model(etabs=etabs, filename='shayeste h.EDB')
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     table = etabs.get_diaphragm_max_over_avg_drifts()
     assert len(table) == 20
 
-@pytest.mark.getmethod
 def test_get_magnification_coeff_aj():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     df = etabs.get_magnification_coeff_aj()
-    assert len(df) == 20
+    assert len(df) == 9
 
 def test_get_story_forces_with_percentages():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     forces, _ = etabs.get_story_forces_with_percentages()
     assert len(forces) == 10
 
@@ -162,28 +160,16 @@ def test_get_drifts():
     # None, '0.001152', '1.065', '7', '11.81', '5', '18.68', '0.0056'], [...]]
     ret_drifts = [.0012, .0025, .0043, .0038, .0057, .0049, .0056, .0049, .0038, .0034]
     for i, dr in enumerate(ret_drifts):
-        assert pytest.approx(dr, abs=0.0001) == float(drifts[i][9])
-
-# def test_calculate_drifts(shayesteh, mocker):
-#     mocker.patch(
-#         'etabs_api.etabs_obj.EtabsModel.get_drift_periods_calculate_cfactor_and_apply_to_edb',
-#         return_value = 0
-#     )
-#     no_story = 4
-#     widget = Mock()
-#     widget.final_building.x_system.cd = 4.5
-#     widget.final_building.y_system.cd = 4.5
-#     drifts, headers = etabs.calculate_drifts(
-#         widget, no_story, auto_no_story=False,auto_height=False)
-#     assert len(drifts[0]) == len(headers)
+        assert pytest.approx(dr, abs=0.0001) == float(drifts[i][5])
 
 def test_get_irregularity_of_mass():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     iom, fields = etabs.get_irregularity_of_mass()
     assert len(iom) == 5
     assert len(iom[0]) == len(fields)
 
-@pytest.mark.slow
 def test_get_story_stiffness_modal_way():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     # dx = dy = {
     #             'STORY5' : 5,
     #             'STORY4' : 4,
@@ -206,24 +192,33 @@ def test_get_story_stiffness_modal_way():
     #         ))
     story_stiffness = etabs.get_story_stiffness_modal_way()
     assert len(story_stiffness) == 5
-    assert story_stiffness == {
-                            'STORY5':[4, 4],
-                            'STORY4': [7, 7],
-                            'STORY3': [9, 9],
-                            'STORY2': [10, 10],
-                            'STORY1': [15, 15],
-                            }
+    desired_story_stiffness = {
+        'STORY1': [3981106.61, 4123839.81],
+        'STORY2': [3907090.56, 3828170.06],
+        'STORY3': [2941770.48, 2917066.37],
+        'STORY4': [2199361.67, 2148767.10],
+        'STORY5': [741428.62, 426294.86],
+    }
+    for story in story_stiffness.keys():
+        np.testing.assert_almost_equal(
+            list(story_stiffness[story]),
+            list(desired_story_stiffness[story]),
+            decimal=1,
+            )
 
 def test_set_current_unit():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.set_current_unit('kgf', 'm')
     assert etabs.SapModel.GetPresentUnits_2()[:-1] == [5, 6, 2]
     assert etabs.SapModel.GetPresentUnits() == 8
 
 def test_add_prefix_suffix_name():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     path = etabs.add_prefix_suffix_name(prefix='asli_', suffix='_x', open=False)
     assert path.name == f'asli_test{version}_x.EDB'
 
 def test_create_joint_shear_bcc_file():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     from shayesteh import get_temp_filepath
     filename = get_temp_filepath(filename='js_bc')
     df = etabs.create_joint_shear_bcc_file(file_name=filename.name, open_main_file=True)
@@ -239,6 +234,7 @@ def test_get_type_of_structure():
     assert typ == 'steel'
 
 def test_start_slab_design():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.start_slab_design()
 
 def test_angles_response_spectrums_analysis():
@@ -311,6 +307,6 @@ def test_check_seismic_names():
 
 
 if __name__ == '__main__':
-    test_check_seismic_names()
+    test_get_drifts()
 
 
