@@ -199,9 +199,9 @@ def test_get_story_stiffness_modal_way():
         'STORY4': [2199361.67, 2148767.10],
         'STORY5': [741428.62, 426294.86],
     }
-    for story in story_stiffness.keys():
+    for story, stiff in story_stiffness.items():
         np.testing.assert_almost_equal(
-            [i / 10e4 for i in story_stiffness[story]],
+            [i / 10e4 for i in stiff],
             [i / 10e4 for i in desired_story_stiffness[story]],
             decimal=0,
             )
@@ -235,7 +235,9 @@ def test_get_type_of_structure():
 
 def test_start_slab_design():
     open_model(etabs=etabs, filename='shayesteh.EDB')
-    etabs.start_slab_design()
+    with pytest.raises(NotImplementedError) as err:
+        etabs.start_slab_design()
+    assert True
 
 def test_angles_response_spectrums_analysis():
     open_model(etabs=etabs, filename='zibaei.EDB')
@@ -307,6 +309,6 @@ def test_check_seismic_names():
 
 
 if __name__ == '__main__':
-    test_get_drifts()
+    test_start_slab_design()
 
 

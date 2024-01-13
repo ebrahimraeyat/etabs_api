@@ -266,6 +266,8 @@ class EtabsModel:
         exec(f"self.SapModel.Design{type_}.StartDesign()")
 
     def start_slab_design(self):
+        if self.etabs_main_version < 20:
+            raise NotImplementedError
         self.run_analysis()
         print("Starting Design Slabs")
         self.SapModel.DesignConcreteSlab.StartSlabDesign()
