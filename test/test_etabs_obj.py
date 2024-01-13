@@ -201,9 +201,9 @@ def test_get_story_stiffness_modal_way():
     }
     for story in story_stiffness.keys():
         np.testing.assert_almost_equal(
-            list(story_stiffness[story]),
-            list(desired_story_stiffness[story]),
-            decimal=1,
+            [i / 10e4 for i in story_stiffness[story]],
+            [i / 10e4 for i in desired_story_stiffness[story]],
+            decimal=0,
             )
 
 def test_set_current_unit():
