@@ -13,20 +13,19 @@ if 'etabs' not in dir(__builtins__):
 import create_f2k
 
 
-@pytest.mark.setmethod
 def test_add_point_coordinates():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name
     shutil.copy(f2k, temp_f2k)
     writer = create_f2k.CreateF2kFile(
         input_f2k=temp_f2k,
-        etabs=shayesteh,
+        etabs=etabs,
         load_cases=[],
         case_types=[],
         model_datum=0,
         append=False,
         )
-    shayesteh.run_analysis()
+    etabs.run_analysis()
     writer.add_point_coordinates()
     writer.write()
     points = writer.get_points_coordinates()
@@ -35,7 +34,7 @@ def test_add_point_coordinates():
 def test_add_load_patterns():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     content = safe.add_load_patterns()
     safe.write()
@@ -44,7 +43,7 @@ def test_add_load_patterns():
 def test_add_loadcase_general():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     content = safe.add_loadcase_general()
     safe.write()
@@ -53,7 +52,7 @@ def test_add_loadcase_general():
 def test_add_modal_loadcase_definitions():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     content = safe.add_modal_loadcase_definitions()
     safe.write()
@@ -62,7 +61,7 @@ def test_add_modal_loadcase_definitions():
 def test_add_loadcase_definitions():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     content = safe.add_loadcase_definitions()
     safe.write()
@@ -71,7 +70,7 @@ def test_add_loadcase_definitions():
 def test_add_point_loads():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     content = safe.add_point_loads()
     safe.write()
@@ -81,26 +80,25 @@ def test_add_point_loads():
 def test_create_f2k():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     safe.create_f2k()
 
 def test_add_grids():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
-        shayesteh,
+        etabs,
         )
     safe.add_grids()
     safe.write()
 
-@pytest.mark.setmethod
 def test_add_load_combinations():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name
     shutil.copy(f2k, temp_f2k)
     writer = create_f2k.CreateF2kFile(
         input_f2k=temp_f2k,
-        etabs=shayesteh,
+        etabs=etabs,
         load_cases=[],
         case_types=[],
         model_datum=0,
@@ -115,14 +113,13 @@ def test_add_load_combinations():
                     assert False
     assert True
 
-@pytest.mark.setmethod
 def test_add_load_combinations_envelope():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name
     shutil.copy(f2k, temp_f2k)
     writer = create_f2k.CreateF2kFile(
         input_f2k=temp_f2k,
-        etabs=shayesteh,
+        etabs=etabs,
         load_cases=[],
         case_types=[],
         model_datum=0,

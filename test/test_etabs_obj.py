@@ -32,7 +32,7 @@ def create_building():
 
 def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
-    assert ver == int(version)
+    assert ver == version
 
 def test_get_filename_with_suffix():
     open_model(etabs, 'shayesteh.EDB')

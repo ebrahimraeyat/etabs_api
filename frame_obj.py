@@ -960,18 +960,20 @@ class FrameObj:
         asli_file_path = asli_file_path.with_suffix(".EDB")
         self.SapModel.File.Save(str(asli_file_path))
         print(asli_file_path)
-        # if type_ == 'Concrete':
         if isinstance(file_name, Path):
             new_file_path = file_name
         else:
             new_file_path = self.etabs.backup_model(name=file_name)
         print(f"Saving file as {new_file_path}\n")
         self.SapModel.File.Save(str(new_file_path))
-        # elif type_ == 'Steel':
-        #     pass
-            # self.SapModel.File.Open(str(file_name))
         if ex is None:
             ex, exn, exp, ey, eyn, eyp = self.etabs.load_patterns.get_seismic_load_patterns()
+            ex = ex.pop()
+            exn = exn.pop()
+            exp = exp.pop()
+            ey = ey.pop()
+            eyn = eyn.pop()
+            eyp = eyp.pop()
         combos = []
         load_cases = []
         if ex:
@@ -1154,7 +1156,9 @@ class FrameObj:
         section_name = self.SapModel.FrameObj.GetSection(name)[0]
         _, _, h, b, *_ = self.SapModel.PropFrame.GetRectangle(section_name)
         if cover == 0:
-            cover = 6
+            len_unit = self.etabs.get_current_unit()[1]
+            multiply = {'m': 0.01, 'cm': 1, 'mm': 10}
+            cover = 6 * multiply.get(len_unit)
         return (b * (h - cover))
 
 

@@ -17,17 +17,20 @@ if 'etabs' not in dir(__builtins__):
     from shayesteh import etabs, open_model, version
 
 def test_get_story_mass():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     story_mass = etabs.database.get_story_mass()
     assert len(story_mass) == 5
     assert pytest.approx(float(story_mass[2][1]), abs=1) == 17696
 
 def test_get_center_of_rigidity():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     cor = etabs.database.get_center_of_rigidity()
     assert len(cor) == 5
     assert cor['STORY1'] == ('9.3844', '3.7778')
 
 
 def test_get_stories_displacement_in_xy_modes():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     dx, dy, wx, wy = etabs.database.get_stories_displacement_in_xy_modes()
     assert len(dx) == 5
     assert len(dy) == 5
@@ -35,17 +38,20 @@ def test_get_stories_displacement_in_xy_modes():
     assert pytest.approx(wy, abs=.01) == 4.868
 
 def test_get_story_forces():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     forces, loadcases, _ = etabs.database.get_story_forces()
     assert len(forces) == 10
     assert loadcases == ('QX', 'QY')
 
 def test_multiply_seismic_loads():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     NumFatalErrors, ret = etabs.database.multiply_seismic_loads(.67)
     assert NumFatalErrors == ret == 0
     ret = etabs.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 
 def test_write_aj_user_coefficient():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     etabs.load_patterns.select_all_load_patterns()
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
     input_df = etabs.database.read(table_key, to_dataframe=True)
@@ -80,6 +86,7 @@ def test_write_daynamic_aj_user_coefficient():
 
 
 def test_write_seismic_user_coefficient_df():
+    open_model(etabs=etabs, filename="two_earthquakes.EDB")
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
     df = pd.read_pickle(filename)
@@ -90,6 +97,7 @@ def test_write_seismic_user_coefficient_df():
     assert len(df) == 14
 
 def test_write_seismic_user_coefficient_df01():
+    open_model(etabs=etabs, filename="two_earthquakes.EDB")
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
     df = pd.read_pickle(filename)
@@ -103,6 +111,7 @@ def test_write_seismic_user_coefficient_df01():
         assert row['C'] == '0.1'
 
 def test_write_seismic_user_coefficient_df_overwrite():
+    open_model(etabs=etabs, filename="two_earthquakes.EDB")
     import pandas as pd
     filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'
     df = pd.read_pickle(filename)
@@ -146,17 +155,20 @@ def test_get_beams_forces():
     assert len(df.columns) == 4
 
 def test_get_beams_torsion():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     df = etabs.database.get_beams_torsion()
     assert len(df) == 92
     assert len(df.columns) == 4
 
 def test_get_beams_torsion_2():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     df = etabs.database.get_beams_torsion(beams=['115'])
     assert len(df) == 1
     assert len(df.columns) == 4
     assert pytest.approx(df.iat[0, 3], abs=.01) == 3.926
 
 def test_get_beams_torsion_dict():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     cols=['UniqueName', 'T']
     df = etabs.database.get_beams_torsion(beams=['115'], cols=cols)
     assert len(df) == 1
@@ -164,6 +176,7 @@ def test_get_beams_torsion_dict():
 
 
 def test_get_concrete_frame_design_load_combinations():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     combos = etabs.database.get_concrete_frame_design_load_combinations()
     assert len(combos) == 35
     combinations = [f'COMB{i}' for i in range(1, 36)]
@@ -171,6 +184,7 @@ def test_get_concrete_frame_design_load_combinations():
 
 
 def test_get_section_cuts_base_shear():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     df = etabs.database.get_section_cuts_base_shear(loadcases=['DEAD'], section_cuts=['SEC15'])
     assert len(df) == 1
     df = etabs.database.get_section_cuts_base_shear(loadcases=['DEAD', 'QXP'], section_cuts=['SEC15'])
@@ -178,6 +192,7 @@ def test_get_section_cuts_base_shear():
 
 
 def test_get_section_cuts_angle():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     d = etabs.database.get_section_cuts_angle()
     assert len(d) == 12
 
@@ -192,6 +207,7 @@ def test_expand_seismic_load_patterns():
 
 
 def test_expand_table():
+    open_model(etabs=etabs, filename="khiabany.EDB")
     d1 = {
         'EXALL' : ['EX', 'EPX', 'ENX'],
         'EYALL' : ['EY', 'EPY', 'ENY'],
@@ -207,6 +223,7 @@ def test_expand_table():
 
 
 def test_expand_design_combos():
+    open_model(etabs=etabs, filename="khiabany.EDB")
     d1 = {
         'EXALL' : ['EX', 'EPX', 'ENX'],
         'EYALL' : ['EY', 'EPY', 'ENY'],
@@ -217,7 +234,7 @@ def test_expand_design_combos():
     assert list(dfs.keys())[0] == 'Concrete Frame Design Load Combination Data'
 
 def test_area_mesh_joints():
-    # open_model(etabs=etabs, filename="khiabany.EDB")
+    open_model(etabs=etabs, filename="khiabany.EDB")
     ret = etabs.database.area_mesh_joints(areas=['4'])
     assert len(ret) == 3
     if version < 20:
@@ -268,15 +285,18 @@ def test_apply_expand_design_combos():
     assert l2 == ['COMB1']
     
 def test_get_basepoints_coord_and_dims():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     d = etabs.database.get_basepoints_coord_and_dims()
     assert len(d) == 11
 
 
 def test_get_frame_points_xyz():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     d = etabs.database.get_frame_points_xyz(frames=('114', '115'))
     assert len(d) == 2
 
 def test_set_floor_cracking_for_floor():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     type_ = 'Area'
     etabs.database.set_floor_cracking(type_=type_)
     names = etabs.area.get_names_of_areas_of_type(type_='floor')
@@ -285,6 +305,7 @@ def test_set_floor_cracking_for_floor():
     assert set(names) == set(df['UniqueName'].unique())
 
 def test_set_floor_cracking_for_beams():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     type_ = 'Frame'
     etabs.database.set_floor_cracking(type_=type_)
     names, _ = etabs.frame_obj.get_beams_columns()
@@ -293,9 +314,11 @@ def test_set_floor_cracking_for_beams():
     assert set(names) == set(df['UniqueName'].unique())
 
 def test_get_design_load_combinations_steel():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     etabs.database.get_design_load_combinations('steel')
 
 def test_create_nonlinear_loadcases():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     dead = ['Dead']
     sd = ['S-DEAD']
     lives = ['Live', 'Live-0.5', 'L-RED']
@@ -306,6 +329,7 @@ def test_create_nonlinear_loadcases():
     assert ret[0] == 'Dead+S-DEAD+0.25Live'
 
 def test_add_grid_lines():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     data = [
     'G1', 'X (Cartesian)', '1', '140.0', 'End', 'Yes',
     'G1', 'X (Cartesian)', '2', '250.0', 'End', 'Yes',
@@ -319,6 +343,7 @@ def test_add_grid_lines():
     assert set(df.Ordinate) == {'140', '250', '6130', '290'}
 
 def test_set_cracking_analysis_option():
+    open_model(etabs=etabs, filename="shayesteh.EDB")
     min_tension_ratio = .1
     min_compression_ratio = .2
     etabs.database.set_cracking_analysis_option(

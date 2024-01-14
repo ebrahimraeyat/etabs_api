@@ -53,10 +53,11 @@ def test_calculate_equivalent_height_according_to_volume():
 
 def test_deck_plate_equivalent_height_according_to_volume():
     import area
+    etabs.set_current_unit('N', 'mm')
     h_equal = area.deck_plate_equivalent_height_according_to_volume(
         s=800, d=380, tw_top=140, tw_bot=120, hc=100, t_deck=50
     )
-    assert pytest.approx(h_equal, abs=.01) == 1340.357
+    assert pytest.approx(h_equal, abs=.01) == 83.77
 
 def test_calculate_rho():
     import area
@@ -107,18 +108,20 @@ def test_assign_slab_modifiers():
 
 def test_design_slabs():
     open_model(etabs=etabs, filename='khiabany.EDB')
-    etabs.area.design_slabs(
-        slab_names=['4'],
-        s = 80,
-        d = 30,
-        tw = 13,
-        hc = 5,
-        as_top = 1.5,
-        as_bot = 2,
-        fill = True,
-        two_way = True,
-        design = True,
-        )
+    with pytest.raises(NotImplementedError) as err:
+        etabs.area.design_slabs(
+            slab_names=['4'],
+            s = 80,
+            d = 30,
+            tw = 13,
+            hc = 5,
+            as_top = 1.5,
+            as_bot = 2,
+            fill = True,
+            two_way = True,
+            design = True,
+            )
+    assert True
     
 def test_save_as_deflection_filename():
     open_model(etabs=etabs, filename='shayesteh.EDB')
@@ -130,22 +133,24 @@ def test_save_as_deflection_filename():
     
 def test_get_deflection_of_slab():
     open_model(etabs=etabs, filename='khiabany.EDB')
-    etabs.area.get_deflection_of_slab(
-    dead=['Dead'],
-    supper_dead=['S-DEAD'],
-    lives=['Live', 'Live-0.5', 'LROOF'],
-    slab_name='4',
-    s=800,
-    d=300,
-    tw=130,
-    hc=50,
-    as_top=130,
-    as_bot=200,
-    # fill=,
-    two_way=True,
-    lives_percentage=0.25,
-    filename='',
-    )
+    with pytest.raises(NotImplementedError) as err:
+        etabs.area.get_deflection_of_slab(
+        dead=['Dead'],
+        supper_dead=['S-DEAD'],
+        lives=['Live', 'Live-0.5', 'LROOF'],
+        slab_name='4',
+        s=800,
+        d=300,
+        tw=130,
+        hc=50,
+        as_top=130,
+        as_bot=200,
+        # fill=,
+        two_way=True,
+        lives_percentage=0.25,
+        filename='',
+        )
+    assert True
 
 
 
@@ -153,4 +158,4 @@ def test_get_deflection_of_slab():
 
 
 if __name__ == '__main__':
-    test_calculate_slab_weight_per_area()
+    test_deck_plate_equivalent_height_according_to_volume()

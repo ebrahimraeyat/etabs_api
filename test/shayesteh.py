@@ -6,7 +6,7 @@ import etabs_obj
 
 global etabs
 global open_model
-version = os.environ.get('version', 21)
+version = int(os.environ.get('version', 21))
 
 def etabs_model(
         edb: str="shayesteh.EDB",

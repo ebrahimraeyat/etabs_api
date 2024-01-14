@@ -759,6 +759,7 @@ class DatabaseTables:
                     ):
         if not loadcases:
             loadcases = self.etabs.load_patterns.get_ex_ey_earthquake_name()
+        self.etabs.run_analysis()
         # assert len(loadcases) == 2
         self.etabs.set_current_unit('kgf', 'm')
         self.etabs.load_cases.select_load_cases(loadcases)
