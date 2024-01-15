@@ -310,6 +310,17 @@ def test_check_seismic_names():
     assert n1 == 17
     assert n2 == 35
 
+def test_purge_model():
+    open_model(etabs=etabs, filename='two_earthquakes.EDB')
+    etabs.purge_model()
+    beams, columns = etabs.frame_obj.get_beams_columns()
+    assert len(beams) == len(columns) == 0
+    beams, columns = etabs.frame_obj.get_beams_columns(type_=1)
+    assert len(beams) == len(columns) == 0
+    names = etabs.area.get_names_of_areas_of_type()
+    assert len(names) == 0
+    names = etabs.area.get_names_of_areas_of_type(type_='wall')
+    assert len(names) == 0
 
 
 if __name__ == '__main__':

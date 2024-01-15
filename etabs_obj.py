@@ -1034,6 +1034,13 @@ class EtabsModel:
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
     
+    def purge_model(self):
+        '''
+        Remove All frames and areas from model
+        '''
+        self.frame_obj.delete_frames()
+        self.area.delete_areas()
+    
     def get_type_of_structure(self):
         '''
         Return 'steel' or 'concrete'

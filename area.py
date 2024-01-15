@@ -754,6 +754,15 @@ class Area:
             "Results": results
             }
         return m
+    
+    def delete_areas(self,
+                      areas: Union[list, None]=None,
+                      ) -> None:
+        if areas is None:
+            self.SapModel.AreaObj.Delete('ALL', ItemType=1) # Group
+        else:
+            for area in areas:
+                self.SapModel.AreaObj.Delete(area)
 
 def deck_plate_equivalent_height_according_to_volume(
         s,

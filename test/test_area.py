@@ -152,6 +152,18 @@ def test_get_deflection_of_slab():
         )
     assert True
 
+def test_delete_areas():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    etabs.area.delete_areas()
+    names = etabs.area.get_names_of_areas_of_type()
+    assert len(names) == 0
+    open_model(etabs=etabs, filename='two_earthquakes.EDB')
+    etabs.area.delete_areas()
+    names = etabs.area.get_names_of_areas_of_type()
+    assert len(names) == 0
+    names = etabs.area.get_names_of_areas_of_type(type_='wall')
+    assert len(names) == 0
+
 
 
 
