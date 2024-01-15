@@ -32,6 +32,7 @@ class Material:
         '''
         try to find S400 (AIII) and S340 (AII) Rebars material
         '''
+        units = self.etabs.get_current_unit()
         self.etabs.set_current_unit('N', 'mm')
         rebars = self.get_material_of_type(6)
         S340 = []
@@ -42,6 +43,7 @@ class Material:
                 S400.append(rebar)
             elif 290 < fy < 350:
                 S340.append(rebar)
+        self.etabs.set_current_unit(*units)
         return S340, S400
 
     def get_tie_main_rebar_all_sizes(self):
@@ -50,12 +52,14 @@ class Material:
         and rebars that size is in [14, 16, 18, 20, 22, 25, 28, 30] as main_rebar_sizes
         and all rebars with size and name
         '''
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit('N', 'mm')
         tie_rebar_sizes = set()
         main_rebar_sizes = set()
         all_rebars = {}
         rebars = self.SapModel.PropRebar.GetNameListWithData()
         for name, size in zip(rebars[1], rebars[3]):
-            if int(size) == size:
+            if not name.startswith('#') or not name.endswith('M') and int(size) == size:
                 size = int(size)
                 if  size in [10, 12]:
                     tie_rebar_sizes.add(str(size))
@@ -63,11 +67,15 @@ class Material:
                 elif size in [14, 16, 18, 20, 22, 25, 28, 30]:
                     main_rebar_sizes.add(str(size))
                     all_rebars[str(size)] = name
+        self.etabs.set_current_unit(*units)
         return tie_rebar_sizes, main_rebar_sizes, all_rebars
 
     def get_fc(self, conc):
+        units = self.etabs.get_current_unit()
         self.etabs.set_current_unit('N', 'mm')
-        return self.SapModel.PropMaterial.GetOConcrete(conc)[0]
+        fc = self.SapModel.PropMaterial.GetOConcrete(conc)[0]
+        self.etabs.set_current_unit(*units)
+        return fc
 
     def add_material(
         self,

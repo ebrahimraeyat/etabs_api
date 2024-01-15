@@ -232,6 +232,10 @@ def test_get_type_of_structure():
     open_model(etabs=etabs, filename='steel.EDB')
     typ = etabs.get_type_of_structure()
     assert typ == 'steel'
+    etabs.frame_obj.delete_frames()
+    typ = etabs.get_type_of_structure()
+    assert typ == 'concrete'
+
 
 def test_start_slab_design():
     open_model(etabs=etabs, filename='shayesteh.EDB')

@@ -1036,7 +1036,7 @@ class EtabsModel:
     
     def get_type_of_structure(self):
         '''
-        Return 'steel' or 'concrete' or 'unknown'
+        Return 'steel' or 'concrete'
         '''
         steel = 'steel'
         concrete = 'concrete'
@@ -1050,7 +1050,7 @@ class EtabsModel:
             return concrete
         elif len(concrete_beams) < len(steel_beams):
             return steel
-        return 'unknown'
+        return concrete
     
     def get_settings_from_model(self):
         d = {}

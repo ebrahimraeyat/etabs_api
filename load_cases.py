@@ -13,7 +13,7 @@ class LoadCases:
 
     def get_load_cases(self):
         load_case_names = self.SapModel.LoadCases.GetNameList(0, [])[1]
-        return load_case_names
+        return [text for text in load_case_names if not text.startswith('~')]
 
     def select_all_load_cases(self):
         load_case_names = self.get_load_cases()
@@ -155,6 +155,8 @@ class LoadCases:
         '''
         table = 'Load Case Definitions - Response Spectrum'
         df = self.etabs.database.read(table, to_dataframe=True, cols=['Name', 'Angle'])
+        if df is None:
+            return {}
         df.dropna(inplace=True)
         df['Angle'] = df['Angle'].astype(int16)
         df.drop_duplicates(['Name'], keep=False, inplace=True)

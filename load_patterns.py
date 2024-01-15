@@ -270,20 +270,9 @@ class LoadPatterns:
         return ret
 
     def get_ex_ey_earthquake_name(self):
-        x_names, y_names = self.get_load_patterns_in_XYdirection()
-        x_names = sorted(x_names)
-        y_names = sorted(y_names)
-        x_name = None
-        y_name = None
-        drift_load_patterns = self.get_drift_load_pattern_names()
-        for name in x_names:
-            if name not in drift_load_patterns:
-                x_name = name
-                break
-        for name in y_names:
-            if name not in drift_load_patterns:
-                y_name = name
-                break
+        ret = self.get_seismic_load_patterns()
+        x_name = ret[0].pop()
+        y_name = ret[3].pop()
         return x_name, y_name
 
     def get_expanded_seismic_load_patterns(self) -> tuple:
@@ -311,7 +300,7 @@ class LoadPatterns:
         for col in cols:
             df[col] = df[col].map(d)
         filt_multi = (df[cols.keys()].sum(axis=1) > 1)
-        if not True in filt_multi.values:
+        if True not in filt_multi.values:
             return None
         converted_loads = dict.fromkeys(df['Name'].unique())
         converted_loads_type = dict()

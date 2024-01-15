@@ -104,7 +104,11 @@ class FrameObj:
         if story is None and len(stories) > 0:
             story = stories[0]
         stories = set(stories).union([story])
-        for label in self.SapModel.FrameObj.GetLabelNameList()[1]:
+        try:
+            frames = self.SapModel.FrameObj.GetLabelNameList()
+        except:
+            return beams, columns
+        for label in frames[1]:
             if self.SapModel.FrameObj.GetDesignProcedure(label)[0] in types:
                 for story in stories:
                     if self.is_frame_on_story(label, story):
@@ -1160,6 +1164,17 @@ class FrameObj:
             multiply = {'m': 0.01, 'cm': 1, 'mm': 10}
             cover = 6 * multiply.get(len_unit)
         return (b * (h - cover))
+    
+    def delete_frames(self,
+                      frames: Union[list, None]=None,
+                      ) -> None:
+        if frames is None:
+            self.SapModel.FrameObj.Delete('ALL', ItemType=1) # Group
+        else:
+            for frame in frames:
+                self.SapModel.FrameObj.Delete(frame)
+
+
 
 
 if __name__ == '__main__':

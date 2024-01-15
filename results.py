@@ -37,7 +37,14 @@ class Results:
             lp_name: str,
             type_: str='Case', # 'Combo
             ):
-        x, y, _ = self.get_point_displacement(point_name, lp_name, type_)
+        if type_ == 'Case':
+            load_cases = [lp_name]
+            load_combinations = []
+        elif type_ == 'Combo':
+            load_cases = []
+            load_combinations = [lp_name]
+        disps = self.get_points_min_max_displacements([point_name], load_cases, load_combinations)
+        x, y = disps.loc[(point_name, lp_name), (['Ux', 'Uy'], 'max')]
         return x, y
     
     def get_point_displacement(self,

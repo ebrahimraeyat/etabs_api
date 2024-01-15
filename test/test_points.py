@@ -17,6 +17,7 @@ def test_get_points_coords():
     assert pytest.approx(points_coords['146'], abs=1) == (12751.4, 3365.6, 5220)
 
 def test_add_point():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.set_current_unit('N', 'm')
     x1, y1, z1 = 1.01, 12, 20
     name = etabs.points.add_point(x1, y1, z1)
@@ -24,6 +25,7 @@ def test_add_point():
     assert pytest.approx(coords[name], abs=1) == (x1, y1, z1)
 
 def test_add_point_on_beam():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.set_current_unit('N', 'cm')
     name = etabs.points.add_point_on_beam('115')
     coords = etabs.points.get_points_coords([name])
@@ -70,6 +72,6 @@ def test_get_objects_and_elements_joints_coordinate():
         assert set(ret['~208']) == set([5750, -1700, 15840])
 
 def test_get_maximum_point_number_in_model():
-    # open_model(etabs=etabs, filename='khiabany.EDB')
+    open_model(etabs=etabs, filename="khiabany.EDB")
     n = etabs.points.get_maximum_point_number_in_model()
     assert n == 201

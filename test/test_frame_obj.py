@@ -13,6 +13,13 @@ def test_get_beams_columns():
     beams, columns = etabs.frame_obj.get_beams_columns()
     assert len(beams) == 92
     assert len(columns) == 48
+    # Remove frames
+    etabs.frame_obj.delete_frames()
+    beams, columns = etabs.frame_obj.get_beams_columns()
+    assert len(beams) == len(columns) == 0
+    beams, columns = etabs.frame_obj.get_beams_columns(type_=1)
+    assert len(beams) == len(columns) == 0
+
 
 def test_get_beams_columns_on_stories():
     open_model(etabs=etabs, filename='shayesteh.EDB')
@@ -266,6 +273,19 @@ def test_set_end_length_offsets():
     table_key = 'Frame Assignments - End Length Offsets'
     df = etabs.database.read(table_key, to_dataframe=True)
     assert set(df.RigidFact.unique()) == {'0.5'}
+
+def test_delete_frames():
+    open_model(etabs=etabs, filename='shayesteh.EDB')
+    etabs.frame_obj.delete_frames()
+    beams, columns = etabs.frame_obj.get_beams_columns()
+    assert len(beams) == len(columns) == 0
+    open_model(etabs=etabs, filename='madadi.EDB')
+    etabs.frame_obj.delete_frames()
+    beams, columns = etabs.frame_obj.get_beams_columns()
+    assert len(beams) == len(columns) == 0
+    beams, columns = etabs.frame_obj.get_beams_columns(type_=1)
+    assert len(beams) == len(columns) == 0
+
 
 
 if __name__ == '__main__':
