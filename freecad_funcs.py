@@ -145,6 +145,9 @@ def show_help(
         except:
             FreeCADGui.runCommand('Std_AddonMgr',0)
             return
+    prefs = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Help")
+    if not prefs.GetBool("optionBrowser", True):
+        prefs.SetBool("optionBrowser", True)
     software_help_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / f"{software}" / 'help'
     help_path = software_help_dir / filename
     Help.show(str(help_path))
