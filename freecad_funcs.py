@@ -126,7 +126,7 @@ def ask_to_unlock(etabs):
 class GitFailed(RuntimeError):
     """The call to git returned an error of some kind"""
 
-def show_help(
+def show_help_freecad(
         filename: str,
         software: str = 'civilTools',
         ):
@@ -151,6 +151,15 @@ def show_help(
     software_help_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / f"{software}" / 'help'
     help_path = software_help_dir / filename
     Help.show(str(help_path))
+
+def show_help(
+        filename: str,
+        software: str = 'civilTools',
+        ):
+    software_help_dir = Path(FreeCAD.getUserAppDataDir()) / "Mod" / f"{software}" / 'help'
+    help_path = software_help_dir / filename
+    import webbrowser
+    webbrowser.open_new(help_path)
 
 def get_git_exe():
     import shutil
