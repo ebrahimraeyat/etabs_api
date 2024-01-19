@@ -169,12 +169,12 @@ def clone_repos(repos: list):
     git_exe = get_git_exe()
     if git_exe is None:
         return
-    user_path = Path(FreeCAD.getUserAppDataDir() / 'Mod' / 'FreeCAD-Help')
+    user_path = Path(FreeCAD.getUserAppDataDir()) / 'Mod' / 'FreeCAD-Help'
     old_dir = os.getcwd()
     failed = False
     os.chdir(str(user_path.parent))  # Mod folder
     for repo in repos:
-        final_args = [git_exe, 'clone', f'{repo}:{user_path}']
+        final_args = [git_exe, 'clone', f'{repo}', f'{user_path}']
         try:
             subprocess.run(
                 final_args,
