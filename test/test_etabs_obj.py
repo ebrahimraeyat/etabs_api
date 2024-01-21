@@ -9,8 +9,7 @@ import numpy as np
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version, get_temp_filepath
+from shayesteh import etabs, open_etabs_file, version, get_temp_filepath
 
 Tx_drift, Ty_drift = 1.085, 1.085
 
@@ -30,22 +29,25 @@ def create_building():
     building.kx_drift, building.ky_drift = 1.15, 1.2
     return building
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
     assert ver == version
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_filename_with_suffix():
-    open_model(etabs, 'shayesteh.EDB')
     name = etabs.get_filename_with_suffix()
     assert name == f'test{version}.EDB'
-    open_model(etabs, "madadi.EDB")
+
+@open_etabs_file('madadi.EDB')
+def test_get_filename_with_suffix_1():
     name = etabs.get_filename_with_suffix()
     assert name == f'test{version}.EDB'
     name = etabs.get_filename_with_suffix('.e2k')
     assert name == f'test{version}.e2k'
     
+@open_etabs_file('shayesteh.EDB')
 def test_get_from_list_table():
-    open_model(etabs, 'shayesteh.EDB')
     data = [['STORY5', 'QX', 'LinStatic', None, None, None, 'Top', '0', '0'],
             ['STORY5', 'QX', 'LinStatic', None, None, None, 'Bottom', '0', '0'],
             ['STORY4', 'QX', 'LinRespSpec', 'Max', None, None, 'Bottom', '0', '25065.77']]
@@ -61,21 +63,21 @@ def test_get_from_list_table():
     assert list(result) == [['STORY5', 'QX', 'LinStatic', None, None, None, 'Bottom', '0', '0'],
             ['STORY4', 'QX', 'LinRespSpec', 'Max', None, None, 'Bottom', '0', '25065.77']]
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_main_periods():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     tx_drift, ty_drift = etabs.get_main_periods()
     assert pytest.approx(tx_drift, .001) == 1.291
     assert pytest.approx(ty_drift, .001) == 1.291
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_drift_periods():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     Tx_drift, Ty_drift, file_name = etabs.get_drift_periods()
     assert pytest.approx(Tx_drift, .01) == 1.085
     assert pytest.approx(Ty_drift, .01) == 1.085
     assert file_name.name == f"test{version}.EDB"
 
+@open_etabs_file('steel.EDB')
 def test_get_drift_periods_steel():
-    open_model(etabs=etabs, filename='steel.EDB')
     Tx_drift, Ty_drift, file_name = etabs.get_drift_periods(structure_type='steel')
     assert file_name.name == f"test{version}.EDB"
     assert pytest.approx(Tx_drift, .01) == 0.789
@@ -85,17 +87,16 @@ def test_get_drift_periods_steel():
     drift_file_path = Path(tempfile.gettempdir()) / 'periods' / f'test{version}_drift.EDB'
     assert drift_file_path.exists()
 
-    
+@open_etabs_file('shayesteh.EDB')
 def test_apply_cfactor_to_edb():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     building = create_building()
     NumFatalErrors = etabs.apply_cfactor_to_edb(building)
     ret = etabs.SapModel.Analyze.RunAnalysis()
     assert NumFatalErrors == 0
     assert ret == 0
 
+@open_etabs_file('shayesteh.EDB')
 def test_apply_cfactors_to_edb():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     data = [
         (['QX', 'QXN'], ["STORY5", "STORY1", '0.128', '1.37']),
         (['QY', 'QYN'], ["STORY4", "STORY2", '0.228', '1.39']),
@@ -133,23 +134,23 @@ def test_apply_cfactors_to_edb():
         assert etabs.SapModel.LoadPatterns.GetLoadType(lp)[0] == etabs.seismic_drift_load_type
     assert errors == 0
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_diaphragm_max_over_avg_drifts():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     table = etabs.get_diaphragm_max_over_avg_drifts()
     assert len(table) == 20
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_magnification_coeff_aj():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     df = etabs.get_magnification_coeff_aj()
     assert len(df) == 9
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_story_forces_with_percentages():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     forces, _ = etabs.get_story_forces_with_percentages()
     assert len(forces) == 10
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_drifts():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     no_story, cdx, cdy = 4, 4.5, 4.5
     drifts, headers = etabs.get_drifts(no_story, cdx, cdy)
     assert len(drifts[0]) == len(headers)
@@ -162,14 +163,14 @@ def test_get_drifts():
     for i, dr in enumerate(ret_drifts):
         assert pytest.approx(dr, abs=0.0001) == float(drifts[i][5])
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_irregularity_of_mass():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     iom, fields = etabs.get_irregularity_of_mass()
     assert len(iom) == 5
     assert len(iom[0]) == len(fields)
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_story_stiffness_modal_way():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     # dx = dy = {
     #             'STORY5' : 5,
     #             'STORY4' : 4,
@@ -206,30 +207,32 @@ def test_get_story_stiffness_modal_way():
             decimal=0,
             )
 
+@open_etabs_file('shayesteh.EDB')
 def test_set_current_unit():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.set_current_unit('kgf', 'm')
     assert etabs.SapModel.GetPresentUnits_2()[:-1] == [5, 6, 2]
     assert etabs.SapModel.GetPresentUnits() == 8
 
+@open_etabs_file('shayesteh.EDB')
 def test_add_prefix_suffix_name():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     path = etabs.add_prefix_suffix_name(prefix='asli_', suffix='_x', open=False)
     assert path.name == f'asli_test{version}_x.EDB'
 
+@open_etabs_file('shayesteh.EDB')
 def test_create_joint_shear_bcc_file():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     from shayesteh import get_temp_filepath
     filename = get_temp_filepath(filename='js_bc')
     df = etabs.create_joint_shear_bcc_file(file_name=filename.name, open_main_file=True)
     assert len(df) > 0
 
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_type_of_structure():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     typ = etabs.get_type_of_structure()
     assert typ == 'concrete'
-    open_model(etabs=etabs, filename='steel.EDB')
+
+@open_etabs_file('steel.EDB')
+def test_get_type_of_structureـ۱():
     typ = etabs.get_type_of_structure()
     assert typ == 'steel'
     etabs.frame_obj.delete_frames()
@@ -237,14 +240,14 @@ def test_get_type_of_structure():
     assert typ == 'concrete'
 
 
+@open_etabs_file('shayesteh.EDB')
 def test_start_slab_design():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     with pytest.raises(NotImplementedError) as err:
         etabs.start_slab_design()
     assert True
 
+@open_etabs_file('zibaei.EDB')
 def test_angles_response_spectrums_analysis():
-    open_model(etabs=etabs, filename='zibaei.EDB')
     scales = etabs.angles_response_spectrums_analysis(
         ex_name='EX',
         ey_name='EY',
@@ -255,8 +258,8 @@ def test_angles_response_spectrums_analysis():
     for scale in scales:
         assert pytest.approx(scale, abs=.001) == 1
 
+@open_etabs_file('shayesteh.EDB')
 def test_check_seismic_names():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     n1 = len(etabs.load_patterns.get_load_patterns())
     d = {}
     d['ex_combobox'] = 'QX'
@@ -310,8 +313,8 @@ def test_check_seismic_names():
     assert n1 == 17
     assert n2 == 35
 
+@open_etabs_file('two_earthquakes.EDB')
 def test_purge_model():
-    open_model(etabs=etabs, filename='two_earthquakes.EDB')
     etabs.purge_model()
     beams, columns = etabs.frame_obj.get_beams_columns()
     assert len(beams) == len(columns) == 0

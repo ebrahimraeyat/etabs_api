@@ -5,21 +5,20 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version
+from shayesteh import etabs, open_etabs_file
 
+@open_etabs_file('shayesteh.EDB')
 def test_show_point():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.view.show_point('STORY4', '23')
     assert etabs.SapModel.PointObj.GetSelected('166')[0]
 
+@open_etabs_file('shayesteh.EDB')
 def test_show_frame():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.view.show_frame('115')
     assert etabs.SapModel.FrameObj.GetSelected('115')[0]
 
+@open_etabs_file('shayesteh.EDB')
 def test_show_frames():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     frames = ['115', '114', '104']
     etabs.view.show_frames(frames)
     for frame in frames:

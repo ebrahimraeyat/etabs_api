@@ -5,38 +5,37 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version
+from shayesteh import etabs, open_etabs_file
 
 # from load_combinations import generate_concrete_load_combinations
 
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_separate_direction():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, separate_direction=True)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_asd():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD")
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_two_systems_in_height():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead'],
                     'L' : ['Live'],
                     'EX': ['ex'],
@@ -55,16 +54,16 @@ def test_generate_concrete_load_combinations_two_systems_in_height():
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, rho_x1=1.2)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_separate_direction_asd():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD", separate_direction=True)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_separate_direction_retwall():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
@@ -72,8 +71,8 @@ def test_generate_concrete_load_combinations_separate_direction_retwall():
     data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD", separate_direction=True, retaining_wall=True)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_notional_loads():
-    open_model(etabs, 'shayesteh.EDB')
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
                     }
@@ -88,8 +87,8 @@ def test_generate_concrete_load_combinations_notional_loads():
     # print(data)
     assert data
 
+@open_etabs_file('shayesteh.EDB')
 def test_add_load_combination():
-    open_model(etabs, 'shayesteh.EDB')
     load_combinations = []
     for i in range(1, 5):
         name = f'test{i}'
@@ -103,8 +102,8 @@ def test_add_load_combination():
     )
     assert True
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_load_combinations_of_type():
-    open_model(etabs, 'shayesteh.EDB')
     load_combos = etabs.load_combinations.get_load_combinations_of_type(type_='ALL')
     assert len(load_combos) == 59
     load_combos = etabs.load_combinations.get_load_combinations_of_type(type_='SEISMIC')
@@ -112,8 +111,8 @@ def test_get_load_combinations_of_type():
     load_combos = etabs.load_combinations.get_load_combinations_of_type(type_='GRAVITY')
     assert len(load_combos) == 11
 
+@open_etabs_file('two_earthquakes.EDB')
 def test_expand_linear_load_combinations():
-    open_model(etabs, 'two_earthquakes.EDB')
     ret = etabs.load_patterns.get_expanded_seismic_load_patterns()
     etabs.database.write_seismic_user_coefficient_df(ret[0], ret[2])
     # ex_loads = {
@@ -134,8 +133,8 @@ def test_expand_linear_load_combinations():
     assert load_combos[1][2][8] == 'EX2N'
     # assert load_combos == []
 
+@open_etabs_file('two_earthquakes.EDB')
 def test_apply_linear_load_combinations():
-    open_model(etabs, 'two_earthquakes.EDB')
     new_combos = [
         ('New comb 1', (0, 0, 0), ('DL', 'LL', 'EX1'), (1.4, -.3, 0.6)),
         ('New comb 2', (0, 0, 0), ('DL', 'LL', 'EY1'), (1.2, 0.5, 1)),

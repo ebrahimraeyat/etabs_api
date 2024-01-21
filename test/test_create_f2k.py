@@ -7,8 +7,7 @@ import sys
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version
+from shayesteh import etabs, open_etabs_file
 
 import create_f2k
 

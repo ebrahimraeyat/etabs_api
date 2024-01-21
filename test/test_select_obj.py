@@ -5,11 +5,10 @@ import pytest
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-if 'etabs' not in dir(__builtins__):
-    from shayesteh import etabs, open_model, version
+from shayesteh import etabs, open_etabs_file
 
+@open_etabs_file('shayesteh.EDB')
 def test_get_selected_objects():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.SapModel.FrameObj.SetSelected('122', True)
     etabs.SapModel.PointObj.SetSelected('146', True)
     etabs.SapModel.PointObj.SetSelected('147', True)
@@ -18,8 +17,8 @@ def test_get_selected_objects():
     assert set(ret[2]) == {'122'}
     assert set(ret[1]) ==  {'146', '147'}
 
+@open_etabs_file('shayesteh.EDB')
 def test_select_concrete_columns():
-    open_model(etabs=etabs, filename='shayesteh.EDB')
     etabs.select_obj.select_concrete_columns()
     _, columns = etabs.frame_obj.get_beams_columns(type_=2)
     sel_frames = etabs.select_obj.get_selected_obj_type(2)

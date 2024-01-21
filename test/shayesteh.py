@@ -8,6 +8,7 @@ global etabs
 global open_model
 version = int(os.environ.get('version', 21))
 
+
 def etabs_model(
         edb: str="shayesteh.EDB",
         version: int=0, # 19, 20, 21
@@ -94,17 +95,15 @@ def get_all_open_software(
 
 
 etabs, new_instance = etabs_model(version=version)
-# register_version = etabs.etabs_main_version
 
-# if register_version == 19:
-#     etabs19 = etabs
-#     etabs20, new_instance = etabs_model(version=20)
-#     etabs21, new_instance = etabs_model(version=21)
-# elif register_version == 20:
-#     etabs19, new_instance = etabs_model(version=19)
-#     etabs20 = etabs
-#     etabs21, new_instance = etabs_model(version=21)
-# elif register_version == 21:
-#     etabs19, new_instance = etabs_model(version=19)
-#     etabs20, new_instance = etabs_model(version=20)
-#     etabs21 = etabs
+
+def open_etabs_file(filename: str):
+    def _outer(func):
+        def _inner(*args, **kwargs):
+            if 'etabs' not in dir(__builtins__):
+                etabs, _ = etabs_model(version=version)
+            open_model(etabs, filename)
+            response = func(*args, **kwargs)
+            return response
+        return _inner
+    return _outer
