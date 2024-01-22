@@ -8,6 +8,7 @@ global etabs
 global open_model
 version = int(os.environ.get('version', 21))
 
+test_folder = Path(__file__).parent
 
 def etabs_model(
         edb: str="shayesteh.EDB",
@@ -51,10 +52,6 @@ def etabs_model(
         new_instance = True
         return create_test_file(etabs, suffix=suffix), new_instance
 
-# def shayesteh_safe(edb="shayesteh.FDB"):
-# def two_earthquakes(edb="etabs.EDB"):
-# def khiabani(edb="khiabani.EDB"):
-# def steel(edb="steel.EDB"):
 def open_model(
         etabs,
         filename: str, # "madadi.EDB"
@@ -104,6 +101,16 @@ def open_etabs_file(filename: str):
                 etabs, _ = etabs_model(version=version)
             open_model(etabs, filename)
             response = func(*args, **kwargs)
+            purge_test_folder()
             return response
         return _inner
     return _outer
+
+
+def purge_test_folder():
+    for f in test_folder.rglob('*'):
+        if f.suffix == '.log':
+            try:
+                f.unlink()
+            except PermissionError:
+                continue
