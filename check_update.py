@@ -47,6 +47,7 @@ class CheckWorker(QtCore.QThread):
         self.updateAvailable.emit(updates)
 
 def check_updates(software='civilTools'):
+    FreeCAD.Console.PrintLog(f"Check update for {software}\n")
     FreeCAD.software_update_checker = CheckWorker(software)
     FreeCAD.software_update_checker.updateAvailable.connect(show_message)
     FreeCAD.software_update_checker.start()
