@@ -49,7 +49,7 @@ class Material:
     def get_tie_main_rebar_all_sizes(self):
         '''
         return rebars that size is in (10, 12) as tie_rebar_sizes
-        and rebars that size is in [14, 16, 18, 20, 22, 25, 28, 30] as main_rebar_sizes
+        and rebars that size is in [14, 16, 18, 20, 22, 25, 28, 30, 32, 36, 40, 50] as main_rebar_sizes
         and all rebars with size and name
         '''
         units = self.etabs.get_current_unit()
@@ -64,7 +64,7 @@ class Material:
                 if  size in [10, 12]:
                     tie_rebar_sizes.add(str(size))
                     all_rebars[str(size)] = name
-                elif size in [14, 16, 18, 20, 22, 25, 28, 30]:
+                elif size in [14, 16, 18, 20, 22, 25, 28, 30, 32, 36, 40, 50]:
                     main_rebar_sizes.add(str(size))
                     all_rebars[str(size)] = name
         self.etabs.set_current_unit(*units)
