@@ -87,8 +87,10 @@ class Story:
         levels = stories_data[2]
         return dict(zip(names, levels))
 
-    def get_story_boundbox(self, story_name) -> tuple:
-        self.etabs.set_current_unit('kgf', 'cm')
+    def get_story_boundbox(self, story_name, len_unit: str='cm') -> tuple:
+        units = self.etabs.get_current_unit()
+        if units[1] != len_unit:
+            self.etabs.set_current_unit('kgf', len_unit)
         points = self.SapModel.PointObj.GetNameListOnStory(story_name)[1]
         if len(points) == 0:
             return (0, 0, 0, 0)
@@ -102,14 +104,19 @@ class Story:
         x_min = min(xs)
         y_max = max(ys)
         y_min = min(ys)
+        if units[1] != len_unit:
+            self.etabs.set_current_unit(*units)
         return x_min, y_min, x_max, y_max
 
-    def get_stories_boundbox(self) -> dict:
+    def get_stories_boundbox(self, len_unit: str='cm') -> dict:
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit('kgf', len_unit)
         stories = self.SapModel.Story.GetNameList()[1]
         stories_bb = {}
         for story in stories:
-            bb = self.get_story_boundbox(story)
+            bb = self.get_story_boundbox(story, len_unit=len_unit)
             stories_bb[story] = bb
+        self.etabs.set_current_unit(*units)
         return stories_bb
 
     def get_stories_length(self):
