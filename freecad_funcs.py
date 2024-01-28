@@ -2,7 +2,7 @@ import os, sys, subprocess
 from typing import Union
 from pathlib import Path
 
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QMessageBox, QFileDialog
 
 import FreeCAD
 import FreeCADGui
@@ -408,3 +408,17 @@ def open_file(filename):
     else:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, filename])
+
+def get_file_name(suffix: list, etabs=None):
+    filters = f"{suffix}(*.{suffix})"
+    if etabs is not None:
+        directory = str(etabs.get_filepath())
+    else:
+        directory = ''
+    filename, _ = QFileDialog.getSaveFileName(None, 'Get Filename',
+                                                directory, filters)
+    if filename == '':
+        return
+    if not filename.endswith(f".{suffix}"):
+        filename += f".{suffix}"
+    return filename
