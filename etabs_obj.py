@@ -1017,10 +1017,10 @@ class EtabsModel:
         # get main file path
         main_file_path = Path(self.SapModel.GetModelFilename())
         main_file_path = main_file_path.with_suffix(".EDB")
-        self.save_as(str(file_name))
-        self.design.set_concrete_framing_type(1, beams=False)
         if structure_type == 'Sway Intermediate':
+            self.save_as(str(file_name))
             phi = 0.75
+            self.design.set_concrete_framing_type(1, beams=False)
         else:
             phi = 0.85
         self.design.set_phi_joint_shear(phi)
@@ -1030,7 +1030,7 @@ class EtabsModel:
         table_key = f"Concrete Joint Design Summary - {code}"
         cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio', 'BCMajRatio', 'BCMinRatio']
         df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
-        if open_main_file:
+        if structure_type == 'Sway Intermediate' and open_main_file:
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
     
