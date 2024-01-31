@@ -317,6 +317,8 @@ class Design:
                 widths = widths,
                 heights = heights,
             )
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit('N', 'cm')
         # Save As etabs model with filename
         if not filename:
             filename = 'deflection_beams_' + '_'.join(beam_names) + '.EDB'
@@ -419,6 +421,7 @@ class Design:
             print(f'\n{def1=}, {def2=}')
             deflections1.append(abs(def1))
             deflections2.append(abs(def2))
+        self.etabs.set_current_unit(*units)
         return deflections1, deflections2, texts
         
 def get_deflection_check_result(
