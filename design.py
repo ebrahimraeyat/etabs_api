@@ -210,17 +210,18 @@ class Design:
                 torsion_area = total_torsion_area * torsion_percent
             if total_torsion_area is not None:
                 text += f'Total torsion area = {total_torsion_area:0.1f} Cm2, Assume 3/8 for {location} ==> '
-            text += f'Torsion Area = {torsion_area:0.1f}\n'
-            text += f'As = bending + torsion + add rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}\n'
+            text += f'Torsion Area = {torsion_area:0.1f} Cm2\n'
+            text += f'As = bending + torsion + add rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}'
             area += torsion_area
             area += additional_rebars
+            text += f' = {area:0.1f} Cm2\n'
             if frame_area is None:
                 frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
             rho = area / frame_area
             if width is not None:
-                text += f'b = {width}, d = {height} - {cover} = {height - cover} ==> '
+                text += f'b = {int(width)}, d = {int(height)} - {cover} = {height - cover} ==> '
             text += f'b x d = {frame_area:.1f} Cm2\n'
-            text += f'Rho = As / b x d = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
+            text += f'rho = As / b x d = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
             rhos.append(rho)
             texts.append(text)
         self.etabs.set_current_unit(*units)
