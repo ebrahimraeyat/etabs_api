@@ -211,7 +211,7 @@ class Design:
             if total_torsion_area is not None:
                 text += f'Total torsion area = {total_torsion_area:0.1f} Cm2, Assume 3/8 for {location} ==> '
             text += f'Torsion Area = {torsion_area:0.1f} Cm2\n'
-            text += f'As = bending + torsion + add rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}'
+            text += f'As = bending + torsion + added rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}'
             area += torsion_area
             area += additional_rebars
             text += f' = {area:0.1f} Cm2\n'
