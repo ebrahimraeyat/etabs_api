@@ -139,8 +139,10 @@ class Design:
         from scipy.interpolate import interp1d
         rhos = []
         texts = []
+        units = self.etabs.get_current_unit()
         self.etabs.set_current_unit('N', 'cm')
         self.etabs.run_analysis()
+        self.etabs.frame_obj.set_frame_obj_selected(names)
         self.etabs.start_design(check_designed=True)
         if torsion_areas is None:
             torsion_areas = len(names) * [None]
@@ -211,16 +213,17 @@ class Design:
             text += f'Torsion Area = {torsion_area:0.1f}\n'
             text += f'As = bending + torsion + add rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}\n'
             area += torsion_area
+            area += additional_rebars
             if frame_area is None:
                 frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
-            area += additional_rebars
             rho = area / frame_area
             if width is not None:
-                text += f'b = {width}, d = {height} - {cover} = {height - cover}, '
+                text += f'b = {width}, d = {height} - {cover} = {height - cover} ==> '
             text += f'b x d = {frame_area:.1f} Cm2\n'
             text += f'Rho = As / b x d = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
             rhos.append(rho)
             texts.append(text)
+        self.etabs.set_current_unit(*units)
         return rhos, texts
     
     def get_deflection_of_beams(self,
