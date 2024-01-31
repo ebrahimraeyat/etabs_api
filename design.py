@@ -133,6 +133,8 @@ class Design:
             frame_areas: "Union[list[float], bool]" = None,
             covers: "list[float]"= [6],
             additionals_rebars: "Union[list[float], float]"=0,
+            widths: "Union[list[float], None]" = None,
+            heights: "Union[list[float], None]" = None,
     ) -> "tuple(list, list)":
         from scipy.interpolate import interp1d
         rhos = []
@@ -144,6 +146,10 @@ class Design:
             torsion_areas = len(names) * [None]
         if frame_areas is None:
             frame_areas = len(names) * [None]
+        if widths is None:
+            widths = len(names) * [None]
+        if heights is None:
+            heights = len(names) * [None]
         if isinstance(covers, (int, float)):
             covers = len(names) * [covers]
         if isinstance(distances, (float, int, str)):
@@ -157,6 +163,8 @@ class Design:
             distance = distances[i]
             torsion_area = torsion_areas[i]
             frame_area = frame_areas[i]
+            width = widths[i]
+            height = heights[i]
             cover = covers[i]
             additional_rebars = additionals_rebars[i]
             text = ''
@@ -168,7 +176,7 @@ class Design:
                 areas = beam_rebars[6]
             first_dist = beam_rebars[2][0]
             last_dist = beam_rebars[2][-1]
-            text += f'The area of main rebar of beam name {name} at {location} in '
+            text += f'The Calculated area of main rebar of beam name {name} at {location} in '
             if isinstance(distance, str):
                 text += f'{distance} of beam = '
                 if distance == 'start':
@@ -179,29 +187,38 @@ class Design:
                     distance = (last_dist - first_dist) / 2
             else:
                 text += f'{distance:.1f} cm = '
+            torsion_percent = 3 / 8
+            total_torsion_area = None
             if distance < first_dist:
                 area = areas[0]
                 if torsion_area is None:
-                    torsion_area = beam_rebars[10][0] / 2
+                    total_torsion_area = beam_rebars[10][0]
             elif distance > last_dist:
                 area = areas[-1]
                 if torsion_area is None:
-                    torsion_area = beam_rebars[10][-1] / 2
+                    total_torsion_area = beam_rebars[10][-1]
             else:
                 f = interp1d(beam_rebars[2], areas)
                 area = f(distance)
                 if torsion_area is None:
                     f = interp1d(beam_rebars[2], beam_rebars[10])
-                    torsion_area = f(distance) / 2
+                    total_torsion_area = f(distance)
             text += f'{area:.1f} Cm2\n'
-            text += f'Torsion area = {torsion_area:0.1f} Cm2\n'
+            if torsion_area is None:
+                torsion_area = total_torsion_area * torsion_percent
+            if total_torsion_area is not None:
+                text += f'Total torsion area = {total_torsion_area:0.1f} Cm2, Assume 3/8 for {location} ==> '
+            text += f'Torsion Area = {torsion_area:0.1f}\n'
+            text += f'As = bending + torsion + add rebar = {area:0.1f} + {torsion_area:0.1f} + {additional_rebars:0.1f}\n'
             area += torsion_area
             if frame_area is None:
                 frame_area = self.etabs.frame_obj.get_area(name, cover=cover)
             area += additional_rebars
             rho = area / frame_area
+            if width is not None:
+                text += f'b = {width}, d = {height} - {cover} = {height - cover}, '
             text += f'b x d = {frame_area:.1f} Cm2\n'
-            text += f'Rho = As / bd = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
+            text += f'Rho = As / b x d = {area:.1f} / {frame_area:.1f} = {rho:.4f}\n'
             rhos.append(rho)
             texts.append(text)
         return rhos, texts
@@ -270,6 +287,8 @@ class Design:
             locations = df['location']
             distances = df['distance_for_calculate_rho']
             covers = df['Cover']
+            widths = df['Width']
+            heights = df['Height']
             frame_areas = df['frame_area']
             additionals_rebars = df['Add Rebar']
         else:
@@ -291,6 +310,8 @@ class Design:
                 frame_areas=frame_areas,
                 covers = covers,
                 additionals_rebars=additionals_rebars,
+                widths = widths,
+                heights = heights,
             )
         # Save As etabs model with filename
         if not filename:

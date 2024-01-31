@@ -61,8 +61,11 @@ def test_set_phi_joint_shear_aci08():
 
 @open_etabs_file('shayesteh.EDB')
 def test_get_rho_of_beams():
-    rhos, _ = etabs.design.get_rho_of_beams(['130'], distances=[0])
-    assert pytest.approx(rhos[0], abs=.0001) == .01517
+    rhos, texts = etabs.design.get_rho_of_beams(['130'], distances=[0])
+    assert len(rhos) == len(texts)
+    assert isinstance(texts[0], str)
+    print(texts[0])
+    assert pytest.approx(rhos[0], abs=.0001) == .014598
 
 @open_etabs_file('madadi.EDB')
 def test_get_deflection_of_beams():
