@@ -122,6 +122,8 @@ def test_add_load_patterns():
     all_load_patterns = etabs.load_patterns.get_load_patterns()
     for name in names:
         assert name in all_load_patterns
+        cases = etabs.SapModel.LoadCases.StaticLinear.GetLoads(name)
+        assert cases[2][0] == name
 
 @open_etabs_file('two_earthquakes.EDB')
 def test_add_notional_loads():
