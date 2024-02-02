@@ -934,6 +934,7 @@ class DatabaseTables:
     def get_all_joint_design_reactions(self,
         select_combos : bool = True,
         ):
+        self.etabs.run_analysis()
         if select_combos:
             self.etabs.load_combinations.select_load_combinations()
         table_key = 'Joint Design Reactions'
