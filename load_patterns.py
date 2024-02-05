@@ -121,80 +121,82 @@ class LoadPatterns:
         return lists of load pattern names, x, +x, -x, y, +y and -y separately
         '''
         self.select_all_load_patterns()
-        TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.etabs.database.read_table(TableKey)
-        i_xdir = FieldsKeysIncluded.index('XDir')
-        i_xdir_plus = FieldsKeysIncluded.index('XDirPlusE')
-        i_xdir_minus = FieldsKeysIncluded.index('XDirMinusE')
-        i_ydir = FieldsKeysIncluded.index('YDir')
-        i_ydir_plus = FieldsKeysIncluded.index('YDirPlusE')
-        i_ydir_minus = FieldsKeysIncluded.index('YDirMinusE')
-        i_name = FieldsKeysIncluded.index('Name')
-        data = self.etabs.database.reshape_data(FieldsKeysIncluded, TableData)
-        drift_lp_names = self.get_drift_load_pattern_names()
         xdir = set()
         xdir_plus = set()
         xdir_minus = set()
         ydir = set()
         ydir_plus = set()
         ydir_minus = set()
-        for earthquake in data:
-            name = earthquake[i_name]
-            if (drifts and name in drift_lp_names) or (not drifts and name not in drift_lp_names):
-                if all((
-                    earthquake[i_xdir] == 'Yes',
-                    earthquake[i_xdir_minus] == 'No',
-                    earthquake[i_xdir_plus] == 'No',
-                    earthquake[i_ydir] == 'No',
-                    earthquake[i_ydir_minus] == 'No',
-                    earthquake[i_ydir_plus] == 'No',
-                    )):
-                    xdir.add(name)
-                elif all((
-                    earthquake[i_xdir] == 'No',
-                    earthquake[i_xdir_minus] == 'Yes',
-                    earthquake[i_xdir_plus] == 'No',
-                    earthquake[i_ydir] == 'No',
-                    earthquake[i_ydir_minus] == 'No',
-                    earthquake[i_ydir_plus] == 'No',
-                    )):
-                    xdir_minus.add(name)
-                elif all((
-                    earthquake[i_xdir] == 'No',
-                    earthquake[i_xdir_minus] == 'No',
-                    earthquake[i_xdir_plus] == 'Yes',
-                    earthquake[i_ydir] == 'No',
-                    earthquake[i_ydir_minus] == 'No',
-                    earthquake[i_ydir_plus] == 'No',
-                    )):
-                    xdir_plus.add(name)
-                elif all((
-                    earthquake[i_xdir] == 'No',
-                    earthquake[i_xdir_minus] == 'No',
-                    earthquake[i_xdir_plus] == 'No',
-                    earthquake[i_ydir] == 'Yes',
-                    earthquake[i_ydir_minus] == 'No',
-                    earthquake[i_ydir_plus] == 'No',
-                    )):
-                    ydir.add(name)
-                elif all((
-                    earthquake[i_xdir] == 'No',
-                    earthquake[i_xdir_minus] == 'No',
-                    earthquake[i_xdir_plus] == 'No',
-                    earthquake[i_ydir] == 'No',
-                    earthquake[i_ydir_minus] == 'Yes',
-                    earthquake[i_ydir_plus] == 'No',
-                    )):
-                    ydir_minus.add(name)
-                elif all((
-                    earthquake[i_xdir] == 'No',
-                    earthquake[i_xdir_minus] == 'No',
-                    earthquake[i_xdir_plus] == 'No',
-                    earthquake[i_ydir] == 'No',
-                    earthquake[i_ydir_minus] == 'No',
-                    earthquake[i_ydir_plus] == 'Yes',
-                    )):
-                    ydir_plus.add(name)
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        ret = self.etabs.database.read_table(table_key)
+        if ret is not None:
+            [_, _, FieldsKeysIncluded, _, TableData, _] = ret
+            i_xdir = FieldsKeysIncluded.index('XDir')
+            i_xdir_plus = FieldsKeysIncluded.index('XDirPlusE')
+            i_xdir_minus = FieldsKeysIncluded.index('XDirMinusE')
+            i_ydir = FieldsKeysIncluded.index('YDir')
+            i_ydir_plus = FieldsKeysIncluded.index('YDirPlusE')
+            i_ydir_minus = FieldsKeysIncluded.index('YDirMinusE')
+            i_name = FieldsKeysIncluded.index('Name')
+            data = self.etabs.database.reshape_data(FieldsKeysIncluded, TableData)
+            drift_lp_names = self.get_drift_load_pattern_names()
+            for earthquake in data:
+                name = earthquake[i_name]
+                if (drifts and name in drift_lp_names) or (not drifts and name not in drift_lp_names):
+                    if all((
+                        earthquake[i_xdir] == 'Yes',
+                        earthquake[i_xdir_minus] == 'No',
+                        earthquake[i_xdir_plus] == 'No',
+                        earthquake[i_ydir] == 'No',
+                        earthquake[i_ydir_minus] == 'No',
+                        earthquake[i_ydir_plus] == 'No',
+                        )):
+                        xdir.add(name)
+                    elif all((
+                        earthquake[i_xdir] == 'No',
+                        earthquake[i_xdir_minus] == 'Yes',
+                        earthquake[i_xdir_plus] == 'No',
+                        earthquake[i_ydir] == 'No',
+                        earthquake[i_ydir_minus] == 'No',
+                        earthquake[i_ydir_plus] == 'No',
+                        )):
+                        xdir_minus.add(name)
+                    elif all((
+                        earthquake[i_xdir] == 'No',
+                        earthquake[i_xdir_minus] == 'No',
+                        earthquake[i_xdir_plus] == 'Yes',
+                        earthquake[i_ydir] == 'No',
+                        earthquake[i_ydir_minus] == 'No',
+                        earthquake[i_ydir_plus] == 'No',
+                        )):
+                        xdir_plus.add(name)
+                    elif all((
+                        earthquake[i_xdir] == 'No',
+                        earthquake[i_xdir_minus] == 'No',
+                        earthquake[i_xdir_plus] == 'No',
+                        earthquake[i_ydir] == 'Yes',
+                        earthquake[i_ydir_minus] == 'No',
+                        earthquake[i_ydir_plus] == 'No',
+                        )):
+                        ydir.add(name)
+                    elif all((
+                        earthquake[i_xdir] == 'No',
+                        earthquake[i_xdir_minus] == 'No',
+                        earthquake[i_xdir_plus] == 'No',
+                        earthquake[i_ydir] == 'No',
+                        earthquake[i_ydir_minus] == 'Yes',
+                        earthquake[i_ydir_plus] == 'No',
+                        )):
+                        ydir_minus.add(name)
+                    elif all((
+                        earthquake[i_xdir] == 'No',
+                        earthquake[i_xdir_minus] == 'No',
+                        earthquake[i_xdir_plus] == 'No',
+                        earthquake[i_ydir] == 'No',
+                        earthquake[i_ydir_minus] == 'No',
+                        earthquake[i_ydir_plus] == 'Yes',
+                        )):
+                        ydir_plus.add(name)
         return xdir, xdir_minus, xdir_plus, ydir, ydir_minus, ydir_plus
 
     def get_EX_EY_load_pattern(self):
