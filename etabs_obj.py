@@ -1157,6 +1157,10 @@ class EtabsModel:
         self.load_patterns.select_all_load_patterns()
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         df = self.database.read(table_key, to_dataframe=True)
+        if df is None:
+            df = pd.DataFrame(columns=self.auto_seismic_user_coefficient_columns_part1+['C', 'K'])
+            df.loc[0] = ''
+            df['IsAuto'] = 'No'
         row = copy.deepcopy(df.iloc[0])
         seismic_columns = ['XDir', 'XDirMinusE', 'XDirPlusE', 'YDir', 'YDirMinusE', 'YDirPlusE']
         row[seismic_columns] = 'No'

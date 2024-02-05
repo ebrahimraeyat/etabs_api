@@ -74,18 +74,21 @@ class LoadPatterns:
         return list of load pattern names, x and y direction separately
         '''
         self.select_all_load_patterns()
-        TableKey = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.etabs.database.read_table(TableKey)
-        i_xdir = FieldsKeysIncluded.index('XDir')
-        i_xdir_plus = FieldsKeysIncluded.index('XDirPlusE')
-        i_xdir_minus = FieldsKeysIncluded.index('XDirMinusE')
-        i_ydir = FieldsKeysIncluded.index('YDir')
-        i_ydir_plus = FieldsKeysIncluded.index('YDirPlusE')
-        i_ydir_minus = FieldsKeysIncluded.index('YDirMinusE')
-        i_name = FieldsKeysIncluded.index('Name')
-        data = self.etabs.database.reshape_data(FieldsKeysIncluded, TableData)
         names_x = set()
         names_y = set()
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        ret = self.etabs.database.read_table(table_key)
+        if ret is None:
+            return names_x, names_y
+        [_, _, fields, _, data, _] = ret
+        i_xdir = fields.index('XDir')
+        i_xdir_plus = fields.index('XDirPlusE')
+        i_xdir_minus = fields.index('XDirMinusE')
+        i_ydir = fields.index('YDir')
+        i_ydir_plus = fields.index('YDirPlusE')
+        i_ydir_minus = fields.index('YDirMinusE')
+        i_name = fields.index('Name')
+        data = self.etabs.database.reshape_data(fields, data)
         for earthquake in data:
             name = earthquake[i_name]
             if only_ecc:
