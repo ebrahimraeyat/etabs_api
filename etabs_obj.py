@@ -61,33 +61,32 @@ class EtabsModel:
         self.etabs = None
         self.success = False
         if attach_to_instance:
-            try:
-                self.etabs = comtypes.client.GetActiveObject(f"CSI.{software}.API.ETABSObject")
-                self.success = True
-            except (OSError, comtypes.COMError):
-                print("No running instance of the program found or failed to attach.")
-                self.success = False
+            helper = comtypes.client.CreateObject('ETABSv1.Helper')
+            helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
+            if hasattr(helper, 'GetObjectProcess'):
+                try:
+                    import psutil
+                except ImportError:
+                    import subprocess
+                    package = 'psutil'
+                    subprocess.check_call(['python', "-m", "pip", "install", package])
+                    import psutil
+                pid = None
+                for proc in psutil.process_iter():
+                    if software.lower() in proc.name().lower():
+                        pid = proc.pid
+                        break
+                if pid is not None:
+                    self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.ETABSObject", pid)
+                    self.success = True
+            else:
+                try:
+                    self.etabs = comtypes.client.GetActiveObject(f"CSI.{software}.API.ETABSObject")
+                    self.success = True
+                except (OSError, comtypes.COMError):
+                    print("No running instance of the program found or failed to attach.")
+                    self.success = False
                 # sys.exit(-1)
-            if self.etabs is None:
-                helper = comtypes.client.CreateObject('ETABSv1.Helper')
-                helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-                if hasattr(helper, 'GetObjectProcess'):
-                    try:
-                        import psutil
-                    except ImportError:
-                        import subprocess
-                        package = 'psutil'
-                        subprocess.check_call(['python', "-m", "pip", "install", package])
-                        import psutil
-                    pid = None
-                    for proc in psutil.process_iter():
-                        if software in proc.name().lower():
-                            pid = proc.pid
-                            break
-                    if pid:
-                        self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.ETABSObject", pid)
-                        self.success = True
-
         else:
             # sys.exit(-1)
             helper = comtypes.client.CreateObject('ETABSv1.Helper')
