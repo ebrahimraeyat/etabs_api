@@ -422,3 +422,10 @@ def get_file_name(suffix: list, etabs=None):
     if not filename.endswith(f".{suffix}"):
         filename += f".{suffix}"
     return filename
+
+def get_color(param, pref_intity, color=674321151):
+    c = param.GetUnsigned(pref_intity, color)
+    r = float((c >> 24) & 0xFF)
+    g = float((c >> 16) & 0xFF)
+    b = float((c >> 8) & 0xFF)
+    return (r, g, b)
