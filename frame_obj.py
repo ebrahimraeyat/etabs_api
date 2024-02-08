@@ -402,6 +402,8 @@ class FrameObj:
         design_procedure: steel: 1, concrete: 2
         '''
         # filter desired procedure
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit('N', 'cm')
         design_procedures = {'steel': 1, 'concrete': 2}
         design_procedure = design_procedures.get(design_procedure, None)
         if design_procedure is not None:
@@ -422,10 +424,20 @@ class FrameObj:
         mod_names = [area, as2, as3, torsion, i22, i33, mass, weight]
         for name in frame_names:
             modifiers = list(self.SapModel.FrameObj.GetModifiers(name)[0])
-            for i, mod in enumerate(mod_names):    
+            for i, mod in enumerate(mod_names):
                 if mod:
+                    if mod > 1:
+                        section_name = self.SapModel.FrameObj.GetSection(name)[0]
+                        try:
+                            h = self.SapModel.PropFrame.GetRectangle(section_name)[2]
+                        except: # Non prismitic sections
+                            continue
+                        ratio = mod / h
+                        if ratio < 1:
+                            mod = 1 - ratio
                     modifiers[i] = mod
             self.SapModel.FrameObj.SetModifiers(name, modifiers)
+        self.etabs.set_current_unit(*units)
     
     def get_beams_torsion_prop_modifiers(self,
             beams_names : Iterable[str] = None,

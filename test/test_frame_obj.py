@@ -181,6 +181,16 @@ def test_get_unit_weight_of_beams():
     assert len(df) == 92
 
 @open_etabs_file('shayesteh.EDB')
+def test_assign_frame_modifiers_mass():
+    mod = 10
+    beams, _ = etabs.frame_obj.get_beams_columns(type_=2)
+    etabs.frame_obj.assign_frame_modifiers(beams, mass=mod)
+    modifier = etabs.SapModel.FrameObj.GetModifiers('115')[0][-2]
+    assert modifier == 0.8
+    modifier = etabs.SapModel.FrameObj.GetModifiers('253')[0][-2]
+    assert modifier == 0.75
+
+@open_etabs_file('shayesteh.EDB')
 def test_assign_frame_modifiers():
     i33_beam = 0.5
     i33_column = 0.7
@@ -290,7 +300,7 @@ def test_delete_frames_1():
 
 
 if __name__ == '__main__':
-    test_set_end_length_offsets()
+    test_assign_frame_modifiers_mass()
 
 
 
