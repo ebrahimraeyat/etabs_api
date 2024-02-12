@@ -1,4 +1,5 @@
 from pathlib import Path
+import os, sys
 
 def flatten_list(nested_list):
     return [item for sublist in nested_list for item in (flatten_list(sublist) if isinstance(sublist, list) else [sublist])]
@@ -27,3 +28,10 @@ def get_temp_filepath(suffix='EDB', filename='test') -> Path:
     temp_path = Path(tempfile.gettempdir())
     temp_file_path = temp_path / f"{filename}.{suffix}"
     return temp_file_path
+
+def open_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
