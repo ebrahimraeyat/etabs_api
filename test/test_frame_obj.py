@@ -158,6 +158,28 @@ def test_assign_gravity_load_to_selfs_and_above_beams():
     assert ret == None
 
 @open_etabs_file('shayesteh.EDB')
+def test_update_gravity_loads_from_wall():
+    frame_1 = "115"
+    frame_2 = "114"
+    load = 200
+    wall_loads_dict = {'beams_wall_loads': {
+                'wall_loadpat': {frame_1: 'DEAD', frame_2: "QZ"},
+                'wall_weight_per_area': {frame_1: load, frame_2: load},
+                'wall_opening_ratio': {frame_1: 0.3, frame_2: 0},
+                'wall_dist1': {frame_1: .1, frame_2: 0},
+                'wall_dist2': {frame_1: .9, frame_2: 1},
+                'height_from_below': {frame_1: False, frame_2: True},
+                'parapet': {frame_1: 0, frame_2: 0},
+                'none_beam_h': {frame_1: 0, frame_2: 0},
+                }}
+    etabs.set_settings_to_model(wall_loads_dict)
+    etabs.frame_obj.update_gravity_loads_from_wall([frame_1])
+    ret = etabs.SapModel.FrameObj.GetLoadDistributed(frame_1)
+    assert ret[1][0] == frame_1
+    assert ret[2][0] == 'DEAD'
+    assert ret[10][0] == ret[11][0] == 423
+
+@open_etabs_file('shayesteh.EDB')
 def test_concrete_section_names():
     beam_names = etabs.frame_obj.concrete_section_names('Beam')
     assert len(beam_names) == 37
@@ -300,7 +322,7 @@ def test_delete_frames_1():
 
 
 if __name__ == '__main__':
-    test_assign_frame_modifiers_mass()
+    test_update_gravity_loads_from_wall()
 
 
 
