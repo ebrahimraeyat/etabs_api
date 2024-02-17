@@ -1069,6 +1069,27 @@ class EtabsModel:
         if isinstance(company_name, dict):
             d = company_name
         return d
+    
+    def update_setting(
+        self,
+        keys: Union[list, dict],
+        values: Union[list, None] = None,
+        ):
+        '''
+        update etabs setting dictionary with keys and values or dict 
+        '''
+        d = self.get_settings_from_model()
+        if isinstance(keys, dict):
+            new_d = keys
+        else:
+            new_d = dict(zip(keys, values))
+        d.update(new_d)
+        self.set_settings_to_model(d)
+
+    def set_settings_to_model(self, d: dict):
+        json_str = json.dumps(d)
+        self.SapModel.SetProjectInfo("Company Name", json_str)
+        self.SapModel.File.Save()
         
     def get_first_system_seismic(self, d: dict={}):
         if not d:
