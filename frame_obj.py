@@ -788,7 +788,7 @@ class FrameObj:
         value = math.ceil(mass_per_area * height * (1 - opening_ratio))
         self.assign_gravity_load(name, loadpat, value, value, dist1, dist2, load_type, relative, replace, item_type)
         return None
-            
+
     def assign_gravity_load_to_selfs_and_above_beams(self,
             loadpat : str,
             mass_per_area : float,
@@ -806,6 +806,9 @@ class FrameObj:
             height_from_below : bool = False,
             opening_ratio : float = 0,
         ):
+        d = self.etabs.get_settings_from_model()
+        beam_wall_props_key = 'beams_wall_loads'
+        beams_props = d.get(beam_wall_props_key, {})
         self.etabs.unlock_model()
         self.etabs.set_current_unit('kgf', 'm')
         if names is None:
@@ -823,6 +826,21 @@ class FrameObj:
                     mass_per_area, dist1, dist2, load_type, relative,
                     replace, item_type, height, none_beam_h, parapet,
                     height_from_below, opening_ratio)
+                wall_loads_dict = {
+                'wall_loadpat': loadpat,
+                'wall_weight_per_area': mass_per_area,
+                'wall_opening_ratio': opening_ratio,
+                'wall_dist1': dist1,
+                'wall_dist2': dist2,
+                }
+            for key, value in wall_loads_dict.items():
+                props = beams_props.get(key, {})
+                if props:
+                    props[beam_name] = value
+                else:
+                    props[beam_name] = value
+                    beams_props[key] = props
+        self.etabs.update_setting([beam_wall_props_key], [beams_props])
         self.SapModel.View.RefreshView()
         return None
 
