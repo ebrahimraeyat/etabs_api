@@ -259,6 +259,91 @@ def test_angles_response_spectrums_analysis():
         assert pytest.approx(scale, abs=.001) == 1
 
 @open_etabs_file('shayesteh.EDB')
+def test_scale_response_spectrums():
+    for force in ('kgf', 'N', 'KN'):
+        for length in ('m', 'mm', 'cm'):
+            etabs.set_current_unit(force, length)
+            print(f'Units: {force=}, {length=}')
+            ex_name='QX'
+            ey_name='QY'
+            x_specs=['SX']
+            y_specs=['SY']
+            x_scales, y_scales = etabs.scale_response_spectrums(
+                ex_name=ex_name,
+                ey_name=ey_name,
+                x_specs=x_specs,
+                y_specs=y_specs,
+                analyze=False,
+            )
+            for scale in x_scales + y_scales:
+                assert pytest.approx(scale, abs=.001) == 1
+            # Test base reactions
+            vex, vey = etabs.results.get_base_react(
+                    loadcases=[ex_name, ey_name],
+                    directions=['x', 'y'],
+                    absolute=True,
+                    )
+            vsx = etabs.results.get_base_react(
+                    loadcases=x_specs,
+                    directions=['x'] * len(x_specs),
+                    absolute=True,
+                    )
+            vsy = etabs.results.get_base_react(
+                    loadcases=y_specs,
+                    directions=['y'] * len(y_specs),
+                    absolute=True,
+            )
+            for v in vsx:
+                assert pytest.approx(v / vex, abs=0.001) == 0.9
+            for v in vsy:
+                assert pytest.approx(v / vey, abs=0.001) == 0.9
+
+@open_etabs_file('khalkhali.EDB')
+def test_scale_response_spectrums2():
+    for force in ('kgf', 'N', 'KN'):
+        for length in ('m', 'mm', 'cm'):
+            etabs.set_current_unit(force, length)
+            print(f'Units: {force=}, {length=}')
+            ex_name='EX'
+            ey_name='EY'
+            x_specs=['SX', 'SXPN']
+            y_specs=['SY', 'SYPN']
+            x_scale_factor=.85
+            y_scale_factor=1
+            x_scales, y_scales = etabs.scale_response_spectrums(
+                ex_name=ex_name,
+                ey_name=ey_name,
+                x_specs=x_specs,
+                y_specs=y_specs,
+                x_scale_factor=x_scale_factor,
+                y_scale_factor=y_scale_factor,
+                tolerance=.02,
+                analyze=False,
+            )
+            for scale in x_scales + y_scales:
+                assert pytest.approx(scale, abs=.001) == 1
+            # Test base reactions
+            vex, vey = etabs.results.get_base_react(
+                    loadcases=[ex_name, ey_name],
+                    directions=['x', 'y'],
+                    absolute=True,
+                    )
+            vsx = etabs.results.get_base_react(
+                    loadcases=x_specs,
+                    directions=['x'] * len(x_specs),
+                    absolute=True,
+                    )
+            vsy = etabs.results.get_base_react(
+                    loadcases=y_specs,
+                    directions=['y'] * len(y_specs),
+                    absolute=True,
+            )
+            for v in vsx:
+                assert pytest.approx(v / vex, abs=0.001) == x_scale_factor
+            for v in vsy:
+                assert pytest.approx(v / vey, abs=0.001) == y_scale_factor
+
+@open_etabs_file('shayesteh.EDB')
 def test_check_seismic_names():
     n1 = len(etabs.load_patterns.get_load_patterns())
     d = {}
@@ -327,6 +412,6 @@ def test_purge_model():
 
 
 if __name__ == '__main__':
-    test_start_slab_design()
+    test_scale_response_spectrums2()
 
 

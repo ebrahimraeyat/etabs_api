@@ -910,16 +910,18 @@ class EtabsModel:
         reset_scale : bool = True,
         analyze : bool = True,
         ):
+        print(f'{ex_name=}, {ey_name=}, {x_specs=}, {y_specs=}, {x_scale_factor=}, {y_scale_factor=}, {tolerance=}')
         self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=x_specs+y_specs)
         self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
+        vex, vey = self.results.get_base_react(
+                loadcases=[ex_name, ey_name],
+                directions=['x', 'y'],
+                absolute=True,
+                )
+        print(f'{vex=}, {vey=}')
         for i in range(num_iteration):
-            vex, vey = self.results.get_base_react(
-                    loadcases=[ex_name, ey_name],
-                    directions=['x', 'y'],
-                    absolute=True,
-                    )
             vsx = self.results.get_base_react(
                     loadcases=x_specs,
                     directions=['x'] * len(x_specs),
@@ -930,6 +932,7 @@ class EtabsModel:
                     directions=['y'] * len(y_specs),
                     absolute=True,
                     )
+            print(f'{vsx=}, {vsy=}')
             x_scales = []
             y_scales = []
             for v in vsx:
@@ -952,6 +955,7 @@ class EtabsModel:
         self.analyze.set_load_cases_to_analyze()
         if analyze:
             self.run_analysis()
+        return x_scales, y_scales
 
     def angles_response_spectrums_analysis(self,
         ex_name : str,

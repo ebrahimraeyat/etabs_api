@@ -807,6 +807,7 @@ class FrameObj:
         parapets = beams_props.get('parapet')
         none_beams_h = beams_props.get('none_beam_h')
         current_names = wall_loadpats.keys()
+        self.etabs.set_current_unit('kgf', 'm')
         for name in names:
             if name in current_names:
                 mass_per_area = wall_weight_per_areas.get(name)
