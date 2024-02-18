@@ -951,11 +951,21 @@ class EtabsModel:
                     self.load_cases.multiply_response_spectrum_scale_factor(spec, scale)
                 for spec, scale in zip(y_specs, y_scales):
                     self.load_cases.multiply_response_spectrum_scale_factor(spec, scale)
+        force = self.get_current_unit()[0]
+        import pandas as pd
+        load_cases = [ex_name, ey_name] + x_specs + y_specs
+        base_shear = [vex, vey] + vsx + vsy
+        ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+        df = pd.DataFrame({
+            'Case': load_cases,
+            f'V ({force})': base_shear,
+            'Ratio': ratios,
+            })
         self.unlock_model()
         self.analyze.set_load_cases_to_analyze()
         if analyze:
             self.run_analysis()
-        return x_scales, y_scales
+        return x_scales, y_scales, df
 
     def angles_response_spectrums_analysis(self,
         ex_name : str,

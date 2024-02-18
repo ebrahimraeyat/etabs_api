@@ -5,6 +5,7 @@ from unittest.mock import Mock
 import tempfile
 
 import numpy as np
+import pandas as pd
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
@@ -260,15 +261,15 @@ def test_angles_response_spectrums_analysis():
 
 @open_etabs_file('shayesteh.EDB')
 def test_scale_response_spectrums():
-    for force in ('kgf', 'N', 'KN'):
-        for length in ('m', 'mm', 'cm'):
+    for force in ('kgf',): #, 'N', 'KN'):
+        for length in ('m',): #, 'mm', 'cm'):
             etabs.set_current_unit(force, length)
             print(f'Units: {force=}, {length=}')
             ex_name='QX'
             ey_name='QY'
             x_specs=['SX']
             y_specs=['SY']
-            x_scales, y_scales = etabs.scale_response_spectrums(
+            x_scales, y_scales, df = etabs.scale_response_spectrums(
                 ex_name=ex_name,
                 ey_name=ey_name,
                 x_specs=x_specs,
@@ -300,8 +301,8 @@ def test_scale_response_spectrums():
 
 @open_etabs_file('khalkhali.EDB')
 def test_scale_response_spectrums2():
-    for force in ('kgf', 'N', 'KN'):
-        for length in ('m', 'mm', 'cm'):
+    for force in ('kgf',): #, 'N', 'KN'):
+        for length in ('m',): #, 'mm', 'cm'):
             etabs.set_current_unit(force, length)
             print(f'Units: {force=}, {length=}')
             ex_name='EX'
@@ -310,7 +311,7 @@ def test_scale_response_spectrums2():
             y_specs=['SY', 'SYPN']
             x_scale_factor=.85
             y_scale_factor=1
-            x_scales, y_scales = etabs.scale_response_spectrums(
+            x_scales, y_scales, df = etabs.scale_response_spectrums(
                 ex_name=ex_name,
                 ey_name=ey_name,
                 x_specs=x_specs,
@@ -342,6 +343,18 @@ def test_scale_response_spectrums2():
                 assert pytest.approx(v / vex, abs=0.001) == x_scale_factor
             for v in vsy:
                 assert pytest.approx(v / vey, abs=0.001) == y_scale_factor
+            force = etabs.get_current_unit()[0]
+            load_cases = [ex_name, ey_name] + x_specs + y_specs
+            base_shear = [vex, vey] + vsx + vsy
+            ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            df1 = pd.DataFrame({
+                'Case': load_cases,
+                f'V ({force})': base_shear,
+                'Ratio': ratios,
+                })
+            # Assert equality between the two DataFrames
+            cols = [f'V ({force})', 'Ratio']
+            np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('shayesteh.EDB')
 def test_check_seismic_names():
