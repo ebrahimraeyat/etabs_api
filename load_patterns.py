@@ -279,7 +279,22 @@ class LoadPatterns:
         x_name = ret[0].pop()
         y_name = ret[3].pop()
         return x_name, y_name
-
+    
+    def get_earthquake_values(self, names: list,
+                              ):
+        '''
+        Return the list contain earthquake factors
+        '''
+        table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        df = df.dropna(subset=['C'])
+        c = []
+        for name in names:
+            if name in df.Name.unique():
+                ser = df[df['Name'] == name]['C']
+                c.append(float(ser.values))
+        return c
+    
     def get_expanded_seismic_load_patterns(self) -> tuple:
         '''
         get all seismic loads that have multiple eccentricity in definitions like EXALL, EYALL

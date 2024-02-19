@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -135,6 +137,14 @@ def test_add_notional_loads():
         assert f'N{name}X' in df.LoadPattern.unique()
         assert f'N{name}Y' in df.LoadPattern.unique()
     
+@open_etabs_file('two_earthquakes.EDB')
+def test_get_earthquake_values():
+    names = ["EX1", "EY1", "EX2"]
+    ret = etabs.load_patterns.get_earthquake_values(names)
+    np.testing.assert_allclose(ret, [0.072, .072, 0.15], rtol=0.001)
+    names = ["EX2", "EY1", "EX1"]
+    ret = etabs.load_patterns.get_earthquake_values(names)
+    np.testing.assert_allclose(ret, [0.15, 0.072, .072], rtol=0.001)
 
 if __name__ == '__main__':
     import etabs_obj
