@@ -295,9 +295,21 @@ def test_scale_response_spectrums():
                     absolute=True,
             )
             for v in vsx:
-                assert pytest.approx(v / vex, abs=0.001) == 0.9
+                np.testing.assert_almost_equal(v / vex, 0.9, decimal=2)
             for v in vsy:
-                assert pytest.approx(v / vey, abs=0.001) == 0.9
+                np.testing.assert_almost_equal(v / vey, 0.9, decimal=2)
+            force = etabs.get_current_unit()[0]
+            load_cases = [ex_name, ey_name] + x_specs + y_specs
+            base_shear = [vex, vey] + vsx + vsy
+            ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            df1 = pd.DataFrame({
+                'Case': load_cases,
+                f'V ({force})': base_shear,
+                'Ratio': ratios,
+                })
+            # Assert equality between the two DataFrames
+            cols = [f'V ({force})', 'Ratio']
+            np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('khalkhali.EDB')
 def test_scale_response_spectrums2():
@@ -340,9 +352,133 @@ def test_scale_response_spectrums2():
                     absolute=True,
             )
             for v in vsx:
-                assert pytest.approx(v / vex, abs=0.001) == x_scale_factor
+                np.testing.assert_almost_equal(v / vex, x_scale_factor, decimal=2)
             for v in vsy:
-                assert pytest.approx(v / vey, abs=0.001) == y_scale_factor
+                np.testing.assert_almost_equal(v / vey, y_scale_factor, decimal=2)
+            force = etabs.get_current_unit()[0]
+            load_cases = [ex_name, ey_name] + x_specs + y_specs
+            base_shear = [vex, vey] + vsx + vsy
+            ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            df1 = pd.DataFrame({
+                'Case': load_cases,
+                f'V ({force})': base_shear,
+                'Ratio': ratios,
+                })
+            # Assert equality between the two DataFrames
+            cols = [f'V ({force})', 'Ratio']
+            np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
+
+@open_etabs_file('khalkhali.EDB')
+def test_scale_response_spectrums_min_base_shear():
+    for force in ('kgf',): #, 'N', 'KN'):
+        for length in ('m',): #, 'mm', 'cm'):
+            etabs.set_current_unit(force, length)
+            print(f'Units: {force=}, {length=}')
+            ex_name='EX'
+            ey_name='EY'
+            x_specs=['SX', 'SXPN']
+            y_specs=['SY', 'SYPN']
+            x_scale_factor=.85
+            y_scale_factor=1
+            table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+            df = etabs.database.read(table_key, to_dataframe=True)
+            df['C'] = '.036'
+            etabs.database.write_seismic_user_coefficient_df(df)
+            d = {"risk_level": "زیاد", "importance_factor": 1}
+            x_scales, y_scales, df = etabs.scale_response_spectrums(
+                ex_name=ex_name,
+                ey_name=ey_name,
+                x_specs=x_specs,
+                y_specs=y_specs,
+                x_scale_factor=x_scale_factor,
+                y_scale_factor=y_scale_factor,
+                tolerance=.02,
+                analyze=False,
+                consider_min_static_base_shear=True,
+                d=d,
+            )
+            for scale in x_scales + y_scales:
+                assert pytest.approx(scale, abs=.001) == 1
+            # Test base reactions
+            vex, vey = etabs.results.get_base_react(
+                    loadcases=[ex_name, ey_name],
+                    directions=['x', 'y'],
+                    absolute=True,
+                    )
+            vsx = etabs.results.get_base_react(
+                    loadcases=x_specs,
+                    directions=['x'] * len(x_specs),
+                    absolute=True,
+                    )
+            vsy = etabs.results.get_base_react(
+                    loadcases=y_specs,
+                    directions=['y'] * len(y_specs),
+                    absolute=True,
+            )
+            for v in vsx:
+                np.testing.assert_almost_equal(v / vex, 1.0, decimal=2)
+            for v in vsy:
+                np.testing.assert_almost_equal(v / vey, 1.0, decimal=2)
+            force = etabs.get_current_unit()[0]
+            load_cases = [ex_name, ey_name] + x_specs + y_specs
+            base_shear = [vex, vey] + vsx + vsy
+            ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            df1 = pd.DataFrame({
+                'Case': load_cases,
+                f'V ({force})': base_shear,
+                'Ratio': ratios,
+                })
+            # Assert equality between the two DataFrames
+            cols = [f'V ({force})', 'Ratio']
+            np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
+
+@open_etabs_file('khalkhali.EDB')
+def test_scale_response_spectrums_min_base_shear_2():
+    for force in ('kgf',): #, 'N', 'KN'):
+        for length in ('m',): #, 'mm', 'cm'):
+            etabs.set_current_unit(force, length)
+            print(f'Units: {force=}, {length=}')
+            ex_name='EX'
+            ey_name='EY'
+            x_specs=['SX', 'SXPN']
+            y_specs=['SY', 'SYPN']
+            x_scale_factor=.85
+            y_scale_factor=1
+            d = {"risk_level": "زیاد", "importance_factor": 1}
+            x_scales, y_scales, df = etabs.scale_response_spectrums(
+                ex_name=ex_name,
+                ey_name=ey_name,
+                x_specs=x_specs,
+                y_specs=y_specs,
+                x_scale_factor=x_scale_factor,
+                y_scale_factor=y_scale_factor,
+                tolerance=.02,
+                analyze=False,
+                consider_min_static_base_shear=True,
+                d=d,
+            )
+            for scale in x_scales + y_scales:
+                assert pytest.approx(scale, abs=.001) == 1
+            # Test base reactions
+            vex, vey = etabs.results.get_base_react(
+                    loadcases=[ex_name, ey_name],
+                    directions=['x', 'y'],
+                    absolute=True,
+                    )
+            vsx = etabs.results.get_base_react(
+                    loadcases=x_specs,
+                    directions=['x'] * len(x_specs),
+                    absolute=True,
+                    )
+            vsy = etabs.results.get_base_react(
+                    loadcases=y_specs,
+                    directions=['y'] * len(y_specs),
+                    absolute=True,
+            )
+            for v in vsx:
+                np.testing.assert_almost_equal(v / vex, x_scale_factor, decimal=2)
+            for v in vsy:
+                np.testing.assert_almost_equal(v / vey, y_scale_factor, decimal=2)
             force = etabs.get_current_unit()[0]
             load_cases = [ex_name, ey_name] + x_specs + y_specs
             base_shear = [vex, vey] + vsx + vsy

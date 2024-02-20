@@ -109,7 +109,7 @@ def open_etabs_file(filename: str):
 
 def purge_test_folder():
     for f in test_folder.rglob('*'):
-        if f.suffix == '.log':
+        if f.suffix in ('.log', '.tlog'):
             try:
                 f.unlink()
             except PermissionError:

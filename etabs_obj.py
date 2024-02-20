@@ -909,7 +909,11 @@ class EtabsModel:
         tolerance : float = .05,
         reset_scale : bool = True,
         analyze : bool = True,
+        consider_min_static_base_shear : bool = False,
+        d: Union[None, dict] = None,
         ):
+        assert x_scale_factor in (0.85, 0.9, 1)
+        assert y_scale_factor in (0.85, 0.9, 1)
         print(f'{ex_name=}, {ey_name=}, {x_specs=}, {y_specs=}, {x_scale_factor=}, {y_scale_factor=}, {tolerance=}')
         self.SapModel.File.Save()
         if reset_scale:
@@ -920,6 +924,24 @@ class EtabsModel:
                 directions=['x', 'y'],
                 absolute=True,
                 )
+        if consider_min_static_base_shear:
+            def acceleration(risk_level):
+                accs = {'کم': 0.20,
+                        'متوسط': 0.25,
+                        'زیاد': 0.3,
+                        'خیلی زیاد': 0.35}
+                return accs[risk_level]
+            if d is None:
+                d = self.get_settings_from_model()
+            acc = acceleration(d.get("risk_level"))
+            importance_factor = float(d.get("importance_factor"))
+            cx, cy = self.load_patterns.get_earthquake_values([ex_name, ey_name])
+            wx = vex / cx
+            wy = vey / cy
+            c_min = 0.12 * acc * importance_factor
+            vx_min = c_min * wx
+            vy_min = c_min * wy
+            print(f"{cx=}, {cy=}, {wx=}, {wy=}, {c_min=}, {vx_min=}, {vy_min=}")
         print(f'{vex=}, {vey=}')
         for i in range(num_iteration):
             vsx = self.results.get_base_react(
@@ -937,9 +959,13 @@ class EtabsModel:
             y_scales = []
             for v in vsx:
                 scale = x_scale_factor * vex / v
+                if consider_min_static_base_shear:
+                    scale = max(vx_min / v, scale)
                 x_scales.append(scale)
             for v in vsy:
                 scale = y_scale_factor * vey / v
+                if consider_min_static_base_shear:
+                    scale = max(vy_min / v, scale)
                 y_scales.append(scale)
             print(x_scales, y_scales)
             max_scale = max(x_scales + y_scales)
