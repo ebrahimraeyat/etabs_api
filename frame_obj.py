@@ -1021,14 +1021,8 @@ class FrameObj:
                 columns.append(name)
         return columns
         
-
     def require_100_30(self,
-            ex: Union[str, bool]=None,
-            exn: Union[str, bool]=None,
-            exp: Union[str, bool]=None,
-            ey: Union[str, bool]=None,
-            eyn: Union[str, bool]=None,
-            eyp: Union[str, bool]=None,
+            loads: Union[list, None]=None,
             file_name: Union[str, Path] = '100_30.EDB',
             type_: str = 'Concrete', # 'Steel'
             code : Union[str, None] = None,
@@ -1044,66 +1038,15 @@ class FrameObj:
             new_file_path = self.etabs.backup_model(name=file_name)
         print(f"Saving file as {new_file_path}\n")
         self.SapModel.File.Save(str(new_file_path))
-        if ex is None:
-            ex, exn, exp, ey, eyn, eyp = self.etabs.load_patterns.get_seismic_load_patterns()
-            ex = ex.pop()
-            exn = exn.pop()
-            exp = exp.pop()
-            ey = ey.pop()
-            eyn = eyn.pop()
-            eyp = eyp.pop()
-        combos = []
-        load_cases = []
-        if ex:
-            self.SapModel.RespCombo.Add(f'{ex}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{ex}_100_30', 0, ex, 1)
-            combos.append(['Strength', f'{ex}_100_30'])
-            load_cases.append(ex)
-        if exn:
-            self.SapModel.RespCombo.Add(f'{exn}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{exn}_100_30', 0, exn, 1)
-            combos.append(['Strength', f'{exn}_100_30'])
-            load_cases.append(exn)
-        if exp:
-            self.SapModel.RespCombo.Add(f'{exp}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{exp}_100_30', 0, exp, 1)
-            combos.append(['Strength', f'{exp}_100_30'])
-            load_cases.append(exp)
-        if ey:
-            self.SapModel.RespCombo.Add(f'{ey}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{ey}_100_30', 0, ey, 1)
-            combos.append(['Strength', f'{ey}_100_30'])
-            load_cases.append(ey)
-        if eyn:
-            self.SapModel.RespCombo.Add(f'{eyn}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{eyn}_100_30', 0, eyn, 1)
-            combos.append(['Strength', f'{eyn}_100_30'])
-            load_cases.append(eyn)
-        if eyp:
-            self.SapModel.RespCombo.Add(f'{eyp}_100_30', 0)
-            self.SapModel.RespCombo.SetCaseList(f'{eyp}_100_30', 0, eyp, 1)
-            combos.append(['Strength', f'{eyp}_100_30'])
-            load_cases.append(eyp)
-        # set overwrite for columns
-        if code is None:
-            code = self.etabs.design.get_code(type_)
-        code_string = self.etabs.design.get_code_string(type_, code)
-        # set design combo
-        import pandas as pd
-        if type_ == 'Concrete':
-            columns = self.set_column_dns_overwrite(code=code_string, type_=type_)
-            df = pd.DataFrame(combos,columns=['Combo Type', 'Combo Name'])
-            table_key = 'Concrete Frame Design Load Combination Data'
-        elif type_ == 'Steel':
-            for c in combos:
-                c.insert(0, 'Steel Frame')
-            # self.set_infinite_bending_capacity_for_steel_columns(code_string)
-            df = pd.DataFrame(combos,
-                                columns=['Design Type', 'Combo Type', 'Combo Name']
-                                )
-            table_key = 'Steel Design Load Combination Data'
-            columns = self.get_beams_columns(type_=1)[1]
-        self.etabs.database.apply_data(table_key, df)
+        if loads is None:
+            loads = self.etabs.get_first_system_seismic()
+        print(f'{loads=}')
+        load_cases, columns, code = self.etabs.load_combinations.create_load_combinations_from_loads(
+            loads,
+            suffix='_100_30',
+            type_=type_,
+            code=code,
+            )
         # run analysis
         self.etabs.analyze.set_load_cases_to_analyze(load_cases)
         self.etabs.run_analysis()

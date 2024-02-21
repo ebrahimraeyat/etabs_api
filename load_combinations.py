@@ -247,6 +247,49 @@ class LoadCombination:
                             data.extend([combo_names[k], type_, f'N{name}{dir_}', sfm * sf])
                             
         return data
+    
+    def create_load_combinations_from_loads(self,
+                                            load_names: list,
+                                            suffix: str='',
+                                            prefix: str='',
+                                            type_: str = 'Concrete', # 'Steel'
+                                            code : Union[str, None] = None,
+                                            ):
+        combos = []
+        load_cases = []
+        for load in load_names:
+            if load:
+                self.SapModel.RespCombo.Add(f'{prefix}{load}{suffix}', 0)
+                self.SapModel.RespCombo.SetCaseList(f'{prefix}{load}{suffix}', 0, load, 1)
+                combos.append(['Strength', f'{prefix}{load}{suffix}'])
+                load_cases.append(load)
+        # set overwrite for columns
+        if code is None:
+            code = self.etabs.design.get_code(type_)
+        code_string = self.etabs.design.get_code_string(type_, code)
+        # set design combo
+        import pandas as pd
+        if self.etabs.etabs_main_version < 20:
+            cols = ['Combo Type', 'Combo Name']
+            cols1 = ['Design Type']
+        else:
+            cols = ['ComboType', 'ComboName']
+            cols1 = ['DesignType']
+        if type_ == 'Concrete':
+            columns = self.etabs.frame_obj.set_column_dns_overwrite(code=code_string, type_=type_)
+            df = pd.DataFrame(combos,columns=cols)
+            table_key = 'Concrete Frame Design Load Combination Data'
+        elif type_ == 'Steel':
+            for c in combos:
+                c.insert(0, 'Steel Frame')
+            # self.etabs.set_infinite_bending_capacity_for_steel_columns(code_string)
+            df = pd.DataFrame(combos,
+                                columns=cols1 + cols
+                                )
+            table_key = 'Steel Design Load Combination Data'
+            columns = self.etabs.frame_obj.get_beams_columns(type_=1)[1]
+        self.etabs.database.apply_data(table_key, df)
+        return load_cases, columns, code
             
 def get_mabhas6_load_combinations(
     way='LRFD', # 'ASD'

@@ -193,7 +193,8 @@ def test_all_section_names():
 
 @open_etabs_file('shayesteh.EDB')
 def test_require_100_30():
-    df = etabs.frame_obj.require_100_30('QX', 'QXN', 'QXP', 'QY', 'QYN', 'QYP', file_name=f'100_30_{version}.EDB')
+    loads = ['QX', 'QXN', 'QXP', 'QY', 'QYN', 'QYP']
+    df = etabs.frame_obj.require_100_30(loads, file_name=f'100_30_{version}.EDB')
     assert len(df) == 48
     assert set(df.PMMCombo.unique()) == {'QXN_100_30', 'QXP_100_30', 'QYN_100_30', 'QYP_100_30'}
 

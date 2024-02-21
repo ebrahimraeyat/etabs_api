@@ -63,6 +63,23 @@ def test_generate_concrete_load_combinations_separate_direction_asd():
     assert data
 
 @open_etabs_file('shayesteh.EDB')
+def test_create_load_combinations_from_loads():
+    loads = ['QX', 'QXN', 'QXP', 'QY']
+    suffix = '_100_30'
+    etabs.load_combinations.create_load_combinations_from_loads(loads, suffix=suffix, type_="Concrete")
+    table_key = 'Concrete Frame Design Load Combination Data'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert set(df['ComboName'].values) == {f'{load}{suffix}' for load in loads}
+    # Steel Load combinations
+    table_key = 'Steel Design Load Combination Data'
+    etabs.SapModel.PropFrame.SetISection("ISEC1", "STEEL", 24, 10, 0.5, 0.3, 14, 0.6)
+    etabs.frame_obj.set_section_name('115', "ISEC1")
+    loads = ['QX', 'QXN', 'QXP', 'QYN', 'QYP', 'QY']
+    etabs.load_combinations.create_load_combinations_from_loads(loads, suffix=suffix, type_="Steel")
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert set(df['ComboName'].values) == {f'{load}{suffix}' for load in loads}
+
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_separate_direction_retwall():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
