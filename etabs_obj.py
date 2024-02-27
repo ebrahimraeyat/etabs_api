@@ -918,6 +918,7 @@ class EtabsModel:
         self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=x_specs+y_specs)
+        self.set_current_unit('kgf', 'm')
         self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
         vex, vey = self.results.get_base_react(
                 loadcases=[ex_name, ey_name],
@@ -982,10 +983,15 @@ class EtabsModel:
         load_cases = [ex_name, ey_name] + x_specs + y_specs
         base_shear = [vex, vey] + vsx + vsy
         ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+        final_scales = [1, 1] # Get final scales that applied in etabs model
+        for name in x_specs + y_specs:
+            ret = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+            final_scales.append(ret[3][0])
         df = pd.DataFrame({
             'Case': load_cases,
             f'V ({force})': base_shear,
             'Ratio': ratios,
+            'Scale': final_scales,
             })
         self.unlock_model()
         self.analyze.set_load_cases_to_analyze()

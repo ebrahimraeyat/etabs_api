@@ -35,9 +35,10 @@ def test_get_loadcase_withtype():
 
 @open_etabs_file('shayesteh.EDB')
 def test_multiply_response_spectrum_scale_factor():
-    etabs.load_cases.multiply_response_spectrum_scale_factor('SX', 2)
+    current_scale = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads('SX')[3][0]
+    scales = etabs.load_cases.multiply_response_spectrum_scale_factor('SX', 2)
     ret = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads('SX')[3]
-    assert ret == (3.5198 * 2,)
+    assert ret == (current_scale * 2,)
     etabs.load_cases.multiply_response_spectrum_scale_factor('SX', .5, scale_min=None)
 
 @open_etabs_file('shayesteh.EDB')

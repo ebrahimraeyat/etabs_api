@@ -302,13 +302,18 @@ def test_scale_response_spectrums():
             load_cases = [ex_name, ey_name] + x_specs + y_specs
             base_shear = [vex, vey] + vsx + vsy
             ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            final_scales = [1, 1] # Get final scales that applied in etabs model
+            for name in x_specs + y_specs:
+                ret = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                final_scales.append(ret[3][0])
             df1 = pd.DataFrame({
                 'Case': load_cases,
                 f'V ({force})': base_shear,
                 'Ratio': ratios,
+                'Scale': final_scales,
                 })
             # Assert equality between the two DataFrames
-            cols = [f'V ({force})', 'Ratio']
+            cols = [f'V ({force})', 'Ratio', 'Scale']
             np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('khalkhali.EDB')
@@ -359,13 +364,18 @@ def test_scale_response_spectrums2():
             load_cases = [ex_name, ey_name] + x_specs + y_specs
             base_shear = [vex, vey] + vsx + vsy
             ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            final_scales = [1, 1] # Get final scales that applied in etabs model
+            for name in x_specs + y_specs:
+                ret = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                final_scales.append(ret[3][0])
             df1 = pd.DataFrame({
                 'Case': load_cases,
                 f'V ({force})': base_shear,
                 'Ratio': ratios,
+                'Scale': final_scales,
                 })
             # Assert equality between the two DataFrames
-            cols = [f'V ({force})', 'Ratio']
+            cols = [f'V ({force})', 'Ratio', 'Scale', ]
             np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('khalkhali.EDB')
@@ -423,13 +433,18 @@ def test_scale_response_spectrums_min_base_shear():
             load_cases = [ex_name, ey_name] + x_specs + y_specs
             base_shear = [vex, vey] + vsx + vsy
             ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            final_scales = [1, 1] # Get final scales that applied in etabs model
+            for name in x_specs + y_specs:
+                ret = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                final_scales.append(ret[3][0])
             df1 = pd.DataFrame({
                 'Case': load_cases,
                 f'V ({force})': base_shear,
                 'Ratio': ratios,
+                'Scale': final_scales,
                 })
             # Assert equality between the two DataFrames
-            cols = [f'V ({force})', 'Ratio']
+            cols = [f'V ({force})', 'Ratio', 'Scale']
             np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('khalkhali.EDB')
@@ -483,13 +498,18 @@ def test_scale_response_spectrums_min_base_shear_2():
             load_cases = [ex_name, ey_name] + x_specs + y_specs
             base_shear = [vex, vey] + vsx + vsy
             ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
+            final_scales = [1, 1] # Get final scales that applied in etabs model
+            for name in x_specs + y_specs:
+                ret = etabs.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                final_scales.append(ret[3][0])
             df1 = pd.DataFrame({
                 'Case': load_cases,
                 f'V ({force})': base_shear,
                 'Ratio': ratios,
+                'Scale': final_scales,
                 })
             # Assert equality between the two DataFrames
-            cols = [f'V ({force})', 'Ratio']
+            cols = [f'V ({force})', 'Ratio', 'Scale']
             np.testing.assert_allclose(df1[cols].values, df[cols].values, rtol=1e-3, atol=1e-3)
 
 @open_etabs_file('shayesteh.EDB')

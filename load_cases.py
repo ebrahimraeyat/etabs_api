@@ -146,7 +146,7 @@ class LoadCases:
             scales = (ret[3][0] * scale,) + tuple(ret[3][1:])
         ret[3] = scales
         self.SapModel.LoadCases.ResponseSpectrum.SetLoads(name, *ret[:-1])
-        return None
+        return scales
 
     def get_spectral_with_angles(self,
                 angles : Union[Iterable, bool] = None,
