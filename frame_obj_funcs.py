@@ -37,3 +37,52 @@ def get_column_continuity(
     top_column_height = top_column_dimension[2]
     return [top_column_height >= bot_column_dimension[i] for i in (0, 1)]
 
+def get_joint_shear_vu_due_to_beams_mn_or_mpr(
+    axis_plus_as_top: float,
+    axis_plus_as_bot: float,
+    axis_minus_as_top: float,
+    axis_minus_as_bot: float,
+    ductility: str='Intermediate',
+    fy: float=400,
+):
+    phi = 1.0
+    if ductility.lower() == "high":
+        phi = 1.25
+    as1 = axis_plus_as_top + axis_minus_as_bot
+    as2 = axis_plus_as_bot + axis_minus_as_top
+    vu1 = max(as1, as2) * phi * fy
+    return vu1
+
+def get_beam_section_mn(
+        as_: float,
+        d: float,
+        fy: float,
+        fc: float,
+        width: float,
+        ductility: str='Intermediate',
+        ):
+    phi = 1.0
+    if ductility.lower() == "high":
+        phi = 1.25
+    rho = as_ / (width * d)
+    mn = as_ * phi * fy * d * (1 - .59 * rho * phi * fy / fc)
+    return mn
+
+def get_vu_column_due_to_beams_mn_or_mpr(
+        axis_plus_mn_top: float,
+        axis_plus_mn_bot: float,
+        axis_minus_mn_top: float,
+        axis_minus_mn_bot: float,
+        h_column_bot: float,
+        h_column_top: float,
+    ):
+    mn1 = axis_plus_mn_top + axis_minus_mn_bot
+    mn2 = axis_plus_mn_bot + axis_minus_mn_top
+    hc = (h_column_bot + h_column_top) / 2
+    vu_column = max(mn1, mn2) / hc
+    return vu_column
+    
+    
+
+
+
