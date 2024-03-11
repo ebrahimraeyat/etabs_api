@@ -1,4 +1,4 @@
-
+from typing import Union
 
 def get_beam_continuity(
                         beams_in_axis_plus_dimensions: list,
@@ -59,14 +59,25 @@ def get_beam_section_mn(
         fy: float,
         fc: float,
         width: float,
+        ):
+    rho = as_ / (width * d)
+    mn = as_ * fy * d * (1 - .59 * rho * fy / fc)
+    return mn
+
+def get_beam_section_mpr(
+        as_: float,
+        d: float,
+        fy: float,
+        fc: float,
+        width: float,
         ductility: str='Intermediate',
         ):
     phi = 1.0
     if ductility.lower() == "high":
         phi = 1.25
     rho = as_ / (width * d)
-    mn = as_ * phi * fy * d * (1 - .59 * rho * phi * fy / fc)
-    return mn
+    mpr = as_ * phi * fy * d * (1 - .59 * rho * phi * fy / fc)
+    return mpr
 
 def get_vu_column_due_to_beams_mn_or_mpr(
         axis_plus_mn_top: float,
@@ -81,6 +92,97 @@ def get_vu_column_due_to_beams_mn_or_mpr(
     hc = (h_column_bot + h_column_top) / 2
     vu_column = max(mn1, mn2) / hc
     return vu_column
+
+def get_max_allowed_rebar_distance_due_to_crack_control(
+        transver_rebar_size: int,
+        fy: float=420,
+        cover: float=40,
+):
+    fys = fy * 2 / 3
+    cc = cover + transver_rebar_size
+    ratio = 280 / fys
+    allow_dist_1 = 380 * ratio - 2.5 * cc
+    allow_dist_2 = 300 * ratio
+    allow_dist = min(allow_dist_1, allow_dist_2)
+    return allow_dist
+
+def get_rebar_distance_in_section_width(
+        section_width: float,
+        rebar_size: int,
+        number_of_rebars: int,
+        transver_rebar_size: int,
+        cover: float=40,
+        net: bool=False,
+):
+    '''
+    net: net distance or center to center
+    '''
+    cc = cover + transver_rebar_size
+    n = 1
+    if net:
+        n = number_of_rebars
+    distributed_length = section_width - (2 * cc + n * rebar_size)
+    dist = distributed_length / (number_of_rebars - 1)
+    return dist
+
+def check_max_allowed_rebar_distance_due_to_crack_control(
+        beam_width: float,
+        rebar_size: int,
+        number_of_rebars: int,
+        transver_rebar_size: int,
+        fy: float=420,
+        cover: float=40,
+):
+    dist = get_rebar_distance_in_section_width(
+        section_width=beam_width,
+        rebar_size=rebar_size,
+        number_of_rebars=number_of_rebars,
+        transver_rebar_size=transver_rebar_size,
+        cover=cover,
+        net=False,
+        )
+    allow_dist = get_max_allowed_rebar_distance_due_to_crack_control(
+        transver_rebar_size=transver_rebar_size,
+        fy=fy,
+        cover=cover,
+    )
+    result = dist <= allow_dist
+    return result, dist, allow_dist
+
+def control_mn_end_in_beam(
+        as_top: float,
+        as_bot: float,
+        section_width: float,
+        d_top: float,
+        d_bot: Union[float, None]=None,
+        fy: float=400,
+        fc: float=30,
+        ductility: str="Intermediate",
+):
+    if ductility.lower() == "high":
+        factor = 1 / 2
+    elif ductility.lower() == 'intermediate':
+        factor = 1 / 3
+    if d_bot is None:
+        d_bot = d_top
+    mn_top = get_beam_section_mn(as_=as_top, d=d_top, fy=fy, fc=fc, width=section_width)
+    mn_bot = get_beam_section_mn(as_=as_bot, d=d_bot, fy=fy, fc=fc, width=section_width)
+    ret = mn_bot >= factor * mn_top
+    return ret, mn_top, mn_bot
+
+def get_b_joint_shear_of_column(
+    column_len_in_direction_of_investigate: float,
+    column_len_perpendicular_of_investigate:float,
+    beams_width: list,
+    beams_c: list,
+):
+    b = sum(beams_width) / len(beams_width)
+    c = sum(beams_c) / len(beams_c)
+    b_joint_shear = min(column_len_in_direction_of_investigate, 2 * c) + b
+    b_joint_shear = min(column_len_perpendicular_of_investigate, b_joint_shear)
+    return b_joint_shear
+
+    
     
     
 
