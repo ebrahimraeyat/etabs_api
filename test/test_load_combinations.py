@@ -89,6 +89,15 @@ def test_generate_concrete_load_combinations_separate_direction_retwall():
     assert data
 
 @open_etabs_file('shayesteh.EDB')
+def test_generate_concrete_load_combinations_separate_direction_retwall_csa_code():
+    equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
+                    'L' : ['Live', 'L-RED'],
+                    }
+    data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', separate_direction=True, retaining_wall=True, code='CSA')
+    data = etabs.load_combinations.generate_concrete_load_combinations(equal_loads, prefix='SOIL_', design_type="ASD", separate_direction=True, retaining_wall=True, code='CSA')
+    assert data
+
+@open_etabs_file('shayesteh.EDB')
 def test_generate_concrete_load_combinations_notional_loads():
     equal_loads = {'Dead' : ['Dead', 'SDead', 'Partition'],
                     'L' : ['Live', 'L-RED'],
