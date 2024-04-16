@@ -355,14 +355,14 @@ class CreateF2kFile(Safe):
         d = {
             'UniqueName': 'Point=',
             'OutputCase': 'LoadPat=',
-            'FX' : 'Fx=',
-            'FY' : 'Fy=',
-            'FZ' : 'Fgrav=',
-            'MX' : 'Mx=',
-            'MY' : 'My=',
-            'MZ' : 'Mz=',
-            # 'xim' : 'XDim=',
-            # 'yim' : 'YDim=',
+            'FX'  : 'Fx=',
+            'FY'  : 'Fy=',
+            'FZ'  : 'Fgrav=',
+            'MX'  : 'Mx=',
+            'MY'  : 'My=',
+            'MZ'  : 'Mz=',
+            'xim' : 'XDim=',
+            'yim' : 'YDim=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"
