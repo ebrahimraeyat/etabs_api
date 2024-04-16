@@ -35,3 +35,23 @@ def open_file(filename):
     else:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, filename])
+
+def change_unit(force=None, length=None):
+    def decorator(original_method):
+        def wrapper(self, *args, **kwargs):
+            # Get the unit from etabs
+            curr_force, curr_length = self.etabs.get_current_unit()
+            force_to_use = force if force is not None else curr_force
+            length_to_use = length if length is not None else curr_length
+            self.etabs.set_current_unit(force_to_use, length_to_use)
+
+            # Call the original method
+            result = original_method(self, *args, **kwargs)
+
+            # Set the unit back in etabs
+            self.etabs.set_current_unit(curr_force, curr_length)
+
+            return result
+
+        return wrapper
+    return decorator

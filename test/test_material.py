@@ -37,6 +37,29 @@ def test_get_unit_weight_of_materials():
     ret = etabs.material.get_unit_weight_of_materials()
     assert ret['CONC'] == 2400
 
+@open_etabs_file('shayesteh.EDB')
+def test_add_AIII_rebar():
+    etabs.set_current_unit('kgf', 'm')
+    rebar_aiii = 'rebar_aiii'
+    ret = etabs.material.add_AIII_rebar(name=rebar_aiii)
+    rebars = etabs.material.get_material_of_type(6)
+    assert rebar_aiii in rebars
+    etabs.set_current_unit('N', 'mm')
+    fy, _ = etabs.material.get_rebar_fy_fu(rebar_aiii)
+    assert fy == 400
+
+@open_etabs_file('shayesteh.EDB')
+def test_add_AII_rebar():
+    etabs.set_current_unit('kgf', 'm')
+    rebar_aii = 'rebar_aii'
+    ret = etabs.material.add_AII_rebar(name=rebar_aii)
+    rebars = etabs.material.get_material_of_type(6)
+    assert rebar_aii in rebars
+    etabs.set_current_unit('N', 'mm')
+    fy, _ = etabs.material.get_rebar_fy_fu(rebar_aii)
+    assert fy == 300
+
+
 
 if __name__ == '__main__':
     from pathlib import Path

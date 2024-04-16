@@ -1,3 +1,6 @@
+from python_functions import change_unit
+
+
 __all__ = ['Material']
 
 
@@ -28,12 +31,11 @@ class Material:
     def get_rebar_fy_fu(self, rebar):
         return self.SapModel.PropMaterial.GetORebar(rebar)[0:2]
 
+    @change_unit('N', 'mm')
     def get_S340_S400_rebars(self):
         '''
         try to find S400 (AIII) and S340 (AII) Rebars material
         '''
-        units = self.etabs.get_current_unit()
-        self.etabs.set_current_unit('N', 'mm')
         rebars = self.get_material_of_type(6)
         S340 = []
         S400 = []
@@ -43,17 +45,15 @@ class Material:
                 S400.append(rebar)
             elif 290 < fy < 350:
                 S340.append(rebar)
-        self.etabs.set_current_unit(*units)
         return S340, S400
 
+    @change_unit('N', 'mm')
     def get_tie_main_rebar_all_sizes(self):
         '''
         return rebars that size is in (10, 12) as tie_rebar_sizes
         and rebars that size is in [14, 16, 18, 20, 22, 25, 28, 30, 32, 36, 40, 50] as main_rebar_sizes
         and all rebars with size and name
         '''
-        units = self.etabs.get_current_unit()
-        self.etabs.set_current_unit('N', 'mm')
         tie_rebar_sizes = set()
         main_rebar_sizes = set()
         all_rebars = {}
@@ -67,14 +67,11 @@ class Material:
                 elif size in [14, 16, 18, 20, 22, 25, 28, 30, 32, 36, 40, 50]:
                     main_rebar_sizes.add(str(size))
                     all_rebars[str(size)] = name
-        self.etabs.set_current_unit(*units)
         return tie_rebar_sizes, main_rebar_sizes, all_rebars
 
+    @change_unit('N', 'mm')
     def get_fc(self, conc):
-        units = self.etabs.get_current_unit()
-        self.etabs.set_current_unit('N', 'mm')
         fc = self.SapModel.PropMaterial.GetOConcrete(conc)[0]
-        self.etabs.set_current_unit(*units)
         return fc
 
     def add_material(
@@ -90,6 +87,7 @@ class Material:
         '''
         self.SapModel.PropMaterial.SetMaterial(name, type_)
 
+    @change_unit(force='N', length='mm')
     def add_AIII_rebar(
         self,
         name: str = 'AIII',
@@ -97,6 +95,7 @@ class Material:
         self.add_material(name, 6)
         self.SapModel.PropMaterial.SetORebar(name, 400, 600, 500, 750, 1, 1, 0.01, 0.09, False, 0)
     
+    @change_unit(force='N', length='mm')
     def add_AII_rebar(
         self,
         name: str = 'AII',

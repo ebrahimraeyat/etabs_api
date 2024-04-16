@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Iterable, Union
 import math
 
+from python_functions import change_unit
+
 
 class FrameObj:
     def __init__(
@@ -385,6 +387,7 @@ class FrameObj:
         beams_sections = {name : self.SapModel.FrameObj.GetSection(name)[0] for name in beams_names}
         return beams_sections
     
+    @change_unit('N', 'cm')
     def assign_frame_modifiers(self,
             frame_names: list,
             area: Union[None, float]=None,
@@ -402,8 +405,6 @@ class FrameObj:
         design_procedure: steel: 1, concrete: 2
         '''
         # filter desired procedure
-        units = self.etabs.get_current_unit()
-        self.etabs.set_current_unit('N', 'cm')
         design_procedures = {'steel': 1, 'concrete': 2}
         design_procedure = design_procedures.get(design_procedure, None)
         if design_procedure is not None:
@@ -437,7 +438,6 @@ class FrameObj:
                             mod = 1 - ratio
                     modifiers[i] = mod
             self.SapModel.FrameObj.SetModifiers(name, modifiers)
-        self.etabs.set_current_unit(*units)
     
     def get_beams_torsion_prop_modifiers(self,
             beams_names : Iterable[str] = None,
