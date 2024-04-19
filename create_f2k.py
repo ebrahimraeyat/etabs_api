@@ -347,11 +347,14 @@ class CreateF2kFile(Safe):
         try:
             df2 = self.etabs.database.get_basepoints_coord_and_dims(df)
             df2 = df2.set_index('UniqueName')
-            df['xim'] = df['UniqueName'].map(df2['t2'])
-            df['yim'] = df['UniqueName'].map(df2['t3'])
+            df['xdim'] = df['UniqueName'].map(df2['t2'])
+            df['ydim'] = df['UniqueName'].map(df2['t3'])
+            # Replace None values with 0 in specific columns
+            columns_to_replace = ['xdim', 'ydim']
+            df[columns_to_replace] = df[columns_to_replace].fillna(0)
         except AttributeError:
-            df['xim'] = 0
-            df['yim'] = 0
+            df['xdim'] = 0
+            df['ydim'] = 0
         d = {
             'UniqueName': 'Point=',
             'OutputCase': 'LoadPat=',
@@ -361,8 +364,8 @@ class CreateF2kFile(Safe):
             'MX'  : 'Mx=',
             'MY'  : 'My=',
             'MZ'  : 'Mz=',
-            'xim' : 'XDim=',
-            'yim' : 'YDim=',
+            'xdim' : 'XDim=',
+            'ydim' : 'YDim=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"
