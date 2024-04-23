@@ -429,3 +429,39 @@ def get_color(param, pref_intity, color=674321151):
     g = float((c >> 16) & 0xFF)
     b = float((c >> 8) & 0xFF)
     return (r, g, b)
+
+def equivalent_height_in_meter(wall):
+    inlists = wall.InList
+    if not inlists:
+        return wall.Height.getValueAs('m').Value, 0
+    win = None
+    for o in inlists:
+        if hasattr(o, 'IfcType') and o.IfcType == 'Window':
+            win = o
+            break
+    if win is None:
+        return wall.Height.getValueAs('m').Value, 0
+    wall_area = wall.Height * wall.Length
+    window_area = win.Height * win.Width
+    area = (wall_area) -  (window_area)
+    percent = window_area / wall_area
+    height = (area / wall.Length).getValueAs('m').Value
+    return height, percent.Value
+
+def get_relative_dists(wall):
+    wall_trace = wall.Base
+    if hasattr(wall, 'base'):
+        base = wall.base
+    else: # wall load created with user
+        return 0, 1
+    e1 = wall_trace.Shape.Edges[0]
+    e2 = base.Shape.Edges[0]
+    p1 = e2.firstVertex().Point
+    p2 = e1.firstVertex().Point + wall.Placement.Base
+    p3 = e1.lastVertex().Point + wall.Placement.Base
+    v1 = p2.sub(p1)
+    v2 = p3.sub(p1)
+    dist1 = round((v1.Length / base.Length).Value, 3)
+    dist2 = round((v2.Length / base.Length).Value, 3)
+    assert max(dist1, dist2) <= 1
+    return dist1, dist2

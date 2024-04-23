@@ -3,6 +3,7 @@ from typing import Iterable, Union
 import math
 
 from python_functions import change_unit
+import freecad_funcs
 
 
 class FrameObj:
@@ -887,6 +888,77 @@ class FrameObj:
         self.etabs.update_setting([beam_wall_props_key], [beams_props])
         self.SapModel.View.RefreshView()
         return None
+    
+    def assign_wall_loads_to_etabs(
+            self,
+            wall_loadpat: str = '',
+            wall_weight: float = 0,
+            walls: list = [],
+        ):
+        d = self.etabs.get_settings_from_model()
+        beam_wall_props_key = 'beams_wall_loads'
+        beams_props = d.get(beam_wall_props_key, {})
+        names = set()
+        len_unit = 'm'
+        weight_unit = 'kg'
+        self.etabs.set_current_unit(f'{weight_unit}f', len_unit)
+        if not walls:
+            import FreeCAD
+            walls = FreeCAD.ActiveDocument.Objects
+        self.etabs.unlock_model()
+        for obj in walls:
+            if (
+                hasattr(obj, 'IfcType') and
+                obj.IfcType == 'Wall'
+            ):
+                if hasattr(obj, 'loadpat') and hasattr(obj, 'weight'):
+                    loadpat = obj.loadpat
+                    weight = obj.weight.getValueAs(f"{weight_unit}/({len_unit}*s^2)")
+                elif wall_loadpat and wall_weight:
+                    loadpat = wall_loadpat
+                    weight = wall_weight
+                else:
+                    continue
+                name = ''
+                if hasattr(obj, 'base'):
+                    name = obj.base.Label2
+                if not name:
+                    if hasattr(obj, 'base'):
+                        label, story = obj.base.Label.split('_')[:2]
+                    elif hasattr(obj, 'Base'):
+                        label, story = obj.Base.Label.split('_')[:2]
+                    name = self.etabs.SapModel.FrameObj.GetNameFromLabel(label, story)[0]
+                height, percent = freecad_funcs.equivalent_height_in_meter(obj)
+                load_value = math.ceil(height * weight)
+                dist1, dist2 = freecad_funcs.get_relative_dists(obj)
+
+                self.assign_gravity_load(
+                    name=name,
+                    loadpat=loadpat,
+                    val1=load_value,
+                    val2=load_value,
+                    dist1=dist1,
+                    dist2=dist2,
+                    relative=True,
+                    replace=name not in names,
+                )
+                names.add(name)
+                wall_loads_dict = {
+                    'wall_loadpat': loadpat,
+                    'wall_weight_per_area': weight,
+                    'wall_opening_ratio': percent,
+                    'wall_dist1': dist1,
+                    'wall_dist2': dist2,
+                    'height_from_below': False,
+                    'parapet': obj.parapet.getValueAs(len_unit),
+                    'none_beam_h': obj.none_beam_h.getValueAs(len_unit),
+                    }
+                for key, value in wall_loads_dict.items():
+                    props = beams_props.get(key, {})
+                    props[name] = value
+                    if not props:
+                        beams_props[key] = props
+        self.etabs.update_setting([beam_wall_props_key], [beams_props])
 
     def concrete_section_names(self, type_='Beam'):
         '''

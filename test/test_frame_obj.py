@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -320,10 +322,20 @@ def test_delete_frames_1():
     beams, columns = etabs.frame_obj.get_beams_columns(type_=1)
     assert len(beams) == len(columns) == 0
 
-
+@open_etabs_file('shayesteh.EDB')
+def test_assign_wall_loads_to_etabs():
+    FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
+    sys.path.append(FREECADPATH)
+    import FreeCAD
+    freecad_model = etabs_api_path / 'test' / 'files' / 'freecad' / 'shayesteh.FCStd'
+    FreeCAD.openDocument(str(freecad_model))
+    etabs.frame_obj.assign_wall_loads_to_etabs()
+    ret = etabs.SapModel.FrameObj.GetLoadDistributed('124')
+    np.testing.assert_allclose(ret[10], 665)
+    np.testing.assert_allclose(ret[11], 665)
 
 if __name__ == '__main__':
-    test_update_gravity_loads_from_wall()
+    test_assign_wall_loads_to_etabs()
 
 
 

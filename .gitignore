@@ -166,6 +166,9 @@ ENV/
 *.xdv
 *.fdb_latexmk
 
+# FreeCAD
+*.FCStd1
+
 # securiry
 test/etabs_api/test.*
 
