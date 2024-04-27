@@ -23,8 +23,10 @@ def get_exe_path(program_name):
     except subprocess.CalledProcessError:
         return None
     
-def get_temp_filepath(suffix='EDB', filename='test') -> Path:
+def get_temp_filepath(suffix='EDB', filename='test', random=False) -> Path:
     import tempfile
+    if random:
+        return Path(tempfile.NamedTemporaryFile(suffix=f".{suffix}", delete=True).name)
     temp_path = Path(tempfile.gettempdir())
     temp_file_path = temp_path / f"{filename}.{suffix}"
     return temp_file_path
