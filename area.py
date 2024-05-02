@@ -672,7 +672,7 @@ class Area:
         '''
         text = ''
         self.save_as_deflection_filename(slab_name=slab_name, filename=filename)
-        self.design_slabs(slab_name, s, d, tw, hc, as_top, as_bot, True, two_way, True)
+        self.design_slabs([slab_name], s, d, tw, hc, as_top, as_bot, True, two_way, True)
         self.etabs.unlock_model()
         print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
