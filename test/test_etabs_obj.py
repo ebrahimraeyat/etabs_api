@@ -249,7 +249,7 @@ def test_start_slab_design():
 
 @open_etabs_file('zibaei.EDB')
 def test_angles_response_spectrums_analysis():
-    scales = etabs.angles_response_spectrums_analysis(
+    scales, df = etabs.angles_response_spectrums_analysis(
         ex_name='EX',
         ey_name='EY',
         specs=['SPECT0', 'SPECT105', 'SPECT120', 'SPECT135', 'SPECT15', 'SPECT150', 'SPECT165', 'SPECT30', 'SPECT45', 'SPECT60', 'SPECT75', 'SPECT90'],
@@ -258,6 +258,7 @@ def test_angles_response_spectrums_analysis():
     )
     for scale in scales:
         assert pytest.approx(scale, abs=.001) == 1
+    print(df)
 
 @open_etabs_file('shayesteh.EDB')
 def test_scale_response_spectrums():

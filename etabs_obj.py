@@ -1015,6 +1015,9 @@ class EtabsModel:
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=specs)
         loadcases = [ex_name, ey_name] + specs
+        base_shear_spec = {}
+        base_shear_ex = {}
+        base_shear_ey = {}
         for i in range(num_iteration):
             self.analyze.set_load_cases_to_analyze(loadcases)
             df = self.database.get_section_cuts_base_shear(loadcases, section_cuts)
@@ -1027,11 +1030,13 @@ class EtabsModel:
             spec_sec_angle = df[df['OutputCase'] == df['angle_spec']]
             scales = []
             spec_scales = {}
+            angle_specs = {}
             df['F1'] = df['F1'].astype(float)
             for i, row in spec_sec_angle.iterrows():
                 spec = row['OutputCase']
                 section_cut = row['SectionCut']
                 angle = row['angle']
+                angle_specs[angle] = spec
                 df_angle_section = df[(df['SectionCut'] == section_cut) & (df['angle'] == angle)][['F1', 'OutputCase']]
                 df_angle_section.set_index('OutputCase', inplace=True)
                 f_ex = abs(df_angle_section.loc[ex_name, 'F1'])
@@ -1040,6 +1045,9 @@ class EtabsModel:
                 scale = scale_factor * math.sqrt(f_ex ** 2 + f_ey ** 2) / f_spec
                 spec_scales[spec] = scale
                 scales.append(scale)
+                base_shear_spec[angle] = f_spec
+                base_shear_ex[angle] = f_ex
+                base_shear_ey[angle] = f_ey
             print(scales)
             max_scale = max(scales)
             min_scale = min(scales)
@@ -1048,11 +1056,46 @@ class EtabsModel:
             else:
                 for spec, scale in spec_scales.items():
                     self.load_cases.multiply_response_spectrum_scale_factor(spec, scale)
+        force = self.get_current_unit()[0]
+        import pandas as pd
+        base_shear_specs = []
+        base_shear_exs = []
+        base_shear_eys = []
+        load_cases =  []
+        final_scales = []
+        for angle in angles:
+            base_shear_specs.append(base_shear_spec[angle])
+            base_shear_exs.append(base_shear_ex[angle])
+            base_shear_eys.append(base_shear_ey[angle])
+            load_cases.append(angle_specs[angle])
+            ret = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(angle_specs[angle])
+            final_scales.append(ret[3][0])
+        ex_name_col_title = f'{ex_name} ({force})'
+        ey_name_col_title = f'{ey_name} ({force})'
+        spec_col_title = f'SPEC ({force})'
+        df = pd.DataFrame({
+            "Name": load_cases,
+            'Angle': angles,
+            spec_col_title: base_shear_specs,
+            ex_name_col_title: base_shear_exs,
+            ey_name_col_title: base_shear_eys,
+            # 'Ratio': ratios,
+            # 'Scale': final_scales,
+            })
+        static_col_title = f"({ex_name}^2 + {ey_name}^2) ^0.5"
+        df[static_col_title] = df.apply(
+            lambda row: math.sqrt(row[ex_name_col_title] ** 2 + row[ey_name_col_title] ** 2),
+            axis=1,
+            )
+        df['Scale'] = final_scales
+        df['Ratio'] = df.apply(
+            lambda row: row[spec_col_title] / row[static_col_title], axis=1
+        )
         self.unlock_model()
         self.analyze.set_load_cases_to_analyze()
         if analyze:
             self.run_analysis()
-        return scales
+        return scales, df
 
     def create_joint_shear_bcc_file(self,
         file_name: Union[str, Path]= 'js_bbc.EDB',
