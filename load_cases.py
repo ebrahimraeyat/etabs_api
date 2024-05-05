@@ -156,23 +156,26 @@ class LoadCases:
         return angles and Response spectrum loadcase
         {0: spec}
         '''
-        table = 'Load Case Definitions - Response Spectrum'
-        df = self.etabs.database.read(table, to_dataframe=True, cols=['Name', 'Angle'])
+        table_key = 'Load Case Definitions - Response Spectrum'
+        df = self.etabs.database.read(table_key, to_dataframe=True)
         if df is None:
             return {}
-        df.dropna(inplace=True)
         df['Angle'] = df['Angle'].astype(int16)
-        df.drop_duplicates(['Name'], keep=False, inplace=True)
-        if angles is not None:
-            df = df[df['Angle'].isin(angles)]
         if specs is not None:
             df = df[df['Name'].isin(specs)]
-        # df.drop_duplicates(['Angle'], keep='first', inplace=True)
         angles_specs = dict()
-        for _, row in df.iterrows():
-            angle = row['Angle']
-            name = row['Name']
-            angles_specs[int(angle)] = name
+        if df is not None:
+            for name in df.Name.unique():
+                try:
+                    n, dirs, _, _, _, angles, _ = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(name)
+                except:
+                    continue
+                if n == 1:
+                    angle = angles[0]
+                    if dirs[0] == 'U2':
+                        angle = 90 - angle
+                    if angles is None or angle in angles:
+                        angles_specs[angle] = name
         return angles_specs
 
     def reset_scales_for_response_spectrums(self,

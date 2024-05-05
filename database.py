@@ -3,6 +3,8 @@ import sys
 from typing import Iterable, Union
 import copy
 
+from numpy import int16
+
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
@@ -892,6 +894,7 @@ class DatabaseTables:
 
     def get_section_cuts_angle(self):
         df1 = self.get_section_cuts(cols=['Name', 'RotAboutZ'])
+        df1['RotAboutZ'] = df1['RotAboutZ'].astype(int16)
         re_dict = df1.set_index('Name').to_dict()['RotAboutZ']
         return re_dict
 

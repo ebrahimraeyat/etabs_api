@@ -44,7 +44,7 @@ def test_multiply_response_spectrum_scale_factor():
 @open_etabs_file('shayesteh.EDB')
 def test_get_spectral_with_angles():
     ret = etabs.load_cases.get_spectral_with_angles((0, 10, 15, 20, 30))
-    assert ret == {0: 'SY'}
+    assert ret == {0: 'SX'}
 
 @open_etabs_file('shayesteh.EDB')
 def test_reset_scales_for_response_spectrums():
@@ -124,3 +124,5 @@ def test_get_xy_seismic_load_cases():
     assert set(y_seismic_load_cases) == {'QY', 'QYP', 'QYN', 'EYDRIFT'}
 
 
+if __name__ == "__main__":
+    test_get_spectral_with_angles()
