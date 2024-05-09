@@ -1,0 +1,932 @@
+[
+    {
+        "row": 0,
+        "col": 0,
+        "text": "Story",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 1,
+        "text": "OutputCase",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 2,
+        "text": "Max Drift",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 3,
+        "text": "Avg Drift",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 4,
+        "text": "Allowable Drift",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 1,
+        "text": "EX(drift)",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 2,
+        "text": "0.0033",
+        "color": "#00ffff"
+    },
+    {
+        "row": 1,
+        "col": 3,
+        "text": "0.0031",
+        "color": "#00ffff"
+    },
+    {
+        "row": 1,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 2,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 2,
+        "col": 1,
+        "text": "EXN(drift)",
+        "color": ""
+    },
+    {
+        "row": 2,
+        "col": 2,
+        "text": "0.0034",
+        "color": "#00ffff"
+    },
+    {
+        "row": 2,
+        "col": 3,
+        "text": "0.0032",
+        "color": "#00ffff"
+    },
+    {
+        "row": 2,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 3,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 3,
+        "col": 1,
+        "text": "EXP(drift)",
+        "color": ""
+    },
+    {
+        "row": 3,
+        "col": 2,
+        "text": "0.0033",
+        "color": "#00ffff"
+    },
+    {
+        "row": 3,
+        "col": 3,
+        "text": "0.0031",
+        "color": "#00ffff"
+    },
+    {
+        "row": 3,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 4,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 4,
+        "col": 1,
+        "text": "EY(drift)",
+        "color": ""
+    },
+    {
+        "row": 4,
+        "col": 2,
+        "text": "0.0022",
+        "color": "#00ffff"
+    },
+    {
+        "row": 4,
+        "col": 3,
+        "text": "0.0022",
+        "color": "#00ffff"
+    },
+    {
+        "row": 4,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 5,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 5,
+        "col": 1,
+        "text": "EYN(drift)",
+        "color": ""
+    },
+    {
+        "row": 5,
+        "col": 2,
+        "text": "0.0023",
+        "color": "#00ffff"
+    },
+    {
+        "row": 5,
+        "col": 3,
+        "text": "0.0022",
+        "color": "#00ffff"
+    },
+    {
+        "row": 5,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 6,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 6,
+        "col": 1,
+        "text": "EYP(drift)",
+        "color": ""
+    },
+    {
+        "row": 6,
+        "col": 2,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 6,
+        "col": 3,
+        "text": "0.0022",
+        "color": "#00ffff"
+    },
+    {
+        "row": 6,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 7,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 7,
+        "col": 1,
+        "text": "EX(drift)",
+        "color": ""
+    },
+    {
+        "row": 7,
+        "col": 2,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 7,
+        "col": 3,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 7,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 8,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 8,
+        "col": 1,
+        "text": "EXN(drift)",
+        "color": ""
+    },
+    {
+        "row": 8,
+        "col": 2,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 8,
+        "col": 3,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 8,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 9,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 9,
+        "col": 1,
+        "text": "EXP(drift)",
+        "color": ""
+    },
+    {
+        "row": 9,
+        "col": 2,
+        "text": "0.0025",
+        "color": "#00ffff"
+    },
+    {
+        "row": 9,
+        "col": 3,
+        "text": "0.0024",
+        "color": "#00ffff"
+    },
+    {
+        "row": 9,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 10,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 10,
+        "col": 1,
+        "text": "EY(drift)",
+        "color": ""
+    },
+    {
+        "row": 10,
+        "col": 2,
+        "text": "0.0033",
+        "color": "#00ffff"
+    },
+    {
+        "row": 10,
+        "col": 3,
+        "text": "0.0031",
+        "color": "#00ffff"
+    },
+    {
+        "row": 10,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 11,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 11,
+        "col": 1,
+        "text": "EYN(drift)",
+        "color": ""
+    },
+    {
+        "row": 11,
+        "col": 2,
+        "text": "0.0033",
+        "color": "#00ffff"
+    },
+    {
+        "row": 11,
+        "col": 3,
+        "text": "0.0031",
+        "color": "#00ffff"
+    },
+    {
+        "row": 11,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 12,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 12,
+        "col": 1,
+        "text": "EYP(drift)",
+        "color": ""
+    },
+    {
+        "row": 12,
+        "col": 2,
+        "text": "0.0037",
+        "color": "#00ffff"
+    },
+    {
+        "row": 12,
+        "col": 3,
+        "text": "0.0031",
+        "color": "#00ffff"
+    },
+    {
+        "row": 12,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 13,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 13,
+        "col": 1,
+        "text": "EX(drift)",
+        "color": ""
+    },
+    {
+        "row": 13,
+        "col": 2,
+        "text": "0.0035",
+        "color": "#00ffff"
+    },
+    {
+        "row": 13,
+        "col": 3,
+        "text": "0.0034",
+        "color": "#00ffff"
+    },
+    {
+        "row": 13,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 14,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 14,
+        "col": 1,
+        "text": "EXN(drift)",
+        "color": ""
+    },
+    {
+        "row": 14,
+        "col": 2,
+        "text": "0.0034",
+        "color": "#00ffff"
+    },
+    {
+        "row": 14,
+        "col": 3,
+        "text": "0.0034",
+        "color": "#00ffff"
+    },
+    {
+        "row": 14,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 15,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 15,
+        "col": 1,
+        "text": "EXP(drift)",
+        "color": ""
+    },
+    {
+        "row": 15,
+        "col": 2,
+        "text": "0.0035",
+        "color": "#00ffff"
+    },
+    {
+        "row": 15,
+        "col": 3,
+        "text": "0.0034",
+        "color": "#00ffff"
+    },
+    {
+        "row": 15,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 16,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 16,
+        "col": 1,
+        "text": "EY(drift)",
+        "color": ""
+    },
+    {
+        "row": 16,
+        "col": 2,
+        "text": "0.0048",
+        "color": "#00ffff"
+    },
+    {
+        "row": 16,
+        "col": 3,
+        "text": "0.0045",
+        "color": "#00ffff"
+    },
+    {
+        "row": 16,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 17,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 17,
+        "col": 1,
+        "text": "EYN(drift)",
+        "color": ""
+    },
+    {
+        "row": 17,
+        "col": 2,
+        "text": "0.0048",
+        "color": "#00ffff"
+    },
+    {
+        "row": 17,
+        "col": 3,
+        "text": "0.0045",
+        "color": "#00ffff"
+    },
+    {
+        "row": 17,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 18,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 18,
+        "col": 1,
+        "text": "EYP(drift)",
+        "color": ""
+    },
+    {
+        "row": 18,
+        "col": 2,
+        "text": "0.0054",
+        "color": "#00ffff"
+    },
+    {
+        "row": 18,
+        "col": 3,
+        "text": "0.0045",
+        "color": "#00ffff"
+    },
+    {
+        "row": 18,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 19,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 19,
+        "col": 1,
+        "text": "EX(drift)",
+        "color": ""
+    },
+    {
+        "row": 19,
+        "col": 2,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 19,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 19,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 20,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 20,
+        "col": 1,
+        "text": "EXN(drift)",
+        "color": ""
+    },
+    {
+        "row": 20,
+        "col": 2,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 20,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 20,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 21,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 21,
+        "col": 1,
+        "text": "EXP(drift)",
+        "color": ""
+    },
+    {
+        "row": 21,
+        "col": 2,
+        "text": "0.0041",
+        "color": "#00ffff"
+    },
+    {
+        "row": 21,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 21,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 22,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 22,
+        "col": 1,
+        "text": "EY(drift)",
+        "color": ""
+    },
+    {
+        "row": 22,
+        "col": 2,
+        "text": "0.0054",
+        "color": "#00ffff"
+    },
+    {
+        "row": 22,
+        "col": 3,
+        "text": "0.0051",
+        "color": "#00ffff"
+    },
+    {
+        "row": 22,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 23,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 23,
+        "col": 1,
+        "text": "EYN(drift)",
+        "color": ""
+    },
+    {
+        "row": 23,
+        "col": 2,
+        "text": "0.0054",
+        "color": "#00ffff"
+    },
+    {
+        "row": 23,
+        "col": 3,
+        "text": "0.0051",
+        "color": "#00ffff"
+    },
+    {
+        "row": 23,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 24,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 24,
+        "col": 1,
+        "text": "EYP(drift)",
+        "color": ""
+    },
+    {
+        "row": 24,
+        "col": 2,
+        "text": "0.0061",
+        "color": "#00ffff"
+    },
+    {
+        "row": 24,
+        "col": 3,
+        "text": "0.0051",
+        "color": "#00ffff"
+    },
+    {
+        "row": 24,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 25,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 25,
+        "col": 1,
+        "text": "EX(drift)",
+        "color": ""
+    },
+    {
+        "row": 25,
+        "col": 2,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 25,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 25,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 26,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 26,
+        "col": 1,
+        "text": "EXN(drift)",
+        "color": ""
+    },
+    {
+        "row": 26,
+        "col": 2,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 26,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 26,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 27,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 27,
+        "col": 1,
+        "text": "EXP(drift)",
+        "color": ""
+    },
+    {
+        "row": 27,
+        "col": 2,
+        "text": "0.0041",
+        "color": "#00ffff"
+    },
+    {
+        "row": 27,
+        "col": 3,
+        "text": "0.0040",
+        "color": "#00ffff"
+    },
+    {
+        "row": 27,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 28,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 28,
+        "col": 1,
+        "text": "EY(drift)",
+        "color": ""
+    },
+    {
+        "row": 28,
+        "col": 2,
+        "text": "0.0053",
+        "color": "#00ffff"
+    },
+    {
+        "row": 28,
+        "col": 3,
+        "text": "0.0050",
+        "color": "#00ffff"
+    },
+    {
+        "row": 28,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 29,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 29,
+        "col": 1,
+        "text": "EYN(drift)",
+        "color": ""
+    },
+    {
+        "row": 29,
+        "col": 2,
+        "text": "0.0053",
+        "color": "#00ffff"
+    },
+    {
+        "row": 29,
+        "col": 3,
+        "text": "0.0050",
+        "color": "#00ffff"
+    },
+    {
+        "row": 29,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    },
+    {
+        "row": 30,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 30,
+        "col": 1,
+        "text": "EYP(drift)",
+        "color": ""
+    },
+    {
+        "row": 30,
+        "col": 2,
+        "text": "0.0060",
+        "color": "#00ffff"
+    },
+    {
+        "row": 30,
+        "col": 3,
+        "text": "0.0051",
+        "color": "#00ffff"
+    },
+    {
+        "row": 30,
+        "col": 4,
+        "text": "0.0063",
+        "color": ""
+    }
+]

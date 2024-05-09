@@ -1,0 +1,146 @@
+[
+    {
+        "row": 0,
+        "col": 0,
+        "text": "Story",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 1,
+        "text": "Mass X",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 2,
+        "text": "1.5 * Below",
+        "color": ""
+    },
+    {
+        "row": 0,
+        "col": 3,
+        "text": "1.5 * Above",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 0,
+        "text": "Story1",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 1,
+        "text": "11602",
+        "color": ""
+    },
+    {
+        "row": 1,
+        "col": 2,
+        "text": "11602",
+        "color": "#00ffff"
+    },
+    {
+        "row": 1,
+        "col": 3,
+        "text": "17239",
+        "color": "#00ffff"
+    },
+    {
+        "row": 2,
+        "col": 0,
+        "text": "Story2",
+        "color": ""
+    },
+    {
+        "row": 2,
+        "col": 1,
+        "text": "11493",
+        "color": ""
+    },
+    {
+        "row": 2,
+        "col": 2,
+        "text": "17403",
+        "color": "#00ffff"
+    },
+    {
+        "row": 2,
+        "col": 3,
+        "text": "17124",
+        "color": "#00ffff"
+    },
+    {
+        "row": 3,
+        "col": 0,
+        "text": "Story3",
+        "color": ""
+    },
+    {
+        "row": 3,
+        "col": 1,
+        "text": "11416",
+        "color": ""
+    },
+    {
+        "row": 3,
+        "col": 2,
+        "text": "17239",
+        "color": "#00ffff"
+    },
+    {
+        "row": 3,
+        "col": 3,
+        "text": "16439",
+        "color": "#00ffff"
+    },
+    {
+        "row": 4,
+        "col": 0,
+        "text": "Roof",
+        "color": ""
+    },
+    {
+        "row": 4,
+        "col": 1,
+        "text": "10959",
+        "color": ""
+    },
+    {
+        "row": 4,
+        "col": 2,
+        "text": "17124",
+        "color": "#00ffff"
+    },
+    {
+        "row": 4,
+        "col": 3,
+        "text": "1756",
+        "color": "#ff557f"
+    },
+    {
+        "row": 5,
+        "col": 0,
+        "text": "PENT",
+        "color": ""
+    },
+    {
+        "row": 5,
+        "col": 1,
+        "text": "1171",
+        "color": ""
+    },
+    {
+        "row": 5,
+        "col": 2,
+        "text": "16439",
+        "color": "#00ffff"
+    },
+    {
+        "row": 5,
+        "col": 3,
+        "text": "1171",
+        "color": "#00ffff"
+    }
+]
