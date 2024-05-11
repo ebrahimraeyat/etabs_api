@@ -20,7 +20,7 @@ def test_add_json_table_to_doc():
 
 def test_create_report():
     results_path = etabs_api_path / 'test' / 'files' / 'json'
-    filename = get_temp_filepath(suffix='docx', filename='test')
+    filename = get_temp_filepath(suffix='docx', filename='test1')
     report.create_report(
         filename=filename,
         results_path=results_path,

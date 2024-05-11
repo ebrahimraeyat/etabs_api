@@ -31,7 +31,7 @@ def add_table_figure(
     feild_charachter.set(qn('w:fldCharType'), 'begin')
     r.append(feild_charachter)
     instr_text = OxmlElement('w:instrText')
-    instr_text.text = f' SEQ {type_}\* ARABIC'
+    instr_text.text = f' SEQ {type_}\\* ARABIC'
     r.append(instr_text)
     feild_charachter = OxmlElement('w:fldChar')
     feild_charachter.set(qn('w:fldCharType'), 'end')
@@ -51,7 +51,7 @@ def add_json_table_to_doc(
             json_table = json.load(file)
     except json.JSONDecodeError:
         return doc
-    table_style = 'List Table 4 Accent 5'
+    table_style = 'vazhgooni'
     if isinstance(json_table, list):
         cols = json_table[-1].get('col') + 1
         rows = json_table[-1].get('row') + 1
@@ -91,12 +91,13 @@ def create_report(
                 doc: 'docx.Document' = None,
                 results_path: Union[Path, None]=None,
                 ):
-    if etabs is None and results_path is None:
-        return
-    if etabs is not None:
-        results_path = etabs.get_filepath() / "table_results"
-        if not results_path.exists():
+    if results_path is None:
+        if etabs is None:
             return
+        else:
+            results_path = etabs.get_filepath() / "table_results"
+            if not results_path.exists():
+                return
     if doc is None:
         doc = create_doc()
     for file in results_path.glob('*.json'):
@@ -112,6 +113,7 @@ def create_report(
         doc = add_json_table_to_doc(json_file=file, doc=doc, caption=result)
     if filename is None:
         filename = results_path / 'all_reports.docx'
+    print(filename)
     doc.save(filename)
     return doc
 
