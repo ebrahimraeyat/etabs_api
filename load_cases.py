@@ -160,6 +160,7 @@ class LoadCases:
         df = self.etabs.database.read(table_key, to_dataframe=True)
         if df is None:
             return {}
+        df = df.dropna(subset=['Angle'])
         df['Angle'] = df['Angle'].astype(int16)
         if specs is not None:
             df = df[df['Name'].isin(specs)]
