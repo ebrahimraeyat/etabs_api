@@ -11,7 +11,7 @@ from test.shayesteh import get_temp_filepath
 
 
 def test_add_json_table_to_doc():
-    json_file = etabs_api_path / 'test' / 'files' / 'json' / 'model_IrregularityOfMassModel.json'
+    json_file = etabs_api_path / 'test' / 'files' / 'json' / 'IrregularityOfMassModel.json'
     filename = get_temp_filepath(suffix='docx', filename='test')
     doc = report.add_json_table_to_doc(json_file=json_file)
     doc.save(filename)

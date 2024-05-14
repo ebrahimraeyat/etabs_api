@@ -15,6 +15,7 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 etabs_api_path = Path(__file__).absolute().parent.parent
 
@@ -25,6 +26,7 @@ def add_table_figure(
         type_: str='Table ', # 'Figure '
         ):
     paragraph = doc.add_paragraph(type_, style='Caption')
+    paragraph.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = run = paragraph.add_run()
     r = run._r
     feild_charachter = OxmlElement('w:fldChar')
@@ -51,7 +53,7 @@ def add_json_table_to_doc(
             json_table = json.load(file)
     except json.JSONDecodeError:
         return doc
-    table_style = 'vazhgooni'
+    table_style = 'List Table 4 Accent 5'
     if isinstance(json_table, list):
         cols = json_table[-1].get('col') + 1
         rows = json_table[-1].get('row') + 1
@@ -95,15 +97,17 @@ def create_report(
         if etabs is None:
             return
         else:
-            results_path = etabs.get_filepath() / "table_results"
+            name = etabs.get_file_name_without_suffix()
+            results_path = etabs.get_filepath() / f"{name}_table_results"
             if not results_path.exists():
                 return
     if doc is None:
         doc = create_doc()
     for file in results_path.glob('*.json'):
         doc.add_paragraph()
-        caption = ''.join(file.name.split('_')[1:]).rstrip('.json')
-        caption = caption.replace('Model', "").replace("Table", "")
+        caption = ''.join(file.name.split('_')).rstrip('.json')
+        caption = caption.replace('Model', "")
+        caption = caption.replace("Table", "")
         result = ""
         for i, char in enumerate(caption):
             if char.isupper() and i > 0:
@@ -113,9 +117,8 @@ def create_report(
         doc = add_json_table_to_doc(json_file=file, doc=doc, caption=result)
     if filename is None:
         filename = results_path / 'all_reports.docx'
-    print(filename)
     doc.save(filename)
-    return doc
+    return doc, filename
 
 
 
