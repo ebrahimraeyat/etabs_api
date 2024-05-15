@@ -32,21 +32,26 @@ __all__ = ['EtabsModel']
 
 
 class EtabsModel:
-    force_units = dict(N=3, kN=4, KN=4, kgf=5, Kgf=5, tonf=6, Tonf=6)
-    length_units = dict(mm=4, cm=5, m=6)
+    force_units = dict(Ib=1, kip=2, N=3, kN=4, KN=4, kgf=5, Kgf=5, tonf=6, Tonf=6)
+    length_units = dict(inch=1, ft=2, micron=3, mm=4, cm=5, m=6)
+    length_units['in'] = 1
     enum_units = {
-            'kn_mm' : 5,
-            'kn_m' : 6,
-            'kgf_mm' : 7,
-            'kgf_m' : 8,
-            'n_mm' : 9,
-            'n_m' : 10,
-            'tonf_mm' : 11,
-            'tonf_m' : 12,
-            'kn_cm' : 13,
-            'kgf_cm' : 14,
-            'n_cm' : 15,
-            'tonf_cm' : 16,
+        'ib_in': 1,
+        'ib_ft': 2,
+        'kip_in': 3,
+        'kip_ft': 4,
+        'kn_mm' : 5,
+        'kn_m' : 6,
+        'kgf_mm' : 7,
+        'kgf_m' : 8,
+        'n_mm' : 9,
+        'n_m' : 10,
+        'tonf_mm' : 11,
+        'tonf_m' : 12,
+        'kn_cm' : 13,
+        'kgf_cm' : 14,
+        'n_cm' : 15,
+        'tonf_cm' : 16,
     }
 
     def __init__(
