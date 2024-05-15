@@ -7,6 +7,9 @@ Stable Release:
 
 `pip install etabs-api`
 
+For getting the latest version: 
+`pip install git+https://github.com/ebrahimraeyat/etabs_api.git`
+
 ## Simple example
 
 ```python
