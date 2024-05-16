@@ -1343,21 +1343,16 @@ class EtabsModel:
     
     def get_json_file_path_for_table_results(
             self,
-            model=None,
-            filename: str='',
+            json_filename: str,
     ) -> Path:
         '''
-        model: table model class for show results
-        filename: json filename
+        json_filename: json filename
         '''
         name = self.get_file_name_without_suffix()
         table_result_path = self.get_filepath() / f"{name}_table_results"
         if not table_result_path.exists():
             table_result_path.mkdir()
-        if not filename:
-            if model:
-                filename = model.__name__ + '.json'
-        return table_result_path / filename
+        return table_result_path / json_filename
 
         
         

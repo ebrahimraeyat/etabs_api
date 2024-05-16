@@ -582,8 +582,10 @@ def test_purge_model():
 
 @open_etabs_file('shayesteh.EDB')
 def test_get_json_file_path_for_table_results():
-    filename = etabs.get_json_file_path_for_table_results()
-    filename = etabs.get_json_file_path_for_table_results(filename='alaki.json')
+    json_filename = "test.json"
+    filename = etabs.get_json_file_path_for_table_results(json_filename=json_filename)
+    table_result_path = etabs.get_filepath() / "shayesteh_table_results"
+    assert filename == table_result_path / json_filename
 
 
 
