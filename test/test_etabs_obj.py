@@ -580,6 +580,13 @@ def test_purge_model():
     names = etabs.area.get_names_of_areas_of_type(type_='wall')
     assert len(names) == 0
 
+@open_etabs_file('shayesteh.EDB')
+def test_get_json_file_path_for_table_results():
+    filename = etabs.get_json_file_path_for_table_results()
+    filename = etabs.get_json_file_path_for_table_results(filename='alaki.json')
+
+
+
 
 if __name__ == '__main__':
     test_scale_response_spectrums2()
