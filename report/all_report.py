@@ -115,6 +115,8 @@ def create_report(
             else:
                 result += char
         doc = add_json_table_to_doc(json_file=file, doc=doc, caption=result)
+        # Insert a page break
+        doc.add_page_break()
     if filename is None:
         filename = results_path / 'all_reports.docx'
     doc.save(filename)

@@ -1352,6 +1352,8 @@ class EtabsModel:
         table_result_path = self.get_filepath() / f"{name}_table_results"
         if not table_result_path.exists():
             table_result_path.mkdir()
+        if not json_filename.endswith('.json'):
+            json_filename += ".json"
         return table_result_path / json_filename
 
         
