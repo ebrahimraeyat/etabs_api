@@ -40,6 +40,34 @@ def add_table_figure(
     r.append(feild_charachter)
     paragraph.add_run(f': {caption} ')
 
+def add_table_of_content(doc):
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run()
+    fldChar = OxmlElement('w:fldChar')  # creates a new element
+    fldChar.set(qn('w:fldCharType'), 'begin')  # sets attribute on element
+    fldChar.set(qn('w:dirty'), 'true')
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')  # sets attribute on element
+    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'   # change 1-3 depending on heading levels you need
+
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'separate')
+    fldChar3 = OxmlElement('w:t')
+    fldChar3.text = "Right-click to update field."
+    fldChar2.append(fldChar3)
+
+    fldChar4 = OxmlElement('w:fldChar')
+    fldChar4.set(qn('w:fldCharType'), 'end')
+
+    r_element = run._r
+    r_element.append(fldChar)
+    r_element.append(instrText)
+    r_element.append(fldChar2)
+    r_element.append(fldChar4)
+    p_element = paragraph._p
+    doc.add_page_break()
+    return doc
+
 def add_json_table_to_doc(
                           json_file: str,
                           doc=None,
@@ -82,9 +110,13 @@ def add_json_table_to_doc(
     add_table_figure(doc=doc, caption=caption, type_='Table ')
     return doc
 
-def create_doc():
+def create_doc(
+        table_of_content: bool=False,
+):
     filepath = etabs_api_path / 'report' / 'templates' / 'beam_deflections.docx'
     doc = docx.Document(str(filepath))
+    if table_of_content:
+        doc = add_table_of_content(doc)
     return doc
 
 def create_report(
