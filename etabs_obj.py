@@ -209,13 +209,12 @@ class EtabsModel:
             if not backup_path.exists():
                 import os
                 os.mkdir(str(backup_path))
-            backup_path = backup_path
             for edb in backup_path.glob(f'BACKUP_{filename}*.EDB'):
                 num = edb.name.rstrip('.EDB')[len('BACKUP_') + len(filename) + 1:]
                 try:
                     num = int(num)
                     max_num = max(max_num, num)
-                except:
+                except ValueError:
                     continue
             name = f'BACKUP_{filename}_{max_num + 1}.EDB'
         if not name.lower().endswith('.edb'):
