@@ -587,7 +587,19 @@ def test_get_json_file_path_for_table_results():
     table_result_path = etabs.get_filepath() / "shayesteh_table_results"
     assert filename == table_result_path / json_filename
 
+@open_etabs_file('shayesteh.EDB')
+def test_get_new_filename_in_folder_and_add_name():
+    folder_name = 'TEST'
+    _, new = etabs.get_new_filename_in_folder_and_add_name(folder_name=folder_name, name='alaki')
+    assert new.parent.exists()
+    assert new.parent.name == folder_name
 
+@open_etabs_file('shayesteh.EDB')
+def test_save_in_folder_and_add_name():
+    folder_name = 'TEST'
+    _, new = etabs.save_in_folder_and_add_name(folder_name=folder_name, name='alaki')
+    assert new.parent.exists()
+    assert new.exists()
 
 
 if __name__ == '__main__':

@@ -352,6 +352,43 @@ class EtabsModel:
         self.SapModel.File.Save(str(new_file_path))
         return asli_file_path, new_file_path
     
+    def get_new_filename_in_folder_and_add_name(self,
+                                  folder_name: str,
+                                  name: str,
+                                  ):
+        '''
+        Get the current file with FILENAME_name in folder_name
+        forlder of etabs file
+        '''
+        asli_file_path = Path(self.SapModel.GetModelFilename())
+        if asli_file_path.suffix.lower() != '.edb':
+            asli_file_path = asli_file_path.with_suffix(".EDB")
+        # Create folder if not exists
+        file_path = self.get_filepath()
+        folder_path = file_path / folder_name
+        if not folder_path.exists():
+            import os
+            os.mkdir(str(folder_path))
+        filename_without_suffix = self.get_file_name_without_suffix()
+        filename = filename_without_suffix + f"_{name}.EDB"
+        filename = folder_path / filename
+        return asli_file_path, filename
+    
+    def save_in_folder_and_add_name(self,
+                                  folder_name: str,
+                                  name: str,
+                                  ):
+        '''
+        Save the current file with FILENAME_name in folder_name
+        forlder of etabs file
+        '''
+        asli_file_path, new_filename = self.get_new_filename_in_folder_and_add_name(
+            folder_name=folder_name,
+            name=name,
+            )
+        self.SapModel.File.Save(str(new_filename))
+        return asli_file_path, new_filename
+    
     def export(self, suffix='.e2k') -> Tuple[Path, Path]:
         asli_file_path = Path(self.SapModel.GetModelFilename())
         asli_file_path = asli_file_path.with_suffix('.EDB')
