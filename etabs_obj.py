@@ -230,7 +230,7 @@ class EtabsModel:
 
     def remove_backups(self):
         file_path = self.get_filepath() / 'backups'
-        for edb in file_path.glob(f'BACKUP_*.EDB'):
+        for edb in file_path.glob('BACKUP_*.EDB'):
             edb.unlink()
         return None
 
