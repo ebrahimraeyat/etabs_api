@@ -1139,7 +1139,7 @@ class EtabsModel:
         return scales, df
 
     def create_joint_shear_bcc_file(self,
-        file_name: Union[str, Path]= 'js_bbc.EDB',
+        file_name: Union[str, Path]= 'js',
         structure_type: str = 'Sway Intermediate',
         open_main_file: bool =  False,
         ):
@@ -1147,7 +1147,7 @@ class EtabsModel:
         main_file_path = Path(self.SapModel.GetModelFilename())
         main_file_path = main_file_path.with_suffix(".EDB")
         if structure_type == 'Sway Intermediate':
-            self.save_as(str(file_name))
+            self.save_in_folder_and_add_name(folder_name="joint_shear", name=str(file_name))
             phi = 0.75
             self.design.set_concrete_framing_type(1, beams=False)
         else:
