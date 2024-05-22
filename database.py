@@ -874,17 +874,28 @@ class DatabaseTables:
             prefix : str = 'SEC',
             angles : list = range(0, 180, 15),
             ):
-        fields = ('Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y', 'Rotation About X')
+        if self.etabs.etabs_main_version < 20:
+            fields = ('Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y', 'Rotation About X')
+        else:
+            fields = ('Name', 'DefinedBy', 'Group', 'ResultType', 'ResultLoc', 'RotAboutZ', 'RotAboutY', 'RotAboutX')
         data = []
         for angle in angles:
             name = f'{prefix}{angle}'
             data.append(
-            (name, 'Group', group, 'Analysis', 'Default', f'{angle}', '0', '0')
+            (
+                name,
+                'Group',
+                group,
+                'Analysis',
+                'Default',
+                str(angle),
+                '0',
+                '0',
+            )
             )
         data = self.unique_data(data)
-        table = 'Section Cut Definitions'
-        self.SapModel.DatabaseTables.SetTableForEditingArray(table, 0, fields, 0, data)
-        self.apply_table()
+        table_key = 'Section Cut Definitions'
+        self.write(table_key, data, fields)
 
     def get_section_cuts(self, cols=['Name', 'Group', 'RotAboutZ']):
         table = 'Section Cut Definitions'

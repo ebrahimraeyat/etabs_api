@@ -192,6 +192,17 @@ def test_get_section_cuts_angle():
     d = etabs.database.get_section_cuts_angle()
     assert len(d) == 12
 
+@open_etabs_file('khiabany.EDB')
+def test_create_section_cuts():
+    # etabs.database.create_section_cuts(group='All')
+    # df = etabs.database.get_section_cuts()
+    # assert len(df) == 12
+    etabs.database.create_section_cuts(group='All', angles=range(0, 180, 2))
+    df = etabs.database.get_section_cuts()
+    assert len(df) == 90
+
+    
+
 
 @open_etabs_file('khiabany.EDB')
 def test_expand_seismic_load_patterns():
@@ -374,4 +385,4 @@ def test_get_axial_pressure_columns():
 
 
 if __name__ == '__main__':
-    test_set_floor_cracking_for_floor(shayesteh)
+    test_create_section_cuts()
