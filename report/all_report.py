@@ -131,8 +131,10 @@ def create_report(
         else:
             name = etabs.get_file_name_without_suffix()
             results_path = etabs.get_filepath() / f"{name}_table_results"
+            if filename is None:
+                filename = results_path / 'all_reports.docx'
             if not results_path.exists():
-                return
+                return doc, filename
     if doc is None:
         doc = create_doc()
     for file in results_path.glob('*.json'):
