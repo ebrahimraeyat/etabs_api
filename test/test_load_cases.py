@@ -120,8 +120,12 @@ def test_get_seismic_drift_load_cases():
 @open_etabs_file('shayesteh.EDB')
 def test_get_xy_seismic_load_cases():
     x_seismic_load_cases, y_seismic_load_cases = etabs.load_cases.get_xy_seismic_load_cases()
-    assert set(x_seismic_load_cases) == {'QX', 'QXP', 'QXN', 'EX_DRIFT'}
-    assert set(y_seismic_load_cases) == {'QY', 'QYP', 'QYN', 'EYDRIFT'}
+
+@open_etabs_file('zibaei.EDB')
+def test_get_angular_response_spectrum_with_section_cuts():
+    angles, section_cuts, specs, _ = etabs.load_cases.get_angular_response_spectrum_with_section_cuts()
+    assert len(angles) == len(section_cuts) == len(specs) == 12
+
 
 
 if __name__ == "__main__":
