@@ -900,11 +900,14 @@ class DatabaseTables:
     def get_section_cuts(self, cols=['Name', 'Group', 'RotAboutZ']):
         table = 'Section Cut Definitions'
         df = self.read(table, to_dataframe=True, cols=cols)
-        df['RotAboutZ'] = df['RotAboutZ'].astype(int)
+        if df is not None:
+            df['RotAboutZ'] = df['RotAboutZ'].astype(int)
         return df
 
     def get_section_cuts_angle(self):
         df1 = self.get_section_cuts(cols=['Name', 'RotAboutZ'])
+        if df1 is None:
+            return {}
         df1['RotAboutZ'] = df1['RotAboutZ'].astype(int16)
         re_dict = df1.set_index('Name').to_dict()['RotAboutZ']
         return re_dict
