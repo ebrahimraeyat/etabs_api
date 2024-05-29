@@ -57,3 +57,11 @@ def change_unit(force=None, length=None):
 
         return wrapper
     return decorator
+
+def has_attribs(
+        obj,
+        attribs: list,
+        function=any   # all
+        ):
+    return function(hasattr(obj, attr) for attr in attribs)
+    
