@@ -139,7 +139,8 @@ def create_report(
         doc = create_doc()
     for file in results_path.glob('*.json'):
         doc.add_paragraph()
-        caption = ''.join(file.name.split('_')).rstrip('.json')
+        caption = ''.join(file.name.split('_'))
+        caption = caption.replace('.json', "")
         caption = caption.replace('Model', "")
         caption = caption.replace("Table", "")
         result = ""
