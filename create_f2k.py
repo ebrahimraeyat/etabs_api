@@ -270,13 +270,13 @@ class CreateF2kFile(Safe):
         table_key = 'Load Case Definitions - Summary'
         cols = ['Name', 'Type']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        filt = df['Type'].isin(('Linear Static',))
+        filt = df['Type'].isin(('Linear Static', 'Response Spectrum'))
         df = df.loc[filt]
         df['DesignType'] = df.Name.apply(get_design_type, args=(self.etabs,))
         df.dropna(inplace=True)
         replacements = {
             'Linear Static' : 'LinStatic',
-            # 'Response Spectrum' : 'LinRespSpec',
+            'Response Spectrum' : 'LinStatic',
             # 'Modal - Eigen' : 'LinModal',
             }
         df.replace({'Type' : replacements}, inplace=True)
@@ -330,15 +330,28 @@ class CreateF2kFile(Safe):
         self.add_content_to_table(table_key, content)
         return content
     
+    def add_response_spectrum_loadcases(self):
+        lcs = self.etabs.load_cases.get_response_spectrum_loadcase_name()
+        dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
+        content = ''
+        for lc in lcs:
+            if not lc in dynamic_drift_loadcases:
+                content += f"\nLoadCase={lc}\tLoadPat={lc}\tSF=1"
+        table_key = "LOAD CASES 06 - LOADS APPLIED"
+        self.add_content_to_table(table_key, content)
+        return content
+        
     def add_point_loads(self):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Joint Design Reactions"
         cols = ['Label', 'UniqueName', 'OutputCase', 'CaseType', 'FX', 'FY', 'FZ', 'MX', 'MY', 'MZ']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         drift_names = self.etabs.load_patterns.get_drift_load_pattern_names()
+        dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
+        drift_names.extend(dynamic_drift_loadcases)
         filt = df.OutputCase.isin(drift_names)
         df = df.loc[~filt]
-        filt = df.CaseType == 'LinStatic'
+        filt = df.CaseType.isin(('LinStatic', 'LinRespSpec'))
         df = df.loc[filt]
         df.UniqueName.fillna(df.Label, inplace=True)
         df.drop(columns=['Label', 'CaseType'], inplace=True)
@@ -376,7 +389,7 @@ class CreateF2kFile(Safe):
                 self,
                 types: Iterable = ('Envelope', 'Linear Add'),
                 load_combinations: Union[list, bool] = None,
-                ignore_dynamics : bool = True,
+                ignore_dynamics : bool = False,
         ):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Load Combination Definitions"
@@ -429,6 +442,7 @@ class CreateF2kFile(Safe):
         self.add_loadcase_general()
         # self.add_modal_loadcase_definitions()
         self.add_loadcase_definitions()
+        self.add_response_spectrum_loadcases()
         yield ('Add Loads ...', 50, 4)
         self.add_point_loads()
         yield ('Add Load Combinations ...', 70, 5)
