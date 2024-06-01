@@ -352,7 +352,7 @@ class CreateF2kFile(Safe):
             # Replace None values with 0 in specific columns
             columns_to_replace = ['xdim', 'ydim']
             df[columns_to_replace] = df[columns_to_replace].fillna(0)
-        except AttributeError:
+        except (AttributeError, TypeError):
             df['xdim'] = 0
             df['ydim'] = 0
         d = {
