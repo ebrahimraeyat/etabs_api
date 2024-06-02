@@ -36,9 +36,9 @@ class EtabsModel:
     length_units = dict(inch=1, ft=2, micron=3, mm=4, cm=5, m=6)
     length_units['in'] = 1
     enum_units = {
-        'ib_in': 1,
+        'ib_inch': 1,
         'ib_ft': 2,
-        'kip_in': 3,
+        'kip_inch': 3,
         'kip_ft': 4,
         'kn_mm' : 5,
         'kn_m' : 6,
