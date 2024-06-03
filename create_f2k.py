@@ -274,6 +274,10 @@ class CreateF2kFile(Safe):
         df = df.loc[filt]
         df['DesignType'] = df.Name.apply(get_design_type, args=(self.etabs,))
         df.dropna(inplace=True)
+        # Remove drift dynamic loadcases
+        dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
+        filt = df.Name.isin(dynamic_drift_loadcases)
+        df = df.loc[~filt]
         replacements = {
             'Linear Static' : 'LinStatic',
             'Response Spectrum' : 'LinStatic',
@@ -330,16 +334,20 @@ class CreateF2kFile(Safe):
         self.add_content_to_table(table_key, content)
         return content
     
-    def add_response_spectrum_loadcases(self):
+    def add_response_spectrum_loadcases_and_loadpatts(self):
         lcs = self.etabs.load_cases.get_response_spectrum_loadcase_name()
         dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
-        content = ''
+        content_loadcase = ''
+        content_loadpatts = ''
         for lc in lcs:
             if not lc in dynamic_drift_loadcases:
-                content += f"\nLoadCase={lc}\tLoadPat={lc}\tSF=1"
+                content_loadcase += f"\nLoadCase={lc}\tLoadPat={lc}\tSF=1"
+                content_loadpatts += f"\nLoadPat={lc}\tType=QUAKE\tSelfWtMult=0"
         table_key = "LOAD CASES 06 - LOADS APPLIED"
-        self.add_content_to_table(table_key, content)
-        return content
+        self.add_content_to_table(table_key, content_loadcase)
+        table_key = "LOAD PATTERNS"
+        self.add_content_to_table(table_key, content_loadpatts)
+        return content_loadcase
         
     def add_point_loads(self):
         self.etabs.load_cases.select_all_load_cases()
@@ -442,7 +450,7 @@ class CreateF2kFile(Safe):
         self.add_loadcase_general()
         # self.add_modal_loadcase_definitions()
         self.add_loadcase_definitions()
-        self.add_response_spectrum_loadcases()
+        self.add_response_spectrum_loadcases_and_loadpatts()
         yield ('Add Loads ...', 50, 4)
         self.add_point_loads()
         yield ('Add Load Combinations ...', 70, 5)
