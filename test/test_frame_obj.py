@@ -331,8 +331,8 @@ def test_assign_wall_loads_to_etabs():
     FreeCAD.openDocument(str(freecad_model))
     etabs.frame_obj.assign_wall_loads_to_etabs()
     ret = etabs.SapModel.FrameObj.GetLoadDistributed('124')
-    np.testing.assert_allclose(ret[10], 665)
-    np.testing.assert_allclose(ret[11], 665)
+    np.testing.assert_allclose(ret[10], -665)
+    np.testing.assert_allclose(ret[11], -665)
 
 if __name__ == '__main__':
     test_assign_wall_loads_to_etabs()

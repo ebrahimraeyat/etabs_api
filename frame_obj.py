@@ -913,7 +913,7 @@ class FrameObj:
             ):
                 if hasattr(obj, 'loadpat') and hasattr(obj, 'weight'):
                     loadpat = obj.loadpat
-                    weight = obj.weight.getValueAs(f"{weight_unit}/({len_unit}*s^2)")
+                    weight = obj.weight.getValueAs(f"{weight_unit}/({len_unit}*s^2)").Value
                 elif wall_loadpat and wall_weight:
                     loadpat = wall_loadpat
                     weight = wall_weight
@@ -950,8 +950,8 @@ class FrameObj:
                     'wall_dist1': dist1,
                     'wall_dist2': dist2,
                     'height_from_below': False,
-                    'parapet': obj.parapet.getValueAs(len_unit),
-                    'none_beam_h': obj.none_beam_h.getValueAs(len_unit),
+                    'parapet': obj.parapet.getValueAs(len_unit).Value,
+                    'none_beam_h': obj.none_beam_h.getValueAs(len_unit).Value,
                     }
                 for key, value in wall_loads_dict.items():
                     props = beams_props.get(key, {})
