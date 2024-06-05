@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -168,6 +170,11 @@ def test_delete_areas():
     names = etabs.area.get_names_of_areas_of_type()
     assert len(names) == 0
 
+@open_etabs_file('shayesteh.EDB')
+def test_get_points_coordinate_of_all_areas():
+    ret = etabs.area.get_points_coordinate_of_all_areas()
+    assert len(ret) == 232
+
 @open_etabs_file('two_earthquakes.EDB')
 def test_delete_areas_1():
     etabs.area.delete_areas()
@@ -176,8 +183,15 @@ def test_delete_areas_1():
     names = etabs.area.get_names_of_areas_of_type(type_='wall')
     assert len(names) == 0
 
-
-
+def test_centroid_of_polygon():
+    vertices = [
+        (0,0), (70,0), (70,25), (45, 45), (45, 180), (95, 188),
+        (95, 200), (-25, 200), (-25,188), (25,180), (25,45), (0, 25),
+    ]
+    from area import centroid_of_polygon
+    x, y = centroid_of_polygon(vertices=vertices)
+    np.testing.assert_almost_equal(x, 35, decimal=0)
+    np.testing.assert_almost_equal(y, 100.4614, decimal=4)
 
 
 

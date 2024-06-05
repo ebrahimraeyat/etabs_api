@@ -764,6 +764,31 @@ class Area:
             for area in areas:
                 self.SapModel.AreaObj.Delete(area)
 
+    def get_points_coordinate_of_all_areas(self,
+                                           type_: str='floor', # 'wall'
+                                           z: bool= False,
+                                           ):
+        design_types = {'wall': 1, 'floor':2, 'opening':4}
+        type_ = design_types.get(type_, 0)
+        (n, names, design, _, delim, _,
+        x_coords, y_coords, z_coords, _) = self.etabs.SapModel.AreaObj.GetAllAreas()
+        i = 0
+        ret = dict()
+        for count, j in enumerate(delim):
+            design_type = design[count]
+            if design_type == type_:
+                xs = x_coords[i: j + 1]
+                ys = y_coords[i: j + 1]
+                name = names[count]
+                if z:
+                    zs = z_coords[i: j + 1]
+                    ret[name] = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
+                else:
+                    ret[name] = [(x, y) for x, y in zip(xs, ys)]
+            i = j + 1
+        return ret
+
+
 def deck_plate_equivalent_height_according_to_volume(
         s,
         d,
@@ -850,6 +875,27 @@ def calculate_rho(
     rho_top = as_top / (s * h)
     rho_bot = as_bot / (s * h)
     return rho_top, rho_bot
+
+def centroid_of_polygon(vertices):
+    '''
+    vertices: a list of pair (x, y) like [(x0, y0), (x1, y1), ...]
+    '''
+    x, y = 0, 0
+    n = len(vertices)
+    signed_area = 0
+    for i in range(len(vertices)):
+        x0, y0 = vertices[i]
+        x1, y1 = vertices[(i + 1) % n]
+        # shoelace formula
+        area = (x0 * y1) - (x1 * y0)
+        signed_area += area
+        x += (x0 + x1) * area
+        y += (y0 + y1) * area
+    signed_area *= 0.5
+    x /= 6 * signed_area
+    y /= 6 * signed_area
+    return x, y
+
 
 
 if __name__ == '__main__':
