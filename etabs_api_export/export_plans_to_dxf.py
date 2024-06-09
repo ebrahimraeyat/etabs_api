@@ -99,8 +99,10 @@ def get_beam_columns_coords(etabs, story):
 def export_to_dxf(
         etabs,
         filename,
+        Open_file: bool=False,
 ):
-    dwg = ezdxf.new()
+    dxf_temp = etabs_api_path / "etabs_api_export" / "templates" / "dxf" / "TEMPLATE_PLANS_OF_STORIES.dxf"
+    dwg = ezdxf.readfile(dxf_temp)
     msp = dwg.modelspace()
     etabs.set_current_unit('kgf', 'm')
     beam_columns = etabs.frame_obj.get_beams_columns_on_stories()
@@ -133,10 +135,13 @@ def export_to_dxf(
             for p1, p2 in zip(polygon, polygon[1:] + [polygon[0]]):
                 block.add_line((p1[0] + dx, p1[1]), (p2[0] + dx, p2[1]), dxfattribs = {'color': 3})
         xmin, ymin, xmax, ymax = etabs.story.get_story_boundbox(story, len_unit='m')
-        block.add_text(f"Elevation: {int(level * 100)}", dxfattribs={'height': .30}).set_pos((dx + (xmax - xmin) / 2, ymin - 1))
+        block.add_text(f"Elevation: {int(level * 100)}", dxfattribs={'height': .30, 'style': 'ROMANT'}).set_pos((dx + (xmax - xmin) / 2, ymin - 1))
         dx += xmax * 1.2
         msp.add_blockref(block_name, (0 , 0))
     dwg.saveas(filename)
+    if Open_file:
+        from python_functions import open_file
+        open_file(filename=filename)
 
 
 
