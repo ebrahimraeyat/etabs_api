@@ -120,7 +120,21 @@ def test_assign_slab_modifiers():
 
 @open_etabs_file('khiabany.EDB')
 def test_design_slabs():
-    with pytest.raises(NotImplementedError) as err:
+    if etabs.etabs_main_version < 20:
+        with pytest.raises(NotImplementedError) as err:
+            etabs.area.design_slabs(
+                slab_names=['4'],
+                s = 80,
+                d = 30,
+                tw = 13,
+                hc = 5,
+                as_top = 1.5,
+                as_bot = 2,
+                fill = True,
+                two_way = True,
+                design = True,
+                )
+    else:
         etabs.area.design_slabs(
             slab_names=['4'],
             s = 80,
@@ -145,7 +159,25 @@ def test_save_as_deflection_filename():
     
 @open_etabs_file('khiabany.EDB')
 def test_get_deflection_of_slab():
-    with pytest.raises(NotImplementedError) as err:
+    if etabs.etabs_main_version < 20:
+        with pytest.raises(NotImplementedError) as err:
+            etabs.area.get_deflection_of_slab(
+            dead=['Dead'],
+            supper_dead=['S-DEAD'],
+            lives=['Live', 'Live-0.5', 'LROOF'],
+            slab_name='4',
+            s=800,
+            d=300,
+            tw=130,
+            hc=50,
+            as_top=130,
+            as_bot=200,
+            # fill=,
+            two_way=True,
+            lives_percentage=0.25,
+            filename='',
+            )
+    else:
         etabs.area.get_deflection_of_slab(
         dead=['Dead'],
         supper_dead=['S-DEAD'],

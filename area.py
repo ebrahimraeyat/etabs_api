@@ -36,9 +36,14 @@ class Area:
         map_dict = {'wall':1, 'floor':2}
         type_ = map_dict.get(type_, 5)
         names = []
-        for name in self.SapModel.AreaObj.GetNameList()[1]:
-            if self.SapModel.AreaObj.GetDesignOrientation(name)[0] == type_:
-                names.append(name)
+        try:
+            areas = self.SapModel.AreaObj.GetNameList()[1]
+        except IndexError:
+            return names
+        if len(areas) > 0:
+            for name in areas:
+                if self.SapModel.AreaObj.GetDesignOrientation(name)[0] == type_:
+                    names.append(name)
         return names
     
     def get_slab_names(self,

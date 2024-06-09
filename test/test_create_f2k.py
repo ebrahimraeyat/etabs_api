@@ -12,6 +12,7 @@ from shayesteh import etabs, open_etabs_file
 import create_f2k
 
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_point_coordinates():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name
@@ -30,6 +31,7 @@ def test_add_point_coordinates():
     points = writer.get_points_coordinates()
     assert len(points) == 11
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_load_patterns():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -39,6 +41,7 @@ def test_add_load_patterns():
     safe.write()
     assert  'LoadPat=DEAD' in content
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_loadcase_general():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -48,6 +51,7 @@ def test_add_loadcase_general():
     safe.write()
     assert  'LoadCase=DEAD' in content
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_modal_loadcase_definitions():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -57,6 +61,7 @@ def test_add_modal_loadcase_definitions():
     safe.write()
     assert  'LoadCase=Modal' in content
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_loadcase_definitions():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -66,6 +71,7 @@ def test_add_loadcase_definitions():
     safe.write()
     assert  'LoadCase=DEAD' in content
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_point_loads():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -76,6 +82,7 @@ def test_add_point_loads():
     # assert  'LoadCase=DEAD' in content
 
 
+@open_etabs_file("shayesteh.EDB")
 def test_create_f2k():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -83,6 +90,7 @@ def test_create_f2k():
         )
     safe.create_f2k()
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_grids():
     safe = create_f2k.CreateF2kFile(
         Path('~\\test.f2k').expanduser(),
@@ -91,6 +99,7 @@ def test_add_grids():
     safe.add_grids()
     safe.write()
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_load_combinations():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name
@@ -112,6 +121,7 @@ def test_add_load_combinations():
                     assert False
     assert True
 
+@open_etabs_file("shayesteh.EDB")
 def test_add_load_combinations_envelope():
     f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
     temp_f2k = Path(tempfile.gettempdir()) / f2k.name

@@ -243,7 +243,10 @@ def test_get_type_of_structureـ۱():
 
 @open_etabs_file('shayesteh.EDB')
 def test_start_slab_design():
-    with pytest.raises(NotImplementedError) as err:
+    if etabs.etabs_main_version < 20:
+        with pytest.raises(NotImplementedError) as err:
+            etabs.start_slab_design()
+    else:
         etabs.start_slab_design()
     assert True
 
