@@ -16,12 +16,14 @@ class Analyze:
         else:
             self.SapModel = SapModel
 
-    def set_load_cases_to_analyze(self, load_cases='All'):
-        if load_cases == "All":
-            self.SapModel.Analyze.SetRunCaseFlag('All', True, True)
+    def set_load_cases_to_analyze(self, load_cases='all_load_cases'):
+        if load_cases == "all_load_cases":
+            self.SapModel.Analyze.SetRunCaseFlag('all_load_cases', True, True)
             return
-        self.SapModel.Analyze.SetRunCaseFlag('All', False, True)
+        self.SapModel.Analyze.SetRunCaseFlag('all_load_cases', False, True)
         all_load_case = self.SapModel.Analyze.GetCaseStatus()[1]
+        if not isinstance(load_cases, (list, tuple, set)):
+            load_cases = [load_cases]
         for lc in load_cases:
             if lc in all_load_case:
                 self.SapModel.Analyze.SetRunCaseFlag(lc, True) 

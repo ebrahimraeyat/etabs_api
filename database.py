@@ -685,7 +685,7 @@ class DatabaseTables:
         f1, _ = self.etabs.save_as('modal_stiffness.EDB')
         story_point = self.etabs.story.add_points_in_center_of_rigidity_and_assign_diph()
         modal = self.etabs.load_cases.get_modal_loadcase_name()
-        self.etabs.analyze.set_load_cases_to_analyze(modal)
+        self.etabs.analyze.set_load_cases_to_analyze([modal])
         self.SapModel.Analyze.RunAnalysis()
         wx, wy, ix, iy = self.etabs.results.get_xy_frequency()
         TableKey = 'Joint Displacements'

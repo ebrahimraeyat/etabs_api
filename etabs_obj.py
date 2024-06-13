@@ -435,7 +435,7 @@ class EtabsModel:
         print("start running T file analysis")
         if not modal_case:
             modal_case = self.load_cases.get_modal_loadcase_name()
-        self.analyze.set_load_cases_to_analyze(modal_case)
+        self.analyze.set_load_cases_to_analyze([modal_case])
         self.SapModel.Analyze.RunAnalysis()
         table_key = "Modal Participating Mass Ratios"
         df = self.database.read(table_key=table_key, to_dataframe=True)
