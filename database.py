@@ -1098,7 +1098,10 @@ class DatabaseTables:
         return df
 
     def get_point_connectivity_with_type(self, point, type_=2):
-        types, names = self.SapModel.PointObj.GetConnectivity(point)[1:3]
+        try:
+            types, names = self.SapModel.PointObj.GetConnectivity(point)[1:3]
+        except IndexError:
+            return None
         for t, name in zip(types, names):
             if t == type_:
                 return name
