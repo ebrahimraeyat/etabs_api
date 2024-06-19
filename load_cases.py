@@ -261,7 +261,7 @@ class LoadCases:
         all_response_spectrums = self.etabs.load_cases.get_response_spectrum_loadcase_name()
         section_cuts_angles = self.etabs.database.get_section_cuts_angle()
         angles = list(section_cuts_angles.values())
-        angles_spectral = self.etabs.load_cases.get_spectral_with_angles(angles)
+        angles_spectral = self.get_spectral_with_angles(angles)
         section_cuts = []
         specs = []
         angles = []
@@ -273,6 +273,18 @@ class LoadCases:
                     angles.append(ang)
                     break
         return angles, section_cuts, specs, all_response_spectrums
+    
+    def add_angular_load_cases(self,
+                               func: str,
+                               angles: Iterable=range(0, 180, 10),
+                               prefix: str= 'SPEC',
+                               ecc: float=0.05,
+                               ):
+        for angle in angles:
+            name = f"{prefix}{angle}"
+            self.etabs.load_cases.add_response_spectrum_loadcases([name], ecc)
+            args = [1, ('U1',), (func,), (1,), ('Global',), (angle,)]
+            self.etabs.SapModel.LoadCases.ResponseSpectrum.SetLoads(name, *args)
         
         
         

@@ -126,6 +126,15 @@ def test_get_angular_response_spectrum_with_section_cuts():
     angles, section_cuts, specs, _ = etabs.load_cases.get_angular_response_spectrum_with_section_cuts()
     assert len(angles) == len(section_cuts) == len(specs) == 12
 
+@open_etabs_file('zibaei.EDB')
+def test_add_angular_load_cases():
+    prefix = 'spec'
+    angles = range(0, 180, 10)
+    etabs.load_cases.add_angular_load_cases(func="SOIL-III", prefix=prefix, angles=angles)
+    angles_spectral = etabs.load_cases.get_spectral_with_angles(angles)
+    for angle in angles:
+        assert angles_spectral[angle]
+
 
 
 if __name__ == "__main__":
