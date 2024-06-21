@@ -64,4 +64,40 @@ def has_attribs(
         function=any   # all
         ):
     return function(hasattr(obj, attr) for attr in attribs)
+
+def get_unique_load_combinations(
+        data: list,
+        sequence_numbering: bool=False,
+        prefix : str = 'COMBO',
+        suffix : str = '',
+        ):
+    '''
+    it gives a list contain load combinations and return the unique load combinations
+    '''
+    combos = {}
+    for i in range(0, len(data) - 3, 4):
+        name = data[i]
+        lc = data[i+2]
+        sf = data[i+3]
+        content = combos.get(name, None)
+        if content is None:
+            combos[name] = f"{lc} {sf}"
+        else:
+            combos[name] += f" {lc} {sf}"
+    un_combos = {}
+    un_combo_list = []
+    j = 1
+    for comb, content in combos.items():
+        name = un_combos.get(content, None)
+        if name is None:
+            un_combos[content] = comb
+            split_content = content.split(" ")
+            if sequence_numbering:
+                comb = f"{prefix}{j}{suffix}"
+                j += 1
+            for i in range(0, len(split_content) - 1, 2):
+                lc = split_content[i]
+                sf = split_content[i+1]
+                un_combo_list.extend([comb, "Linear Add", lc, sf])
+    return un_combo_list
     

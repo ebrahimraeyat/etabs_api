@@ -1,5 +1,6 @@
 
 from typing import Union
+import python_functions
 
 
 class LoadCombination:
@@ -246,7 +247,7 @@ class LoadCombination:
                         data.extend([combo_names[k], type_, name, sf])
                         if add_notional_loads and is_gravity:
                             data.extend([combo_names[k], type_, f'N{name}{dir_}', sfm * sf])
-                            
+        data = python_functions.get_unique_load_combinations(data, sequence_numbering, prefix, suffix)
         return data
     
     def create_load_combinations_from_loads(self,
