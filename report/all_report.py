@@ -104,10 +104,10 @@ def add_json_table_to_doc(
             elif color:   # write the data to the remaining rows of the table
                 shading_elm = parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), color))
                 cell._tc.get_or_add_tcPr().append(shading_elm)
+        add_table_figure(doc=doc, caption=caption, type_='Table ')
     if isinstance(json_table, dict) and "settings" in str(json_file):
         pass
 
-    add_table_figure(doc=doc, caption=caption, type_='Table ')
     return doc
 
 def create_doc(
