@@ -1283,6 +1283,15 @@ class EtabsModel:
         sye = d.get('sye_drift_combobox', 'SYE(Drift)')
         return sx, sxe, sy, sye
 
+    def get_angular_dynamic_loadcases(self, d: dict={}):
+        '''
+        return dict{angle: (sec_cut, spec)}
+        '''
+        if not d:
+            d = self.get_settings_from_model()
+        dic = d.get("angular_tableview", {})
+        return dic
+    
     def get_top_bot_stories(self, d: dict={}):
         if not d:
             d = self.get_settings_from_model()

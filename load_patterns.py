@@ -387,6 +387,8 @@ class LoadPatterns:
     def add_notional_loads(self,
                            loads: list,
                            ):
+        if len(loads) == 0:
+            return
         notional_loads_x = [f'N{load}X' for load in loads]
         notional_loads_y = [f'N{load}Y' for load in loads]
         notional_loads = notional_loads_x + notional_loads_y

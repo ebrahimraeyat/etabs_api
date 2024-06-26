@@ -97,7 +97,7 @@ def get_unique_load_combinations(
                 j += 1
             for i in range(0, len(split_content) - 1, 2):
                 lc = split_content[i]
-                sf = split_content[i+1]
+                sf = float(split_content[i+1])
                 un_combo_list.extend([comb, "Linear Add", lc, sf])
     return un_combo_list
     

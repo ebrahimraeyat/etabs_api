@@ -164,7 +164,6 @@ class LoadCombination:
         return True
 
     def generate_concrete_load_combinations(self,
-        # load_patterns : {Uist,':nio bool] = None,
         equivalent_loads : dict,
         prefix : str = 'COMBO',
         suffix : str = '',
@@ -177,7 +176,7 @@ class LoadCombination:
         A: float = 0.3,
         I: float = 1,
         sequence_numbering: bool = False,
-        add_notional_loads: bool = True,
+        add_notional_loads: bool = False,
         retaining_wall: bool = False,
         omega_x: float=0,
         omega_y: float=0,
@@ -186,68 +185,34 @@ class LoadCombination:
         omega_x1: float=0,
         omega_y1: float=0,
         code: str="ACI",
+        dynamic: str="", # '100-30' , 'angular'
         ):
-        data = []
-        i = 0
-        if add_notional_loads:
-            gravity_loads = []
-            for key in ['Dead', 'L', 'L_5', 'RoofLive', 'Snow']:
-                values = equivalent_loads.get(key, None)
-                if values is not None:
-                    gravity_loads.extend(values)
-            self.etabs.load_patterns.add_notional_loads(gravity_loads)
-            
-        for number, combos in get_mabhas6_load_combinations(design_type, separate_direction, retaining_wall, code).items():
-            if add_notional_loads:
-                is_gravity = True
-                for lateral_load in ('EX', 'EXP', 'EXN', 'EY', 'EYP', 'EYN', 'EX1', 'EXP1', 'EXN1', 'EY1', 'EYP1', 'EYN1'):
-                    if lateral_load in combos.keys():
-                        is_gravity = False
-                        break
-            if sequence_numbering:
-                i += 1
-                number = i
-            combo_names = [f'{prefix}{number}{suffix}']
-            if add_notional_loads and is_gravity:
-                directions = ('X', 'Y', 'X', 'Y')
-                sf_multiply = (1, 1, -1, -1)
-                for j in range(1,4):
-                    if sequence_numbering:
-                        i += 1
-                        number = i
-                        combo_names.append(f'{prefix}{number}{suffix}')
-                    else:
-                        # number = f'{number}{j}'
-                        combo_names.append(f'{prefix}{number}{j}{suffix}')
-            else:
-                directions = ('',)
-                sf_multiply = ('',)
-            if A == 0.35:
-                ev_sf = combos.get('EV', None)
-                if ev_sf:
-                    dead_load_scale_factor = combos.get('Dead', None)
-                    if dead_load_scale_factor:
-                        plus_dead_sf = 0.6 * A * I * ev_sf
-                        if ev_negative or ev_sf > 0:
-                            combos['Dead'] = dead_load_scale_factor + plus_dead_sf
-            for lname, sf in combos.items():
-                if lname in ('EX', 'EXP', 'EXN'):
-                    sf *= max(rho_x, omega_x)
-                elif lname in ('EY', 'EYP', 'EYN'):
-                    sf *= max(rho_y, omega_y)
-                elif lname in ('EX1', 'EXP1', 'EXN1'):
-                    sf *= max(rho_x1, omega_x1)
-                elif lname in ('EY1', 'EYP1', 'EYN1'):
-                    sf *= max(rho_y1, omega_y1)
-                elif lname == 'EV' and not ev_negative and sf < 0:
-                    continue
-                equal_names = equivalent_loads.get(lname, [])
-                for name in equal_names:
-                    for k, (dir_, sfm) in enumerate(zip(directions, sf_multiply)):
-                        data.extend([combo_names[k], type_, name, sf])
-                        if add_notional_loads and is_gravity:
-                            data.extend([combo_names[k], type_, f'N{name}{dir_}', sfm * sf])
-        data = python_functions.get_unique_load_combinations(data, sequence_numbering, prefix, suffix)
+        data, notional_loads = generate_concrete_load_combinations(
+            equivalent_loads=equivalent_loads,
+            prefix=prefix,
+            suffix=suffix,
+            rho_x=rho_x,
+            rho_y=rho_y,
+            type_=type_,
+            design_type=design_type,
+            separate_direction=separate_direction,
+            ev_negative=ev_negative,
+            A=A,
+            I=I,
+            sequence_numbering=sequence_numbering,
+            add_notional_loads=add_notional_loads,
+            retaining_wall=retaining_wall,
+            omega_x=omega_x,
+            omega_y=omega_y,
+            rho_x1=rho_x1,
+            rho_y1=rho_y1,
+            omega_x1=omega_x1,
+            omega_y1=omega_y1,
+            code=code,
+            dynamic=dynamic,
+            )
+        if notional_loads:
+            self.etabs.load_patterns.add_notional_loads(notional_loads)
         return data
     
     def create_load_combinations_from_loads(self,
@@ -298,6 +263,7 @@ def get_mabhas6_load_combinations(
     separate_direction: bool = False,
     retaining_wall: bool = False,
     code: str = 'ACI',
+    dynamic: str= '',
     ):
     '''
     separate_direction: For 100-30 earthquake
@@ -306,114 +272,223 @@ def get_mabhas6_load_combinations(
         if retaining_wall:
             if way == "LRFD":
                 if code.lower() == "aci":
-                    return {
-                        '11'   : {'Dead':1.4, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '21'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '22'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP': 1, 'EXP1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
-                        '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN': 1, 'EXN1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
-                        '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP':-1, 'EXP1':-1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN':-1, 'EXN1':-1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '55'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP': 1, 'EYP1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
-                        '56'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN': 1, 'EYN1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
-                        '57'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP':-1, 'EYP1':-1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
-                        '58'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN':-1, 'EYN1':-1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
-                        '71'   : {'Dead':0.9, 'EXP': 1, 'EXP1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
-                        '72'   : {'Dead':0.9, 'EXN': 1, 'EXN1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
-                        '73'   : {'Dead':0.9, 'EXP':-1, 'EXP1':-1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '74'   : {'Dead':0.9, 'EXN':-1, 'EXN1':-1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '75'   : {'Dead':0.9, 'EYP': 1, 'EYP1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
-                        '76'   : {'Dead':0.9, 'EYN': 1, 'EYN1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
-                        '77'   : {'Dead':0.9, 'EYP':-1, 'EYP1':-1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
-                        '78'   : {'Dead':0.9, 'EYN':-1, 'EYN1':-1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
-                        '81'   : {'EV':-1},
-                    }
+                    if dynamic:
+                        gravity = {
+                            '11'   : {'Dead':1.4, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '21'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '22'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        }
+                        if dynamic == '100-30':
+                            seismic =  {
+                                '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                                '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                                '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                                '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                                '71'   : {'Dead':0.9, 'SXE': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                                '72'   : {'Dead':0.9, 'SXE': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                                '73'   : {'Dead':0.9, 'SYE': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                                '74'   : {'Dead':0.9, 'SYE': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                                '81'   : {'EV':-1},
+                            }
+                        elif dynamic == 'angular':
+                            seismic =  {
+                                '5_1'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                                '5_2'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                                '5_3'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                                '5_4'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                                '7_1'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                                '7_2'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                                '7_3'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                                '7_4'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                                '81'   : {'EV':-1},
+
+                            }
+                        gravity.update(seismic)
+                        return gravity
+                    else:
+                        return {
+                            '11'   : {'Dead':1.4, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '21'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '22'   : {'Dead':1.2, 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP': 1, 'EXP1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                            '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN': 1, 'EXN1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                            '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP':-1, 'EXP1':-1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN':-1, 'EXN1':-1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '55'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP': 1, 'EYP1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '56'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN': 1, 'EYN1': 1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '57'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP':-1, 'EYP1':-1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '58'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN':-1, 'EYN1':-1, 'EV':1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '71'   : {'Dead':0.9, 'EXP': 1, 'EXP1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                            '72'   : {'Dead':0.9, 'EXN': 1, 'EXN1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 1.6},
+                            '73'   : {'Dead':0.9, 'EXP':-1, 'EXP1':-1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '74'   : {'Dead':0.9, 'EXN':-1, 'EXN1':-1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                            '75'   : {'Dead':0.9, 'EYP': 1, 'EYP1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '76'   : {'Dead':0.9, 'EYN': 1, 'EYN1': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '77'   : {'Dead':0.9, 'EYP':-1, 'EYP1':-1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '78'   : {'Dead':0.9, 'EYN':-1, 'EYN1':-1, 'EV':-1, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '81'   : {'EV':-1},
+                        }
                 elif code.lower() == "csa":
-                    return {
-                        '11'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'RoofLive':1.5},
-                        '12'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'Snow':1.5},
-                        '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
-                        '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
-                        '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
-                        '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
-                        '25'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
-                        '26'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
-                        '27'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
-                        '28'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
-                        '29'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
-                        '210' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
-                        '211' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
-                        '212' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
-                        '213' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
-                        '214' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
-                        '215' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
-                        '216' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
-                        '31'  : {'Dead':0.85, 'EXP': 0.84, 'EXP1': 0.84, 'EV':-0.84},
-                        '32'  : {'Dead':0.85, 'EXN': 0.84, 'EXN1': 0.84, 'EV':-0.84},
-                        '33'  : {'Dead':0.85, 'EXP':-0.84, 'EXP1':-0.84, 'EV':-0.84},
-                        '34'  : {'Dead':0.85, 'EXN':-0.84, 'EXN1':-0.84, 'EV':-0.84},
-                        '35'  : {'Dead':0.85, 'EYP': 0.84, 'EYP1': 0.84, 'EV':-0.84},
-                        '36'  : {'Dead':0.85, 'EYN': 0.84, 'EYN1': 0.84, 'EV':-0.84},
-                        '37'  : {'Dead':0.85, 'EYP':-0.84, 'EYP1':-0.84, 'EV':-0.84},
-                        '38'  : {'Dead':0.85, 'EYN':-0.84, 'EYN1':-0.84, 'EV':-0.84},
-                        '41'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
-                        '42'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
-                        '51'  : {'Dead':0.85, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
-                        '81'  : {'EV':-0.84},
-                    }
+                    if dynamic:
+                        gravity = {
+                            '11'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'RoofLive':1.5},
+                            '12'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'Snow':1.5},
+                            '41'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                            '42'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                            '51'  : {'Dead':0.85, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                        }
+                        if dynamic == '100-30':
+                            seismic =  {
+                            '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SXE': 0.84, 'EV':0.84},
+                            '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SXE': 0.84, 'EV':0.84},
+                            '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SYE': 0.84, 'EV':0.84},
+                            '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SYE': 0.84, 'EV':0.84},
+                            '31'  : {'Dead':0.85, 'SXE': 0.84, 'EV':-0.84},
+                            '32'  : {'Dead':0.85, 'SYE': 0.84, 'EV':-0.84},
+                            '81'  : {'EV':-0.84},
+                        }
+                        elif dynamic == 'angular':
+                            seismic =  {
+                            '2_1'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                            '2_2'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                            '3_1'  : {'Dead':0.85, 'AngularDynamic': 0.84, 'EV':-0.84},
+                            '81'  : {'EV':-0.84},
+                            }
+                        gravity.update(seismic)
+                        return gravity
+                    else:
+                        return {
+                            '11'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'RoofLive':1.5},
+                            '12'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'Snow':1.5},
+                            '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
+                            '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
+                            '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
+                            '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
+                            '25'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
+                            '26'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
+                            '27'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
+                            '28'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
+                            '29'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
+                            '210' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
+                            '211' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
+                            '212' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
+                            '213' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
+                            '214' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
+                            '215' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
+                            '216' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
+                            '31'  : {'Dead':0.85, 'EXP': 0.84, 'EXP1': 0.84, 'EV':-0.84},
+                            '32'  : {'Dead':0.85, 'EXN': 0.84, 'EXN1': 0.84, 'EV':-0.84},
+                            '33'  : {'Dead':0.85, 'EXP':-0.84, 'EXP1':-0.84, 'EV':-0.84},
+                            '34'  : {'Dead':0.85, 'EXN':-0.84, 'EXN1':-0.84, 'EV':-0.84},
+                            '35'  : {'Dead':0.85, 'EYP': 0.84, 'EYP1': 0.84, 'EV':-0.84},
+                            '36'  : {'Dead':0.85, 'EYN': 0.84, 'EYN1': 0.84, 'EV':-0.84},
+                            '37'  : {'Dead':0.85, 'EYP':-0.84, 'EYP1':-0.84, 'EV':-0.84},
+                            '38'  : {'Dead':0.85, 'EYN':-0.84, 'EYN1':-0.84, 'EV':-0.84},
+                            '41'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                            '42'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                            '51'  : {'Dead':0.85, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                            '81'  : {'EV':-0.84},
+                        }
             elif way == "ASD":
-                return {
-                    '11'   : {'Dead':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '21'   : {'Dead':1, 'L':1, 'L_5':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '31'   : {'Dead':1, 'Snow':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '32'   : {'Dead':1, 'RoofLive':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '71'   : {'Dead':1, 'EXP': 0.7, 'EXP1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '72'   : {'Dead':1, 'EXN': 0.7, 'EXN1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '73'   : {'Dead':1, 'EXP':-0.7, 'EXP1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '74'   : {'Dead':1, 'EXN':-0.7, 'EXN1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '75'   : {'Dead':1, 'EYP': 0.7, 'EYP1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '76'   : {'Dead':1, 'EYN': 0.7, 'EYN1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '77'   : {'Dead':1, 'EYP':-0.7, 'EYP1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '78'   : {'Dead':1, 'EYN':-0.7, 'EYN1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '79'   : {'Dead':1, 'EX': 0.7, 'EX1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '710'  : {'Dead':1, 'EX':-0.7, 'EX1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '711'  : {'Dead':1, 'EY': 0.7, 'EY1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '712'  : {'Dead':1, 'EY':-0.7, 'EY1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXP': 0.525, 'EXP1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXN': 0.525, 'EXN1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '83'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXP':-0.525, 'EXP1':-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '84'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXN':-0.525, 'EXN1':-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '85'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYP': 0.525, 'EYP1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '86'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYN': 0.525, 'EYN1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '87'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYP':-0.525, 'EYP1':-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '88'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYN':-0.525, 'EYN1':-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '89'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EX' : 0.525, 'EX1' : 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '810'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EX' :-0.525, 'EX1' :-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '811'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EY' : 0.525, 'EY1' : 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '812'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EY' :-0.525, 'EY1' :-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '101'  : {'Dead':0.6, 'EXP': 0.7, 'EXP1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '102'  : {'Dead':0.6, 'EXN': 0.7, 'EXN1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '103'  : {'Dead':0.6, 'EXP':-0.7, 'EXP1':-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '104'  : {'Dead':0.6, 'EXN':-0.7, 'EXN1':-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '105'  : {'Dead':0.6, 'EYP': 0.7, 'EYP1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '106'  : {'Dead':0.6, 'EYN': 0.7, 'EYN1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '107'  : {'Dead':0.6, 'EYP':-0.7, 'EYP1':-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '108'  : {'Dead':0.6, 'EYN':-0.7, 'EYN1':-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                    '109'  : {'Dead':0.6, 'EX' : 0.7, 'EX1' : 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
-                    '1010' : {'Dead':0.6, 'EX' :-0.7, 'EX1' :-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
-                    '1011' : {'Dead':0.6, 'EY' : 0.7, 'EY1' : 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
-                    '1012' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
-                }
+                if dynamic:
+                    gravity = {
+                        '11'   : {'Dead':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '21'   : {'Dead':1, 'L':1, 'L_5':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '31'   : {'Dead':1, 'Snow':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '32'   : {'Dead':1, 'RoofLive':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    }
+                    if dynamic == "100-30":
+                        seismic = {
+                            '71'   : {'Dead':1, 'SXE': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '72'   : {'Dead':1, 'SXE': 0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '73'   : {'Dead':1, 'SYE': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '74'   : {'Dead':1, 'SYE': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                            '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '83'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '84'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                            '101'  : {'Dead':0.6, 'SXE': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '102'  : {'Dead':0.6, 'SXE': 0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '103'  : {'Dead':0.6, 'SYE': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '104'  : {'Dead':0.6, 'SYE': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        }
+                    elif dynamic == 'angular':
+                        seismic = {
+                            '7_1'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '7_2'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '7_3'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '7_4'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                            '8_1'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '8_2'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '8_3'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '8_4'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                            '10_1'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                            '10_2'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                            '10_3'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                            '10_4'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        }
+                    gravity.update(seismic)
+                    return gravity
+                else:
+                    return {
+                        '11'   : {'Dead':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '21'   : {'Dead':1, 'L':1, 'L_5':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '31'   : {'Dead':1, 'Snow':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '32'   : {'Dead':1, 'RoofLive':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '71'   : {'Dead':1, 'EXP': 0.7, 'EXP1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '72'   : {'Dead':1, 'EXN': 0.7, 'EXN1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '73'   : {'Dead':1, 'EXP':-0.7, 'EXP1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '74'   : {'Dead':1, 'EXN':-0.7, 'EXN1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '75'   : {'Dead':1, 'EYP': 0.7, 'EYP1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '76'   : {'Dead':1, 'EYN': 0.7, 'EYN1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '77'   : {'Dead':1, 'EYP':-0.7, 'EYP1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '78'   : {'Dead':1, 'EYN':-0.7, 'EYN1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '79'   : {'Dead':1, 'EX': 0.7, 'EX1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '710'  : {'Dead':1, 'EX':-0.7, 'EX1':-0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '711'  : {'Dead':1, 'EY': 0.7, 'EY1': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '712'  : {'Dead':1, 'EY':-0.7, 'EY1':-0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXP': 0.525, 'EXP1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXN': 0.525, 'EXN1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '83'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXP':-0.525, 'EXP1':-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '84'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EXN':-0.525, 'EXN1':-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '85'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYP': 0.525, 'EYP1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '86'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYN': 0.525, 'EYN1': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '87'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYP':-0.525, 'EYP1':-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '88'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EYN':-0.525, 'EYN1':-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '89'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EX' : 0.525, 'EX1' : 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '810'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EX' :-0.525, 'EX1' :-0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '811'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EY' : 0.525, 'EY1' : 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '812'  : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'EY' :-0.525, 'EY1' :-0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '101'  : {'Dead':0.6, 'EXP': 0.7, 'EXP1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '102'  : {'Dead':0.6, 'EXN': 0.7, 'EXN1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '103'  : {'Dead':0.6, 'EXP':-0.7, 'EXP1':-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '104'  : {'Dead':0.6, 'EXN':-0.7, 'EXN1':-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '105'  : {'Dead':0.6, 'EYP': 0.7, 'EYP1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '106'  : {'Dead':0.6, 'EYN': 0.7, 'EYN1': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '107'  : {'Dead':0.6, 'EYP':-0.7, 'EYP1':-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '108'  : {'Dead':0.6, 'EYN':-0.7, 'EYN1':-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        '109'  : {'Dead':0.6, 'EX' : 0.7, 'EX1' : 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 1.0},
+                        '1010' : {'Dead':0.6, 'EX' :-0.7, 'EX1' :-0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                        '1011' : {'Dead':0.6, 'EY' : 0.7, 'EY1' : 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                        '1012' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                    }
         else:
             if way == "LRFD":
                 if code == 'ACI':
-                    return {
+                    if dynamic:
+                        gravity = {
                         '11'   : {'Dead':1.4},
                         '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
                         '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5},
@@ -421,57 +496,139 @@ def get_mabhas6_load_combinations(
                         '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6},
                         '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5},
                         '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5},
-                        '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP': 1, 'EXP1': 1, 'EV':1},
-                        '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN': 1, 'EXN1': 1, 'EV':1},
-                        '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP':-1, 'EXP1':-1, 'EV':1},
-                        '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN':-1, 'EXN1':-1, 'EV':1},
-                        '55'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP': 1, 'EYP1': 1, 'EV':1},
-                        '56'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN': 1, 'EYN1': 1, 'EV':1},
-                        '57'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP':-1, 'EYP1':-1, 'EV':1},
-                        '58'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN':-1, 'EYN1':-1, 'EV':1},
-                        '71'   : {'Dead':0.9, 'EXP': 1, 'EXP1': 1, 'EV':-1},
-                        '72'   : {'Dead':0.9, 'EXN': 1, 'EXN1': 1, 'EV':-1},
-                        '73'   : {'Dead':0.9, 'EXP':-1, 'EXP1':-1, 'EV':-1},
-                        '74'   : {'Dead':0.9, 'EXN':-1, 'EXN1':-1, 'EV':-1},
-                        '75'   : {'Dead':0.9, 'EYP': 1, 'EYP1': 1, 'EV':-1},
-                        '76'   : {'Dead':0.9, 'EYN': 1, 'EYN1': 1, 'EV':-1},
-                        '77'   : {'Dead':0.9, 'EYP':-1, 'EYP1':-1, 'EV':-1},
-                        '78'   : {'Dead':0.9, 'EYN':-1, 'EYN1':-1, 'EV':-1},
-                        '81'   : {'EV':-1},
-                    }
+                        }
+                        if dynamic == '100-30':
+                            seismic = {
+                            '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'EV':1},
+                            '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'EV':1},
+                            '71'   : {'Dead':0.9, 'SXE': 1, 'EV':-1},
+                            '72'   : {'Dead':0.9, 'SYE': 1, 'EV':-1},
+                            '81'   : {'EV':-1},
+                            }
+                        elif dynamic == 'angular':
+                            seismic = {
+                            '5_1'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1},
+                            '7_1'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1},
+                            '81'   : {'EV':-1},
+                            }
+                        gravity.update(seismic)
+                        return gravity
+                    else:
+                        return {
+                            '11'   : {'Dead':1.4},
+                            '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
+                            '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5},
+                            '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6},
+                            '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6},
+                            '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5},
+                            '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5},
+                            '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP': 1, 'EXP1': 1, 'EV':1},
+                            '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN': 1, 'EXN1': 1, 'EV':1},
+                            '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXP':-1, 'EXP1':-1, 'EV':1},
+                            '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EXN':-1, 'EXN1':-1, 'EV':1},
+                            '55'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP': 1, 'EYP1': 1, 'EV':1},
+                            '56'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN': 1, 'EYN1': 1, 'EV':1},
+                            '57'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYP':-1, 'EYP1':-1, 'EV':1},
+                            '58'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'EYN':-1, 'EYN1':-1, 'EV':1},
+                            '71'   : {'Dead':0.9, 'EXP': 1, 'EXP1': 1, 'EV':-1},
+                            '72'   : {'Dead':0.9, 'EXN': 1, 'EXN1': 1, 'EV':-1},
+                            '73'   : {'Dead':0.9, 'EXP':-1, 'EXP1':-1, 'EV':-1},
+                            '74'   : {'Dead':0.9, 'EXN':-1, 'EXN1':-1, 'EV':-1},
+                            '75'   : {'Dead':0.9, 'EYP': 1, 'EYP1': 1, 'EV':-1},
+                            '76'   : {'Dead':0.9, 'EYN': 1, 'EYN1': 1, 'EV':-1},
+                            '77'   : {'Dead':0.9, 'EYP':-1, 'EYP1':-1, 'EV':-1},
+                            '78'   : {'Dead':0.9, 'EYN':-1, 'EYN1':-1, 'EV':-1},
+                            '81'   : {'EV':-1},
+                        }
                 elif code.lower() == "csa":
-                    return {
+                    if dynamic:
+                        gravity = {
                         '11'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'RoofLive':1.5},
                         '12'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'Snow':1.5},
-                        '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
-                        '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
-                        '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
-                        '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
-                        '25'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
-                        '26'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
-                        '27'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
-                        '28'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
-                        '29'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
-                        '210' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
-                        '211' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
-                        '212' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
-                        '213' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
-                        '214' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
-                        '215' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
-                        '216' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
-                        '31'  : {'Dead':0.85, 'EXP': 0.84, 'EXP1': 0.84, 'EV':-0.84},
-                        '32'  : {'Dead':0.85, 'EXN': 0.84, 'EXN1': 0.84, 'EV':-0.84},
-                        '33'  : {'Dead':0.85, 'EXP':-0.84, 'EXP1':-0.84, 'EV':-0.84},
-                        '34'  : {'Dead':0.85, 'EXN':-0.84, 'EXN1':-0.84, 'EV':-0.84},
-                        '35'  : {'Dead':0.85, 'EYP': 0.84, 'EYP1': 0.84, 'EV':-0.84},
-                        '36'  : {'Dead':0.85, 'EYN': 0.84, 'EYN1': 0.84, 'EV':-0.84},
-                        '37'  : {'Dead':0.85, 'EYP':-0.84, 'EYP1':-0.84, 'EV':-0.84},
-                        '38'  : {'Dead':0.85, 'EYN':-0.84, 'EYN1':-0.84, 'EV':-0.84},
                         '41'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5},
                         '42'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5},
-                        '81'  : {'EV':-0.84},
-                    }
+                        }
+                        if dynamic == "100-30":
+                            seismic = {
+                            '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SXE': 0.84, 'EV':0.84},
+                            '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SYE': 0.84, 'EV':0.84},
+                            '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SXE': 0.84, 'EV':0.84},
+                            '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SYE': 0.84, 'EV':0.84},
+                            '31'  : {'Dead':0.85, 'SXE': 0.84, 'EV':-0.84},
+                            '32'  : {'Dead':0.85, 'SYE': 0.84, 'EV':-0.84},
+                            '81'  : {'EV':-0.84},
+                            }
+                        elif dynamic == 'angular':
+                            seismic = {
+                            '2_1'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                            '2_2'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                            '3_1'  : {'Dead':0.85, 'AngularDynamic': 0.84, 'EV':-0.84},
+                            '81'  : {'EV':-0.84},
+                            }
+                        gravity.update(seismic)
+                        return gravity
+
+                    else:
+                        return {
+                            '11'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'RoofLive':1.5},
+                            '12'  : {'Dead':1.25, 'L':1.5, 'L_5':1.5, 'Snow':1.5},
+                            '21'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
+                            '22'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
+                            '23'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
+                            '24'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
+                            '25'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
+                            '26'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
+                            '27'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
+                            '28'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
+                            '29'  : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP': 0.84, 'EXP1': 0.84, 'EV':0.84},
+                            '210' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN': 0.84, 'EXN1': 0.84, 'EV':0.84},
+                            '211' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXP':-0.84, 'EXP1':-0.84, 'EV':0.84},
+                            '212' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EXN':-0.84, 'EXN1':-0.84, 'EV':0.84},
+                            '213' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP': 0.84, 'EYP1': 0.84, 'EV':0.84},
+                            '214' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN': 0.84, 'EYN1': 0.84, 'EV':0.84},
+                            '215' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYP':-0.84, 'EYP1':-0.84, 'EV':0.84},
+                            '216' : {'Dead':1.0,  'L':1.2, 'L_5':0.6, 'Snow':1.2, 'EYN':-0.84, 'EYN1':-0.84, 'EV':0.84},
+                            '31'  : {'Dead':0.85, 'EXP': 0.84, 'EXP1': 0.84, 'EV':-0.84},
+                            '32'  : {'Dead':0.85, 'EXN': 0.84, 'EXN1': 0.84, 'EV':-0.84},
+                            '33'  : {'Dead':0.85, 'EXP':-0.84, 'EXP1':-0.84, 'EV':-0.84},
+                            '34'  : {'Dead':0.85, 'EXN':-0.84, 'EXN1':-0.84, 'EV':-0.84},
+                            '35'  : {'Dead':0.85, 'EYP': 0.84, 'EYP1': 0.84, 'EV':-0.84},
+                            '36'  : {'Dead':0.85, 'EYN': 0.84, 'EYN1': 0.84, 'EV':-0.84},
+                            '37'  : {'Dead':0.85, 'EYP':-0.84, 'EYP1':-0.84, 'EV':-0.84},
+                            '38'  : {'Dead':0.85, 'EYN':-0.84, 'EYN1':-0.84, 'EV':-0.84},
+                            '41'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5},
+                            '42'  : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5},
+                            '81'  : {'EV':-0.84},
+                        }
             elif way == "ASD":
+                if dynamic:
+                    gravity = {
+                        '11'   : {'Dead':1},
+                        '21'   : {'Dead':1, 'L':1, 'L_5':1},
+                        '31'   : {'Dead':1, 'Snow':1},
+                        '32'   : {'Dead':1, 'RoofLive':1},
+                        '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75},
+                        '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75},
+                    }
+                    if dynamic == "100-30":
+                        seismic = {
+                            '71'   : {'Dead':1, 'SXE': 0.7, 'EV':0.7},
+                            '72'   : {'Dead':1, 'SYE': 0.7, 'EV':0.7},
+                            '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'EV':0.525},
+                            '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'EV':0.525},
+                            '101'  : {'Dead':0.6, 'SXE': 0.7, 'EV':-0.7},
+                            '102'  : {'Dead':0.6, 'SYE': 0.7, 'EV':-0.7},
+
+                        }
+                    if dynamic == "angular":
+                        seismic = {
+                            '7_1'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7},
+                            '8_1'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525},
+                            '10_1'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7},
+
+                        }
+                    gravity.update(seismic)
+                    return gravity
                 return {
                     '11'   : {'Dead':1},
                     '21'   : {'Dead':1, 'L':1, 'L_5':1},
@@ -520,6 +677,57 @@ def get_mabhas6_load_combinations(
         if retaining_wall:
             if way == "LRFD":
                 if code == 'ACI':
+                    if dynamic:
+                        gravity = {
+                        '11'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '12'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        }
+                        if dynamic == "100-30":
+                            seismic = {
+                            '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'SY': 0.3, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'SY': 0.3, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '53'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'SY': 0.3, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '54'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'SY': 0.3, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '55'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'SX': 0.3, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '56'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'SX': 0.3, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '57'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'SX': 0.3, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '58'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'SX': 0.3, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '71'   : {'Dead':0.9, 'SXE': 1, 'SY': 0.3, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '72'   : {'Dead':0.9, 'SXE': 1, 'SY': 0.3, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '73'   : {'Dead':0.9, 'SXE': 1, 'SY': 0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '74'   : {'Dead':0.9, 'SXE': 1, 'SY': 0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '75'   : {'Dead':0.9, 'SYE': 1, 'SX': 0.3, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '76'   : {'Dead':0.9, 'SYE': 1, 'SX': 0.3, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '77'   : {'Dead':0.9, 'SYE': 1, 'SX': 0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '78'   : {'Dead':0.9, 'SYE': 1, 'SX': 0.3, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '81'   : {'EV':-1},
+                            }
+                        if dynamic == "angular":
+                            seismic = {
+                            '5_1'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '5_2'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '5_3'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '5_4'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '5_5'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '5_6'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '5_7'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '5_8'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '7_1'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '7_2'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '7_3'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '7_4'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '7_5'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 1.6, 'HYN': 0.9},
+                            '7_6'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 1.6, 'HXN': 0.9, 'HYP': 0.9, 'HYN': 1.6},
+                            '7_7'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 0.9},
+                            '7_8'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1, 'HXP': 0.9, 'HXN': 1.6, 'HYP': 0.9, 'HYN': 1.6},
+                            '81'   : {'EV':-1},
+                            }
+                        gravity.update(seismic)
+                        return gravity
                     return {
                         '11'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '12'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
@@ -562,6 +770,34 @@ def get_mabhas6_load_combinations(
                         '81'   : {'EV':-1},
                     }
                 elif code == 'CSA':
+                    if dynamic:
+                        gravity = {
+                        '11'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'RoofLive':1.5}, #'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '12'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'Snow':1.5}, #'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '41'   : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                        '42'   : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                        '51'   : {'Dead':0.85, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+
+                        }
+                        if dynamic == "100-30":
+                            seismic = {
+                                    '21'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SXE': 0.84, 'SY': 0.252, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '22'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SYE': 0.84, 'SX': 0.252, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '23'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SXE': 0.84, 'SY': 0.252, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '24'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SYE': 0.84, 'SX': 0.252, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '31'   : {'Dead':0.85, 'SXE': 0.84, 'SY': 0.252, 'EV':-0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '32'   : {'Dead':0.85, 'SYE': 0.84, 'SX': 0.252, 'EV':-0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '81'   : {'EV':-0.84},
+                            }
+                        if dynamic == "angular":
+                            seismic = {
+                                    '2_1'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'AngularDynamic': 0.84, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '2_2'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'AngularDynamic': 0.84, 'EV':0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '3_1'   : {'Dead':0.85, 'AngularDynamic': 0.84, 'EV':-0.84, 'HXP': 1.5, 'HXN': 1.5, 'HYP': 1.5, 'HYN': 1.5},
+                                    '81'   : {'EV':-0.84},
+                            }
+                        gravity.update(seismic)
+                        return gravity
                     return {
                         '11'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'RoofLive':1.5}, #'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '12'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'Snow':1.5}, #'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
@@ -623,6 +859,59 @@ def get_mabhas6_load_combinations(
                         '81'   : {'EV':-0.84},
                     }
             elif way == "ASD":
+                if dynamic:
+                    gravity = {
+                    '11'   : {'Dead':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    '21'   : {'Dead':1, 'L':1, 'L_5':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    '31'   : {'Dead':1, 'Snow':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    '32'   : {'Dead':1, 'RoofLive':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
+                    }
+                    if dynamic == "100-30":
+                        seismic = {
+                                '71'   : {'Dead':1, 'SXE': 0.7, 'SY': 0.21, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '72'   : {'Dead':1, 'SXE': 0.7, 'SY': 0.21, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '73'   : {'Dead':1, 'SXE': 0.7, 'SY': 0.21, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '74'   : {'Dead':1, 'SXE': 0.7, 'SY': 0.21, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '75'   : {'Dead':1, 'SYE': 0.7, 'SX': 0.21, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '76'   : {'Dead':1, 'SYE': 0.7, 'SX': 0.21, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '77'   : {'Dead':1, 'SYE': 0.7, 'SX': 0.21, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '78'   : {'Dead':1, 'SYE': 0.7, 'SX': 0.21, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'SY': 0.1575, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'SY': 0.1575, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '83'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'SY': 0.1575, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '84'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'SY': 0.1575, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '85'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'SX': 0.1575, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '86'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'SX': 0.1575, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '87'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'SX': 0.1575, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '88'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'SX': 0.1575, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '101'  : {'Dead':0.6, 'SXE': 0.7, 'SY': 0.21, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '103'  : {'Dead':0.6, 'SXE': 0.7, 'SY': 0.21, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '105'  : {'Dead':0.6, 'SXE': 0.7, 'SY': 0.21, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '107'  : {'Dead':0.6, 'SXE': 0.7, 'SY': 0.21, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '109'  : {'Dead':0.6, 'SYE': 0.7, 'SX': 0.21, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '1011' : {'Dead':0.6, 'SYE': 0.7, 'SX': 0.21, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '1013' : {'Dead':0.6, 'SYE': 0.7, 'SX': 0.21, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '1015' : {'Dead':0.6, 'SYE': 0.7, 'SX': 0.21, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        }
+                    elif dynamic == 'angular':
+                        seismic = {
+                                '7_1'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '7_2'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '7_3'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '7_4'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '8_1'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '8_2'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '8_3'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '8_4'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                                '10_1'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 1.0, 'HYN': 0.6},
+                                '10_2'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 1.0, 'HXN': 0.6, 'HYP': 0.6, 'HYN': 1.0},
+                                '10_3'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 0.6},
+                                '10_4'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7, 'HXP': 0.6, 'HXN': 1.0, 'HYP': 0.6, 'HYN': 1.0},
+                        }
+                    gravity.update(seismic)
+                    return gravity
                 return {
                     '11'   : {'Dead':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
                     '21'   : {'Dead':1, 'L':1, 'L_5':1, 'HXP': 1.0, 'HXN': 1.0, 'HYP': 1.0, 'HYN': 1.0},
@@ -706,6 +995,32 @@ def get_mabhas6_load_combinations(
         else:
             if way == "LRFD":
                 if code.lower() == "aci":
+                    if dynamic:
+                        gravity = {
+                                '11'   : {'Dead':1.4},
+                                '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
+                                '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5},
+                                '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6},
+                                '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6},
+                                '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5},
+                                '42'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.5},
+                        }
+                        if dynamic == "100-30":
+                            seismic = {
+                                    '51'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SXE': 1, 'SY': 0.3, 'EV':1},
+                                    '52'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'SYE': 1, 'SX': 0.3, 'EV':1},
+                                    '71'   : {'Dead':0.9, 'SXE': 1, 'SY': 0.3, 'EV':-1},
+                                    '72'   : {'Dead':0.9, 'SYE': 1, 'SX': 0.3, 'EV':-1},
+                                    '81'   : {'EV' :-1},
+                            }
+                        elif dynamic == "angular":
+                            seismic = {
+                                    '5_1'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':0.2, 'AngularDynamic': 1, 'EV':1},
+                                    '7_1'   : {'Dead':0.9, 'AngularDynamic': 1, 'EV':-1},
+                                    '81'   : {'EV' :-1},
+                            }
+                        gravity.update(seismic)
+                        return gravity
                     return {
                         '11'   : {'Dead':1.4},
                         '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5},
@@ -749,6 +1064,33 @@ def get_mabhas6_load_combinations(
                         '81'   : {'EV':-1},
                     }
                 elif code.lower() == "csa":
+                    if dynamic:
+                        gravity = {
+                                '11'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'RoofLive':1.5},
+                                '12'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'Snow':1.5},
+                                '41'   : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'RoofLive':1.5},
+                                '42'   : {'Dead':1.25, 'L':1.5, 'L_5':0.6, 'Snow':1.5},
+                                '51'   : {'Dead':0.85},
+                        }
+                        if dynamic == "100-30":
+                            seismic = {
+                                '21'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SXE': 0.84, 'SY': 0.252, 'EV':0.84},
+                                '22'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'SYE': 0.84, 'SX': 0.252, 'EV':0.84},
+                                '23'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SXE': 0.84, 'SY': 0.252, 'EV':0.84},
+                                '24'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'SYE': 0.84, 'SX': 0.252, 'EV':0.84},
+                                '31'   : {'Dead':0.85, 'SXE': 0.84, 'SY': 0.252, 'EV':-0.84},
+                                '32'   : {'Dead':0.85, 'SYE': 0.84, 'SX': 0.252, 'EV':-0.84},
+                                '81'   : {'EV':-0.84},
+                            }
+                        elif dynamic == "angular":
+                            seismic = {
+                                '2_1'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'RoofLive':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                                '2_2'   : {'Dead':1.0, 'L':1.2, 'L_5':0.6, 'Snow':1.2, 'AngularDynamic': 0.84, 'EV':0.84},
+                                '3_1'   : {'Dead':0.85, 'AngularDynamic': 0.84, 'EV':-0.84},
+                                '81'   : {'EV':-0.84},
+                            }
+                        gravity.update(seismic)
+                        return gravity
                     return {
                         '11'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'RoofLive':1.5},
                         '12'   : {'Dead':1.25 , 'L':1.5, 'L_5':1.6, 'Snow':1.5},
@@ -806,6 +1148,32 @@ def get_mabhas6_load_combinations(
                         '81'   : {'EV':-0.84},
                     }
             elif way == "ASD":
+                if dynamic:
+                    gravity = {
+                    '11'   : {'Dead':1},
+                    '21'   : {'Dead':1, 'L':1, 'L_5':1},
+                    '31'   : {'Dead':1, 'Snow':1},
+                    '32'   : {'Dead':1, 'RoofLive':1},
+                    '41'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75},
+                    '42'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'RoofLive':0.75},
+                    }
+                    if dynamic == "100-30":
+                        seismic = {
+                                '71'   : {'Dead':1, 'SXE': 0.7, 'SY': 0.21, 'EV':0.7},
+                                '72'   : {'Dead':1, 'SYE': 0.7, 'SX': 0.21, 'EV':0.7},
+                                '81'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SXE': 0.525, 'SY': 0.1575, 'EV':0.525},
+                                '82'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'SYE': 0.525, 'SX': 0.1575, 'EV':0.525},
+                                '101'  : {'Dead':0.6, 'SXE': 0.7, 'SY': 0.21, 'EV':-0.7},
+                                '102'  : {'Dead':0.6, 'SYE': 0.7, 'SX': 0.21, 'EV':-0.7},
+                        }
+                    elif dynamic == "angular":
+                        seismic = {
+                                '7_1'   : {'Dead':1, 'AngularDynamic': 0.7, 'EV':0.7},
+                                '8_1'   : {'Dead':1, 'L':0.75, 'L_5':0.75, 'Snow':0.75, 'AngularDynamic': 0.525, 'EV':0.525},
+                                '10_1'  : {'Dead':0.6, 'AngularDynamic': 0.7, 'EV':-0.7},
+                        }
+                    gravity.update(seismic)
+                    return gravity
                 return {
                     '11'   : {'Dead':1},
                     '21'   : {'Dead':1, 'L':1, 'L_5':1},
@@ -886,3 +1254,112 @@ def get_mabhas6_load_combinations(
                     '1023' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EX': 0.21, 'EX1': 0.21, 'EV':-0.7},
                     '1024' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EX':-0.21, 'EX1':-0.21, 'EV':-0.7},
                 }
+def generate_concrete_load_combinations(
+    equivalent_loads : dict,
+    prefix : str = 'COMBO',
+    suffix : str = '',
+    rho_x : float = 1,
+    rho_y : float = 1,
+    type_ : str = 'Linear Add',
+    design_type: str = 'LRFD',
+    separate_direction: bool = False,
+    ev_negative: bool = True,
+    A: float = 0.3,
+    I: float = 1,
+    sequence_numbering: bool = False,
+    add_notional_loads: bool = False,
+    retaining_wall: bool = False,
+    omega_x: float=0,
+    omega_y: float=0,
+    rho_x1 : float = 1,
+    rho_y1 : float = 1,
+    omega_x1: float=0,
+    omega_y1: float=0,
+    code: str="ACI",
+    dynamic: str="", # '100-30' , 'angular'
+    mabhas6_load_combinations: dict = {},
+    ):
+    data = []
+    i = 0
+    notional_loads = []
+    if add_notional_loads:
+        for key in ['Dead', 'L', 'L_5', 'RoofLive', 'Snow']:
+            values = equivalent_loads.get(key, None)
+            if values is not None:
+                notional_loads.extend(values)
+    if len(mabhas6_load_combinations) == 0:
+        mabhas6_load_combinations = get_mabhas6_load_combinations(design_type, separate_direction, retaining_wall, code, dynamic)
+    for number, combos in mabhas6_load_combinations.items():
+        if add_notional_loads:
+            is_gravity = True
+            for lateral_load in ('EX', 'EXP', 'EXN', 'EY', 'EYP', 'EYN', 'EX1', 'EXP1', 'EXN1', 'EY1', 'EYP1', 'EYN1',
+                                    'SXE', 'SYE', 'SX', 'SY', 'AngularDynamic'):
+                if lateral_load in combos.keys():
+                    is_gravity = False
+                    break
+        if sequence_numbering:
+            i += 1
+            number = i
+        combo_names = [f'{prefix}{number}{suffix}']
+        if add_notional_loads and is_gravity:
+            directions = ('X', 'Y', 'X', 'Y')
+            sf_multiply = (1, 1, -1, -1)
+            for j in range(1,4):
+                if sequence_numbering:
+                    i += 1
+                    number = i
+                    combo_names.append(f'{prefix}{number}{suffix}')
+                else:
+                    combo_names.append(f'{prefix}{number}{j}{suffix}')
+        elif "AngularDynamic" in combos.keys():
+            if not sequence_numbering:
+                u, v = number.split("_")
+                v = int(v)
+            equal_names = equivalent_loads.get("AngularDynamic", [])
+            len_equalname = len(equal_names)
+            directions = ('',) * len_equalname
+            sf_multiply = ('',) * len_equalname
+            combo_names = []
+            for j in range(len_equalname):
+                if sequence_numbering:
+                    i += 1
+                    number = i
+                    combo_names.append(f'{prefix}{number}{suffix}')
+                else:
+                    combo_names.append(f'{prefix}{u}{(j + 1) + (v - 1) * len_equalname}{suffix}')
+        else:
+            directions = ('',)
+            sf_multiply = ('',)
+        if A == 0.35:
+            ev_sf = combos.get('EV', None)
+            if ev_sf:
+                dead_load_scale_factor = combos.get('Dead', None)
+                if dead_load_scale_factor:
+                    plus_dead_sf = 0.6 * A * I * ev_sf
+                    if ev_negative or ev_sf > 0:
+                        combos['Dead'] = dead_load_scale_factor + plus_dead_sf
+        for lname, sf in combos.items():
+            equal_names = equivalent_loads.get(lname, [])
+            if lname in ('EX', 'EXP', 'EXN', 'SXE', 'SX'):
+                sf *= max(rho_x, omega_x)
+            elif lname in ('EY', 'EYP', 'EYN', 'SYE', 'SY'):
+                sf *= max(rho_y, omega_y)
+            elif lname in ('EX1', 'EXP1', 'EXN1'):
+                sf *= max(rho_x1, omega_x1)
+            elif lname in ('EY1', 'EYP1', 'EYN1'):
+                sf *= max(rho_y1, omega_y1)
+            elif lname == 'EV' and not ev_negative and sf < 0:
+                continue
+            if lname == "AngularDynamic":
+                sf *= max(rho_x, rho_y, omega_x, omega_y)
+                for k, name in enumerate(equal_names):
+                    data.extend([combo_names[k], type_, name, sf])
+            else:
+                for name in equal_names:
+                    for k, (dir_, sfm) in enumerate(zip(directions, sf_multiply)):
+                        data.extend([combo_names[k], type_, name, sf])
+                        if add_notional_loads and is_gravity:
+                            data.extend([combo_names[k], type_, f'N{name}{dir_}', sfm * sf])
+
+    data = python_functions.get_unique_load_combinations(data, sequence_numbering, prefix, suffix)
+    return data, notional_loads
