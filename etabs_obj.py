@@ -777,7 +777,7 @@ class EtabsModel:
         return story_mass, fields
 
     def add_load_case_in_center_of_rigidity(self, story_name, x, y):
-        self.SapModel.SetPresentUnits(7)
+        self.set_current_unit('kgf', 'm')
         z = self.SapModel.story.GetElevation(story_name)[0]
         point_name = self.SapModel.PointObj.AddCartesian(float(x),float(y) , z)[0]  
         diaph = self.story.get_story_diaphragms(story_name).pop()
