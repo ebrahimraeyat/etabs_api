@@ -1,3 +1,5 @@
+from typing import Union
+
 __all__ = ['PropFrame']
 
 
@@ -53,6 +55,49 @@ class PropFrame:
         if ret == 0:
             return True
         return False
+    
+    def change_columns_section_fc(
+        self,
+        names: list,
+        concrete: str,
+        concrete_suffix: str,
+        clean_names: bool=True,
+        # rebar_mat: Union[None, str, float],
+        # rebar_suffix: str,
+        # cover: float,
+        # design: bool = False,
+        ):
+        rets = set()
+        convert_names = {}
+        concretes = self.etabs.material.get_material_of_type(2)
+        names = [str(name) for name in names if self.etabs.frame_obj.is_column(str(name))]
+        for name in names:
+            sec_name = self.SapModel.FrameObj.GetSection(name)[0]
+            _, mat, height, width, *args = self.SapModel.PropFrame.GetRectangle(sec_name)
+            args = self.SapModel.propframe.GetRebarColumn(
+                sec_name
+                )
+            # try to remove previous suffix
+            original_sec_name = sec_name
+            if clean_names:
+                for conc in concretes:
+                    if sec_name.endswith(conc):
+                        sec_name = sec_name[:-len(conc)]
+                        if sec_name.endswith("_"):
+                            sec_name = sec_name[:-1]
+                        break
+            new_sec_name = sec_name + concrete_suffix # + rebar_suffix
+            if convert_names.get(original_sec_name, None) is None:
+                self.SapModel.PropFrame.SetRectangle(new_sec_name, concrete, height, width)
+                ret = self.SapModel.propframe.SetRebarColumn(
+                    new_sec_name, *args[:-1]
+                    )
+                rets.add(ret)
+                convert_names[original_sec_name] = new_sec_name
+            self.SapModel.FrameObj.SetSection(name, new_sec_name)
+        if rets == {0}:
+            return True, convert_names
+        return False, convert_names
 
     def get_concrete_rectangular_of_type(self,
         type_ : str = 'Column',

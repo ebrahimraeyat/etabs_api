@@ -46,12 +46,20 @@ def test_convert_columns_design_types():
     ret = etabs.SapModel.PropFrame.GetRebarColumn("C4512F18")
     assert not ret[-2]
 
+@open_etabs_file('shayesteh.EDB')
+def test_change_columns_section_fc():
+    names = {107, 111, 103, 245}
+    ret, _ = etabs.prop_frame.change_columns_section_fc(names, concrete='CONC', concrete_suffix='_C35')
+    assert ret
+    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C5016F20")
+    # assert ret[-2]
+    # etabs.prop_frame.convert_columns_design_types(design=False)
+    # etabs.prop_frame.convert_columns_design_types(columns=['107'])
+    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C5016F20")
+    # assert ret[-2]
+    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C4512F18")
+    # assert not ret[-2]
+
 
 if __name__ == '__main__':
-    from pathlib import Path
-    etabs_api = Path(__file__).parent.parent
-    import sys
-    sys.path.insert(0, str(etabs_api))
-    from etabs_obj import EtabsModel
-    etabs = EtabsModel(backup=False)
-    SapModel = etabs.SapModel
+    test_change_columns_section_fc_fy_cover_design()
