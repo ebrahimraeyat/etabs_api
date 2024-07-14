@@ -46,11 +46,12 @@ def test_convert_columns_design_types():
     ret = etabs.SapModel.PropFrame.GetRebarColumn("C4512F18")
     assert not ret[-2]
 
-@open_etabs_file('shayesteh.EDB')
+@open_etabs_file('rashidzadeh.EDB')
 def test_change_columns_section_fc():
-    names = {107, 111, 103, 245}
-    ret, _ = etabs.prop_frame.change_columns_section_fc(names, concrete='CONC', concrete_suffix='_C35')
+    names = {135, 396, 160, 159, 397, 153, 150, 129}
+    ret, _, section_that_corner_bars_is_different = etabs.prop_frame.change_columns_section_fc(names, concrete='C35', concrete_suffix='_C35')
     assert ret
+    assert len(section_that_corner_bars_is_different) == 3
     # ret = etabs.SapModel.PropFrame.GetRebarColumn("C5016F20")
     # assert ret[-2]
     # etabs.prop_frame.convert_columns_design_types(design=False)

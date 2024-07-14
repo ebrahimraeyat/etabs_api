@@ -71,10 +71,11 @@ class PropFrame:
         convert_names = {}
         concretes = self.etabs.material.get_material_of_type(2)
         names = [str(name) for name in names if self.etabs.frame_obj.is_column(str(name))]
+        section_that_corner_bars_is_different = []
         for name in names:
             sec_name = self.SapModel.FrameObj.GetSection(name)[0]
             _, mat, height, width, *args = self.SapModel.PropFrame.GetRectangle(sec_name)
-            args = self.SapModel.propframe.GetRebarColumn(
+            args = self.SapModel.propframe.GetRebarColumn_1(
                 sec_name
                 )
             # try to remove previous suffix
@@ -90,14 +91,16 @@ class PropFrame:
             if convert_names.get(original_sec_name, None) is None:
                 self.SapModel.PropFrame.SetRectangle(new_sec_name, concrete, height, width)
                 ret = self.SapModel.propframe.SetRebarColumn(
-                    new_sec_name, *args[:-1]
+                    new_sec_name, *args[:-4]
                     )
                 rets.add(ret)
                 convert_names[original_sec_name] = new_sec_name
+                if args[8] != args[14]: # corner bar is different than other bars
+                    section_that_corner_bars_is_different.append(new_sec_name)
             self.SapModel.FrameObj.SetSection(name, new_sec_name)
         if rets == {0}:
-            return True, convert_names
-        return False, convert_names
+            return True, convert_names, section_that_corner_bars_is_different
+        return False, convert_names, section_that_corner_bars_is_different
 
     def get_concrete_rectangular_of_type(self,
         type_ : str = 'Column',
