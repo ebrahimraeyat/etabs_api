@@ -682,22 +682,25 @@ class DatabaseTables:
         return story_rigidity
 
     def get_stories_displacement_in_xy_modes(self):
-        f1, _ = self.etabs.save_as('modal_stiffness.EDB')
+        asli_file_path, _ = self.etabs.save_in_folder_and_add_name(
+            folder_name = 'story_stiffness',
+            name = 'modal_stiffness',
+            )
         story_point = self.etabs.story.add_points_in_center_of_rigidity_and_assign_diph()
         modal = self.etabs.load_cases.get_modal_loadcase_name()
         self.etabs.analyze.set_load_cases_to_analyze([modal])
         self.SapModel.Analyze.RunAnalysis()
         wx, wy, ix, iy = self.etabs.results.get_xy_frequency()
-        TableKey = 'Joint Displacements'
-        [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)
-        data = self.reshape_data(FieldsKeysIncluded, TableData)
-        i_story = FieldsKeysIncluded.index('Story')
-        i_name = FieldsKeysIncluded.index('UniqueName')
-        i_case = FieldsKeysIncluded.index('OutputCase')
-        i_steptype = FieldsKeysIncluded.index('StepType')
-        i_stepnumber = FieldsKeysIncluded.index('StepNumber')
-        i_ux = FieldsKeysIncluded.index('Ux')
-        i_uy = FieldsKeysIncluded.index('Uy')
+        table_key = 'Joint Displacements'
+        [_, _, fields_keys_included, _, table_data, _] = self.read_table(table_key)
+        data = self.reshape_data(fields_keys_included, table_data)
+        i_story = fields_keys_included.index('Story')
+        i_name = fields_keys_included.index('UniqueName')
+        i_case = fields_keys_included.index('OutputCase')
+        i_steptype = fields_keys_included.index('StepType')
+        i_stepnumber = fields_keys_included.index('StepNumber')
+        i_ux = fields_keys_included.index('Ux')
+        i_uy = fields_keys_included.index('Uy')
         columns = (i_story, i_name, i_case, i_steptype, i_stepnumber)
         x_results = {}
         for story, point in story_point.items():
@@ -715,7 +718,7 @@ class DatabaseTables:
             assert len(result) == 1
             uy = float(result[0][i_uy])
             y_results[story] = uy
-        self.SapModel.File.OpenFile(str(f1))
+        self.SapModel.File.OpenFile(str(asli_file_path))
         return x_results, y_results, wx, wy
 
     def multiply_seismic_loads(

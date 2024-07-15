@@ -380,7 +380,7 @@ class EtabsModel:
                                   ):
         '''
         Save the current file with FILENAME_name in folder_name
-        forlder of etabs file
+        folder of etabs file
         '''
         asli_file_path, new_filename = self.get_new_filename_in_folder_and_add_name(
             folder_name=folder_name,
@@ -831,8 +831,13 @@ class EtabsModel:
         story_names = center_of_rigidity.keys()
         story_stiffness = {}
         name = self.get_file_name_without_suffix()
+        folder_name = "story_stiffness"
+        folder_path = dir_path / folder_name
+        if not folder_path.exists():
+            import os
+            os.mkdir(str(folder_path))
         for story_name in story_names:
-            story_file_path = dir_path / f'{name}_STIFFNESS_{story_name}.EDB'
+            story_file_path = folder_path / f'{name}_STIFFNESS_{story_name}.EDB'
             print(f"Saving file as {story_file_path}\n")
             shutil.copy(asli_file_path, story_file_path)
             print(f"Opening file {story_file_path}\n")
