@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import pytest
+import math
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
@@ -52,12 +53,24 @@ def test_add_AIII_rebar():
 def test_add_AII_rebar():
     etabs.set_current_unit('kgf', 'm')
     rebar_aii = 'rebar_aii'
-    ret = etabs.material.add_AII_rebar(name=rebar_aii)
+    etabs.material.add_AII_rebar(name=rebar_aii)
     rebars = etabs.material.get_material_of_type(6)
     assert rebar_aii in rebars
     etabs.set_current_unit('N', 'mm')
     fy, _ = etabs.material.get_rebar_fy_fu(rebar_aii)
     assert fy == 300
+
+@open_etabs_file('shayesteh.EDB')
+def test_add_concrete():
+    name = 'concrete'
+    fc = 40
+    etabs.set_current_unit('kgf', 'm')
+    etabs.material.add_concrete(name=name, fc=fc)
+    concretes = etabs.material.get_material_of_type(2)
+    assert name in concretes
+    etabs.set_current_unit('N', 'mm')
+    fcc = etabs.material.get_fc(name)
+    assert math.isclose(fcc, fc)
 
 
 

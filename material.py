@@ -113,5 +113,27 @@ class Material:
         df = df.astype({'UnitWeight': float})
         df = df.set_index('Material')
         return df.to_dict()['UnitWeight']
-
+    
+    @change_unit(force='N', length='mm')
+    def add_concrete(self,
+                     name: str,
+                     fc: float,
+                     is_lightweight: bool=False,
+                     fcs_factor: float=1,
+                     ss_type: int=2,
+                     ssh_ys_type: int=4,
+                     strain_at_fc: float=0.002219,
+                     strain_ultimate: float=.005,
+                     weight_for_calculate_ec: float=0,
+                     ):
+        self.add_material(name, type_=2)
+        if weight_for_calculate_ec == 0:
+            par = 4700
+        else:
+            par = 0.043 * weight_for_calculate_ec ** 1.5
+        ec = par * fc ** 0.5
+        self.SapModel.PropMaterial.SetMPIsotropic(name, ec, 0.2, 0.0000055)
+        self.SapModel.PropMaterial.SetOConcrete(name, fc, is_lightweight, fcs_factor, ss_type, ssh_ys_type, strain_at_fc, strain_ultimate)
+        self.etabs.set_current_unit('kgf', 'm')
+        self.SapModel.PropMaterial.SetWeightAndMass(name, 1, 2500)
         
