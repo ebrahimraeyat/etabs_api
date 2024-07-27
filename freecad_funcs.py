@@ -2,12 +2,14 @@ import os, sys, subprocess
 from typing import Union
 from pathlib import Path
 
-from PySide2.QtWidgets import QMessageBox, QFileDialog
+try:
+    from PySide2.QtWidgets import QMessageBox, QFileDialog
 
-import FreeCAD
-import FreeCADGui
-import Part
-
+    import FreeCAD
+    import FreeCADGui
+    import Part
+except ModuleNotFoundError:
+    pass
 import pandas as pd
 
 def rectangle_face(
