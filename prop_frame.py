@@ -56,7 +56,7 @@ class PropFrame:
             return True
         return False
     
-    def change_columns_section_fc(
+    def change_beams_columns_section_fc(
         self,
         names: list,
         concrete: str,
@@ -66,18 +66,16 @@ class PropFrame:
         # rebar_suffix: str,
         # cover: float,
         # design: bool = False,
+        frame_types: list=['column'], 
         ):
         rets = set()
         convert_names = {}
         concretes = self.etabs.material.get_material_of_type(2)
-        names = [str(name) for name in names if self.etabs.frame_obj.is_column(str(name))]
+        names = [str(name) for name in names]
         section_that_corner_bars_is_different = []
         for name in names:
             sec_name = self.SapModel.FrameObj.GetSection(name)[0]
             _, mat, height, width, *args = self.SapModel.PropFrame.GetRectangle(sec_name)
-            args = self.SapModel.propframe.GetRebarColumn_1(
-                sec_name
-                )
             # try to remove previous suffix
             original_sec_name = sec_name
             if clean_names:
@@ -89,14 +87,29 @@ class PropFrame:
                         break
             new_sec_name = sec_name + concrete_suffix # + rebar_suffix
             if convert_names.get(original_sec_name, None) is None:
-                self.SapModel.PropFrame.SetRectangle(new_sec_name, concrete, height, width)
-                ret = self.SapModel.propframe.SetRebarColumn(
-                    new_sec_name, *args[:-4]
-                    )
-                rets.add(ret)
+                if ('column' in frame_types and self.etabs.frame_obj.is_column(str(name))):
+                    self.SapModel.PropFrame.SetRectangle(new_sec_name, concrete, height, width)
+                    args = self.SapModel.propframe.GetRebarColumn_1(
+                        original_sec_name
+                        )
+                    ret = self.SapModel.propframe.SetRebarColumn(
+                        new_sec_name, *args[:-4]
+                        )
+                    if args[8] != args[14]: # corner bar is different than other bars
+                        section_that_corner_bars_is_different.append(new_sec_name)
+                    rets.add(ret)
+                elif ('beam' in frame_types and self.etabs.frame_obj.is_beam(str(name))): 
+                    self.SapModel.PropFrame.SetRectangle(new_sec_name, concrete, height, width)
+                    args = self.SapModel.propframe.GetRebarBeam(
+                        original_sec_name
+                        )
+                    ret = self.SapModel.propframe.SetRebarBeam(
+                        new_sec_name, *args[:-1]
+                        )
+                    rets.add(ret)
+                else:
+                    continue
                 convert_names[original_sec_name] = new_sec_name
-                if args[8] != args[14]: # corner bar is different than other bars
-                    section_that_corner_bars_is_different.append(new_sec_name)
             self.SapModel.FrameObj.SetSection(name, new_sec_name)
         if rets == {0}:
             return True, convert_names, section_that_corner_bars_is_different
