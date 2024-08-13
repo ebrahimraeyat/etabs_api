@@ -783,13 +783,17 @@ class EtabsModel:
         diaph = self.story.get_story_diaphragms(story_name).pop()
         self.SapModel.PointObj.SetDiaphragm(point_name, 3, diaph)
         LTYPE_OTHER = 8
-        lp_name = f'STIFFNESS_{story_name}'
-        self.SapModel.LoadPatterns.Add(lp_name, LTYPE_OTHER, 0, True)
-        load = 1000
-        PointLoadValue = [load,load,0,0,0,0]
-        self.SapModel.PointObj.SetLoadForce(point_name, lp_name, PointLoadValue)
-        self.analyze.set_load_cases_to_analyze(lp_name)
-        return point_name, lp_name
+        lp_name_x = f'X_STIFFNESS_{story_name}'
+        lp_name_y = f'Y_STIFFNESS_{story_name}'
+        for lp_name in (lp_name_x, lp_name_y):
+            self.SapModel.LoadPatterns.Add(lp_name, LTYPE_OTHER, 0, True)
+        load = 100000
+        point_load_value_x = [load, 0, 0, 0, 0, 0]
+        point_load_value_y = [0, load, 0, 0, 0, 0]
+        self.SapModel.PointObj.SetLoadForce(point_name, lp_name_x, point_load_value_x)
+        self.SapModel.PointObj.SetLoadForce(point_name, lp_name_y, point_load_value_y)
+        self.analyze.set_load_cases_to_analyze([lp_name_x, lp_name_y])
+        return point_name, lp_name_x, lp_name_y
 
     def get_story_stiffness_modal_way(self):
         story_mass = self.database.get_story_mass()[::-1]
@@ -843,13 +847,14 @@ class EtabsModel:
             print(f"Opening file {story_file_path}\n")
             self.SapModel.File.OpenFile(str(story_file_path))
             x, y = center_of_rigidity[story_name]
-            point_name, lp_name = self.add_load_case_in_center_of_rigidity(
+            point_name, lp_name_x, lp_name_y = self.add_load_case_in_center_of_rigidity(
                     story_name, x, y)
             self.story.fix_below_stories(story_name)
             self.SapModel.View.RefreshView()
             self.SapModel.Analyze.RunAnalysis()
-            disp_x, disp_y = self.results.get_point_xy_displacement(point_name, lp_name)
-            kx, ky = 1000 / abs(disp_x), 1000 / abs(disp_y)
+            disp_x = self.results.get_point_xy_displacement(point_name, lp_name_x)[0]
+            disp_y = self.results.get_point_xy_displacement(point_name, lp_name_y)[1]
+            kx, ky = 100000 / abs(disp_x), 100000 / abs(disp_y)
             story_stiffness[story_name] = [kx, ky]
         self.SapModel.File.OpenFile(str(asli_file_path))
         return story_stiffness

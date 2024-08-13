@@ -209,6 +209,24 @@ def test_get_story_stiffness_modal_way():
             )
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_story_stiffness_2800_way():
+    story_stiffness = etabs.get_story_stiffness_2800_way()
+    assert len(story_stiffness) == 5
+    desired_story_stiffness = {
+         'STORY1': [6099792.60705136, 5693139.766581269],
+         'STORY2': [9272997.032640949, 8692628.650904033],
+         'STORY3': [6838074.398249453, 6475425.75924367],
+         'STORY4': [4512024.545413528, 4195334.78771606],
+         'STORY5': [975333.8079957867, 1225925.8805212637],
+         }
+    for story, stiff in story_stiffness.items():
+        np.testing.assert_almost_equal(
+            [i / 10e4 for i in stiff],
+            [i / 10e4 for i in desired_story_stiffness[story]],
+            decimal=0,
+            )
+
+@open_etabs_file('shayesteh.EDB')
 def test_set_current_unit():
     etabs.set_current_unit('kgf', 'm')
     assert etabs.SapModel.GetPresentUnits_2()[:-1] == [5, 6, 2]
