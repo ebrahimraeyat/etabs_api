@@ -21,6 +21,27 @@ def test_get_beams_columns():
     beams, columns = etabs.frame_obj.get_beams_columns(type_=1)
     assert len(beams) == len(columns) == 0
 
+@open_etabs_file('shayesteh.EDB')
+def test_get_columns_type_names():
+    col_type_names = etabs.frame_obj.get_columns_type_names()
+    assert len(col_type_names) == 11
+    assert col_type_names['C5'] == ['107', '245', '199', '153', None]
+    assert col_type_names['C3'] == ['105', '243', '197', '151', '288']
+
+def test_get_columns_type_sections():
+    col_type_section = etabs.frame_obj.get_columns_type_sections()
+    assert len(col_type_section) == 11
+    assert col_type_section['C5'] == ['C5016F20', 'C4512F18', 'C4012F16', 'C3510F16', None]
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_section_area():
+    etabs.set_current_unit('kgf', 'cm')
+    areas = etabs.frame_obj.get_section_area()
+    assert isinstance(areas, dict)
+    assert len(areas) == 149
+    assert areas['B25X40'] == 1000
+
+
 
 @open_etabs_file('shayesteh.EDB')
 def test_get_beams_columns_on_stories():

@@ -33,6 +33,17 @@ class View:
         self.SapModel.View.RefreshView()
         return True
     
+    def show_frame_with_lable_and_story(
+            self,
+            label : str,
+            story : str,
+            ):
+        name = self.SapModel.FrameObj.GetNameFromLabel(label, story)[0]
+        self.SapModel.SelectObj.ClearSelection()
+        self.SapModel.FrameObj.SetSelected(name, True)
+        self.SapModel.View.RefreshView()
+        return True
+    
     def show_frames(
             self,
             names : str,
