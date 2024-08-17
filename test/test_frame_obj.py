@@ -29,7 +29,7 @@ def test_get_columns_type_names():
     assert col_type_names['C3'] == ['105', '243', '197', '151', '288']
 
 def test_get_columns_type_sections():
-    col_type_section = etabs.frame_obj.get_columns_type_sections()
+    col_type_section, _ = etabs.frame_obj.get_columns_type_sections()
     assert len(col_type_section) == 11
     assert col_type_section['C5'] == ['C5016F20', 'C4512F18', 'C4012F16', 'C3510F16', None]
 

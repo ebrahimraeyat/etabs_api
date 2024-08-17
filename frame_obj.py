@@ -202,7 +202,10 @@ class FrameObj:
             stories = self.etabs.story.get_level_names()[1:]
             df.set_index(pd.Index(stories), inplace=True)
             ret = pd.DataFrame(df).iloc[::-1]
-        return ret
+            df1 = pd.DataFrame(columns_type_names)
+            df1.set_index(pd.Index(stories), inplace=True)
+            columns_type_names = pd.DataFrame(df1).iloc[::-1]
+        return ret, columns_type_names
 
     def get_columns_pmm_and_beams_rebars(self, frame_names):
         if not self.SapModel.GetModelIsLocked():
@@ -1296,27 +1299,17 @@ class FrameObj:
             cover = 6 * multiply.get(len_unit)
         return (b * (h - cover))
     
-    def get_section_area(self):
+    def get_section_area(self,
+                         names: Union[list, None]=None,
+                         ):
         table_key = "Frame Section Property Definitions - Summary"
         cols = ['Name', 'Area']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if names is not None:
+            filt = df['Name'].isin(names)
+            df = df.loc[filt]
         df['Area'] = df['Area'].astype(float)
         return df.set_index('Name').to_dict()['Area']
-        # frames = etabs.SapModel.FrameObj.GetAllFrames()
-        # frame_props = etabs.SapModel.PropFrame.GetAllFrameProperties()
-        # section_names = []
-        # frame_areas = {}
-        # for name in names:
-        #     i = frames[1].index(name)
-        #     section_name = frames[2][i]
-        #     if section_name in section_names:
-
-        #     section_index = frame_props[1].index(section_name)
-        #     section_type_num = frame_props[2][section_index]
-        #     width = int(frame_props[4][section_index])
-        #     height = int(frame_props[3][section_index])
-        #     tw = frame_props[6][section_index], # TW
-        #     tf = frame_props[5][section_index]
     
     def delete_frames(self,
                       frames: Union[list, None]=None,
