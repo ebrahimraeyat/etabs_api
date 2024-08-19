@@ -3,7 +3,11 @@ from typing import Iterable, Union
 import math
 
 from python_functions import change_unit
-import freecad_funcs
+
+try:
+    import freecad_funcs
+except NameError:
+    pass
 
 
 class FrameObj:
