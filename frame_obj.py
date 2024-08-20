@@ -139,18 +139,24 @@ class FrameObj:
         # Beams
         table_key = "Beam Object Connectivity"
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
-        groups = df.groupby('Story')
-        for story, group in groups:
+        beam_groups = df.groupby('Story')
+        for story, group in beam_groups:
             d[story] = [group['UniqueName']]
         # Columns
         table_key = "Column Object Connectivity"
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
-        groups = df.groupby('Story')
-        for story, group in groups:
+        column_groups = df.groupby('Story')
+        for story, group in column_groups:
             story_frames = d.get(story, [])
             story_frames.append(group['UniqueName'])
             if len(story_frames) == 1: # Beams not exists on this story
                 story_frames.insert(0, [])
+                d[story] = story_frames
+        for story, group in beam_groups:
+            story_frames = d.get(story, [])
+            # story_frames.append(group['UniqueName'])
+            if len(story_frames) == 1: # columns not exists on this story
+                story_frames.insert(1, [])
                 d[story] = story_frames
         return d
     
