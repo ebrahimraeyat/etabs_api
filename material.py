@@ -146,7 +146,7 @@ class Material:
         ry = 1.25
         e = 2e5
         nu = 0.2
-        a = 10e-06
+        a = 0.0000117
         self.add_material(name, type_=6)
         self.SapModel.PropMaterial.SetMPIsotropic(name, e, nu, a)
         self.SapModel.PropMaterial.SetORebar(name, fy, fu, ry * fy, ry * fu, 1, 1, 0.01, 0.09, False)
