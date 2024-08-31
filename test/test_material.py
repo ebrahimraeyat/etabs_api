@@ -72,6 +72,20 @@ def test_add_concrete():
     fcc = etabs.material.get_fc(name)
     assert math.isclose(fcc, fc)
 
+@open_etabs_file('shayesteh.EDB')
+def test_add_rebar():
+    name = 'rebarIII'
+    fy = 400
+    fu = 600
+    etabs.set_current_unit('kgf', 'm')
+    etabs.material.add_rebar(name=name, fy=fy, fu=fu)
+    rebars = etabs.material.get_material_of_type(6)
+    assert name in rebars
+    etabs.set_current_unit('N', 'mm')
+    fya, fua = etabs.material.get_rebar_fy_fu(name)
+    assert math.isclose(fya, fy)
+    assert math.isclose(fua, fu)
+
 
 
 if __name__ == '__main__':

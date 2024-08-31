@@ -136,4 +136,22 @@ class Material:
         self.SapModel.PropMaterial.SetOConcrete(name, fc, is_lightweight, fcs_factor, ss_type, ssh_ys_type, strain_at_fc, strain_ultimate)
         self.etabs.set_current_unit('kgf', 'm')
         self.SapModel.PropMaterial.SetWeightAndMass(name, 1, 2500)
+
+    @change_unit(force='N', length='mm')
+    def add_rebar(self,
+                  name: str,
+                  fy: int,
+                  fu: int,
+    ):
+        ry = 1.25
+        e = 2e5
+        nu = 0.2
+        a = 10e-06
+        self.add_material(name, type_=6)
+        self.SapModel.PropMaterial.SetMPIsotropic(name, e, nu, a)
+        self.SapModel.PropMaterial.SetORebar(name, fy, fu, ry * fy, ry * fu, 1, 1, 0.01, 0.09, False)
+        self.etabs.set_current_unit('kgf', 'm')
+        self.SapModel.PropMaterial.SetWeightAndMass(name, 1, 7850)
+
+    
         
