@@ -299,6 +299,8 @@ class FrameObj:
                     name: str = '',
                     weakness_filename : Union[str, Path] = "weakness.EDB",
                     dir_ : str = 'x',
+                    dynamic: bool=False,
+                    d: Union[dict, None] = None,
                     ):
         if not name:
             try:
@@ -323,6 +325,47 @@ class FrameObj:
             self.etabs.lock_and_unlock_model()
             print('multiply earthquake factor with 0.67')
             self.etabs.database.multiply_seismic_loads(.67)
+            if dynamic:
+                if d is None:
+                    d = self.etabs.get_settings_from_model()
+                ex_name = d.get("ex_combobox")
+                ey_name = d.get("ey_combobox")
+                x_scale_factor = float(d.get("x_scalefactor_combobox", 1.0))
+                y_scale_factor = float(d.get("y_scalefactor_combobox", 1.0))
+                if d.get("combination_response_spectrum_checkbox", False):
+                    print("Start 100-30 Scale Response Spectrum\n")
+                    sx, sxe, sy, sye = self.etabs.get_dynamic_loadcases(d)
+                    x_specs = [sx, sxe]
+                    y_specs = [sy, sye]
+                    self.etabs.scale_response_spectrums(
+                        ex_name,
+                        ey_name,
+                        x_specs,
+                        y_specs,
+                        x_scale_factor,
+                        y_scale_factor,
+                        analyze=False,
+                        consider_min_static_base_shear=False,
+                        d=d,
+                    )
+                elif d.get("angular_response_spectrum_checkbox", False):
+                    print("Start angular Scale Response Spectrum\n")
+                    specs = []
+                    section_cuts = []
+                    key = "angular_tableview"
+                    dic = d.get(key, None)
+                    if dic is not None:
+                        for sec_cut, spec in dic.values():
+                            section_cuts.append(sec_cut)
+                            specs.append(spec)
+                        self.etabs.angles_response_spectrums_analysis(
+                            ex_name,
+                            ey_name,
+                            specs,
+                            section_cuts,
+                            x_scale_factor,
+                            analyze=False,
+                        )
             self.set_end_release_frame(name)
         print('get columns pmm and beams rebars')
         columns_pmm_weakness, beams_rebars_weakness = self.get_columns_pmm_and_beams_rebars(story_frames)

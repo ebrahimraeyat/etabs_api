@@ -70,7 +70,59 @@ def test_get_beams_columns_weakness_structure():
     assert len(col_fields) == 5
     assert len(beam_fields) == 9
     assert len(cols_pmm) == 11
-    # assert len(beams_rebars) == 217
+
+@open_etabs_file('zibaei.EDB')
+def test_get_beams_columns_weakness_structure_dynamic_angular():
+    if version < 20:
+        assert True
+        return
+    d = {}
+    d["ex_combobox"] = 'EX'
+    d["ey_combobox"] = 'EY'
+    d["x_scalefactor_combobox"] = "1"
+    d["y_scalefactor_combobox"] = "1"
+    d["combination_response_spectrum_checkbox"] = False
+    d["angular_response_spectrum_checkbox"] = True
+    d_angles = {}
+    for angle in range(0, 180, 15):
+        d_angles[angle] = [ f"SEC{angle}", f"SPECT{angle}"]
+    d["angular_tableview"] = d_angles
+    cols_pmm, col_fields, beams_rebars, beam_fields = etabs.frame_obj.get_beams_columns_weakness_structure(
+        '67',
+        dynamic=True,
+        d = d,
+        )
+    assert isinstance(cols_pmm, list)
+    assert isinstance(beams_rebars, list)
+    assert len(col_fields) == 5
+    assert len(beam_fields) == 9
+    assert len(cols_pmm) == 16
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_beams_columns_weakness_structure_dynamic_combination():
+    if version < 20:
+        assert True
+        return
+    d = {}
+    d["ex_combobox"] = 'QX'
+    d["ey_combobox"] = 'QY'
+    d["sx_combobox"] = "SX"
+    d["sxe_combobox"] = "SX"
+    d["sy_combobox"] = "SY"
+    d["sye_combobox"] = "SY"
+    d["x_scalefactor_combobox"] = "1"
+    d["y_scalefactor_combobox"] = "1"
+    d["combination_response_spectrum_checkbox"] = True
+    cols_pmm, col_fields, beams_rebars, beam_fields = etabs.frame_obj.get_beams_columns_weakness_structure(
+        '115',
+        dynamic=True,
+        d = d,
+        )
+    assert isinstance(cols_pmm, list)
+    assert isinstance(beams_rebars, list)
+    assert len(col_fields) == 5
+    assert len(beam_fields) == 9
+    assert len(cols_pmm) == 11
 
 @open_etabs_file('shayesteh.EDB')
 def test_set_constant_j():
