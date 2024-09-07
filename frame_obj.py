@@ -637,7 +637,16 @@ class FrameObj:
         if x2 == x1:
             return 90
         return math.degrees(math.atan((y2 - y1) / (x2 - x1)))
-        
+    
+    def get_frame_direction(self,
+        name: str,
+        ):
+        x1, y1, x2, y2 = self.get_xy_of_frame_points(name)
+        if x2 == x1 or abs(y2 - y1) > abs(x2 - x1):
+            return 'y'
+        else:
+            return 'x'
+
     def get_xy_of_frame_points(self, name : str):
         p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(name)
         x1, y1 = self.SapModel.PointObj.GetCoordCartesian(p1_name)[:2]
