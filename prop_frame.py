@@ -141,4 +141,17 @@ class PropFrame:
             ret[-2] = design
             self.SapModel.PropFrame.SetRebarColumn(sec, *ret[:-1])
 
+    def get_number_of_rebars_and_areas_of_column_section(self,
+                                                         name: str,
+                                                         ) -> tuple:
+        '''
+        return the number of rebars in 3 and 2 dir of section and the
+        area of corner and other rebars in section
+        '''
+        ret = self.SapModel.propframe.GetRebarColumn_1(name)
+        n3 = ret[6]
+        n2 = ret[7]
+        area = ret[15]
+        corner_area = ret[16]
+        return n3, n2, area, corner_area
 

@@ -3,6 +3,8 @@ from collections import Iterable
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -52,14 +54,18 @@ def test_change_beams_columns_section_fc():
     ret, _, section_that_corner_bars_is_different = etabs.prop_frame.change_beams_columns_section_fc(names, concrete='C35', concrete_suffix='_C35')
     assert ret
     assert len(section_that_corner_bars_is_different) == 3
-    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C5016F20")
-    # assert ret[-2]
-    # etabs.prop_frame.convert_columns_design_types(design=False)
-    # etabs.prop_frame.convert_columns_design_types(columns=['107'])
-    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C5016F20")
-    # assert ret[-2]
-    # ret = etabs.SapModel.PropFrame.GetRebarColumn("C4512F18")
-    # assert not ret[-2]
+
+@open_etabs_file('rashidzadeh.EDB')
+def test_get_number_of_rebars_and_areas_of_column_section():
+    name = "C5516AC"
+    etabs.set_current_unit('kgf', 'mm')
+    n3, n2, area, corner_area = etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(name)
+    assert n3 == 5
+    assert n2 == 5
+    area25 = np.pi * 25 ** 2 / 4
+    area20 = np.pi * 20 ** 2 / 4
+    np.testing.assert_almost_equal(area25, corner_area, decimal=0)
+    np.testing.assert_almost_equal(area20, area, decimal=0)
 
 
 if __name__ == '__main__':
