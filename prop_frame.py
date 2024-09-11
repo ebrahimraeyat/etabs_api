@@ -1,6 +1,21 @@
 from typing import Union
+import enum
+
 
 __all__ = ['PropFrame']
+
+
+@enum.unique
+class CompareTwoColumnsEnum(enum.IntEnum):
+    section_area = 0
+    corner_rebar_size = 1
+    longitudinal_rebar_size = 2
+    total_rebar_area = 3
+    local_axes = 4
+    section_dimension = 5
+    rebar_number = 6
+    OK = 7
+    not_checked = 8
 
 
 class PropFrame:
@@ -154,4 +169,98 @@ class PropFrame:
         area = ret[15]
         corner_area = ret[16]
         return n3, n2, area, corner_area
+    
+    def check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(self,
+                                                                        below_col: str,
+                                                                        above_col: str,
+                                                                        ) -> tuple:
+        below_angle = self.etabs.SapModel.FrameObj.GetLocalAxes(below_col)[0]
+        above_angle = self.etabs.SapModel.FrameObj.GetLocalAxes(above_col)[0]
+        below_angle = below_angle % 180
+        above_angle = above_angle % 180
+        n1 = below_angle % 90
+        n2 = above_angle % 90
+        rotation_is_ok = True
+        if n1 != n2:
+            rotation_is_ok = False
+        n1 = below_angle // 90
+        n2 = above_angle // 90
+        need_to_convert_dimention = False
+        if n1 != n2:
+            need_to_convert_dimention = True
+        return rotation_is_ok, need_to_convert_dimention
+    
+    def check_if_dimention_of_above_column_is_greater_than_below_column(self,
+                                                                        below_col: str,
+                                                                        above_col: str,
+                                                                        below_sec: Union[str, None]=None,
+                                                                        above_sec: Union[str, None]=None,
+                                                                        rotation_is_ok: Union[bool, None]=None,
+                                                                        need_to_convert_dimention: Union[bool, None]=None,
+                                                                        ):
+        if below_sec is None:
+            below_sec = self.etabs.SapModel.FrameObj.GetSection(below_col)[0]
+        if above_sec is None:
+            above_sec = self.etabs.SapModel.FrameObj.GetSection(above_col)[0]
+        x_below, y_below = self.etabs.SapModel.PropFrame.GetRectangle(below_sec)[2:4]
+        x_above, y_above = self.etabs.SapModel.PropFrame.GetRectangle(above_sec)[2:4]
+        if rotation_is_ok is None:
+            rotation_is_ok, need_to_convert_dimention = \
+            self.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
+        if need_to_convert_dimention:
+            x_above, y_above = y_above, x_above
+        if x_above > x_below or y_above > y_below:
+            return True
+        return False
 
+    def compare_two_columns(self,
+                            below_col: str,
+                            above_col: str,
+                            section_areas: Union[dict, None]=None,
+                            below_sec: Union[str, None]=None,
+                            above_sec: Union[str, None]=None,
+                            ) -> CompareTwoColumnsEnum:
+        # self.etabs.SapModel.PropFrame.GetTypeOAPI()  8: rectangle 9: circle
+        if section_areas is None:
+            column_names = self.etabs.frame_obj.concrete_section_names('Column')
+            section_areas = self.etabs.frame_obj.get_section_area(column_names)
+        if below_sec is None:
+            below_sec = self.SapModel.FrameObj.GetSection(below_col)[0]
+        if above_sec is None:
+            above_sec = self.SapModel.FrameObj.GetSection(above_col)[0]
+        below_area = section_areas.get(below_sec, None)
+        above_area = section_areas.get(above_sec, None)
+        if above_area > below_area:
+            return CompareTwoColumnsEnum.section_area
+        # check the rebars areas
+        n3_below, n2_below, area_below, corner_area_below = self.etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(below_sec)
+        n3_above, n2_above, area_above, corner_area_above = self.etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(above_sec)
+        if corner_area_above > corner_area_below:
+            return CompareTwoColumnsEnum.corner_rebar_size
+        if area_above > area_below:
+            return CompareTwoColumnsEnum.longitudinal_rebar_size
+        total_rebar_area_above = 4 * corner_area_above + ((n3_above - 2) + (n2_above - 2)) * 2 * area_above
+        total_rebar_area_below = 4 * corner_area_below + ((n3_below - 2) + (n2_below - 2)) * 2 * area_below
+        if total_rebar_area_above > total_rebar_area_below:
+            return CompareTwoColumnsEnum.total_rebar_area
+        # Control dimension
+        rotation_is_ok, need_to_convert_dimention = \
+            self.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
+        if not rotation_is_ok:
+            return CompareTwoColumnsEnum.local_axes
+        if self.check_if_dimention_of_above_column_is_greater_than_below_column(
+                                                                        below_col,
+                                                                        above_col,
+                                                                        below_sec,
+                                                                        above_sec,
+                                                                        rotation_is_ok,
+                                                                        need_to_convert_dimention,
+        ):
+            return CompareTwoColumnsEnum.section_dimension
+        # Control number of rebars
+        if need_to_convert_dimention:
+            n3_above, n2_above = n2_above, n3_above
+        if n3_above > n3_below or n2_above > n2_below:
+            return CompareTwoColumnsEnum.rebar_number
+        # There is no error
+        return CompareTwoColumnsEnum.OK

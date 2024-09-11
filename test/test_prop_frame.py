@@ -66,6 +66,71 @@ def test_get_number_of_rebars_and_areas_of_column_section():
     area20 = np.pi * 20 ** 2 / 4
     np.testing.assert_almost_equal(area25, corner_area, decimal=0)
     np.testing.assert_almost_equal(area20, area, decimal=0)
+    name = "C5012AC"
+    n3, n2, area, corner_area = etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(name)
+    assert n3 == 4
+    assert n2 == 4
+    np.testing.assert_almost_equal(area25, corner_area, decimal=0)
+    np.testing.assert_almost_equal(area20, area, decimal=0)
+
+@open_etabs_file('rashidzadeh.EDB')
+def test_compare_two_columns():
+    below_col = '233'
+    above_col = '161'
+    below_sec = "C5012CD"
+    new_sections = (below_sec, "C6012C", "C5012C", "C5016C", "C5012AC")
+    errors = ('OK', "section_area", 'longitudinal_rebar_size', "longitudinal_rebar_size", 'corner_rebar_size')
+    for section, error in zip(new_sections, errors):
+        etabs.SapModel.FrameObj.SetSection(above_col, section)
+        er = etabs.prop_frame.compare_two_columns(below_col, above_col)
+        assert er.name == error
+
+@open_etabs_file('rashidzadeh.EDB')
+def test_check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention():
+    below_col = '233'
+    above_col = '161'
+    below_sec = "C40X70"
+    above_sec = "C60X30"
+    etabs.SapModel.PropFrame.SetRectangle(below_sec, 'C30', 70, 40)
+    etabs.SapModel.PropFrame.SetRectangle(above_sec, 'C30', 30, 60)
+    etabs.SapModel.FrameObj.SetSection(below_col, below_sec)
+    etabs.SapModel.FrameObj.SetSection(above_col, above_sec)
+    for angle in range(-1000, 1000, 10):
+        etabs.SapModel.FrameObj.SetLocalAxes(above_col, angle)
+        etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle + 90)
+        rotation_is_ok, need_to_convert_dimention = etabs.prop_frame.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
+        assert rotation_is_ok
+        assert need_to_convert_dimention
+        etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle)
+        rotation_is_ok, need_to_convert_dimention = etabs.prop_frame.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
+        assert rotation_is_ok
+        assert not need_to_convert_dimention
+        etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle + 10)
+        rotation_is_ok, need_to_convert_dimention = etabs.prop_frame.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
+        assert not rotation_is_ok
+        if (angle + 10) % 90 == 0:
+            assert need_to_convert_dimention
+        else:
+            assert not need_to_convert_dimention
+
+@open_etabs_file('rashidzadeh.EDB')
+def test_check_if_dimention_of_above_column_is_greater_than_below_column():
+    below_col = '233'
+    above_col = '161'
+    below_sec = "C40X70"
+    above_sec = "C60X30"
+    etabs.SapModel.PropFrame.SetRectangle(below_sec, 'C30', 70, 40)
+    etabs.SapModel.PropFrame.SetRectangle(above_sec, 'C30', 30, 60)
+    etabs.SapModel.FrameObj.SetSection(below_col, below_sec)
+    etabs.SapModel.FrameObj.SetSection(above_col, above_sec)
+    for angle in range(-1000, 1000, 10):
+        etabs.SapModel.FrameObj.SetLocalAxes(above_col, angle)
+        etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle + 90)
+        ret = etabs.prop_frame.check_if_dimention_of_above_column_is_greater_than_below_column(below_col, above_col)
+        assert not ret
+        etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle)
+        ret = etabs.prop_frame.check_if_dimention_of_above_column_is_greater_than_below_column(below_col, above_col)
+        assert ret
 
 
 if __name__ == '__main__':
