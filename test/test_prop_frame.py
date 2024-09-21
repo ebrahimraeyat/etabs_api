@@ -127,10 +127,10 @@ def test_check_if_dimention_of_above_column_is_greater_than_below_column():
         etabs.SapModel.FrameObj.SetLocalAxes(above_col, angle)
         etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle + 90)
         ret = etabs.prop_frame.check_if_dimention_of_above_column_is_greater_than_below_column(below_col, above_col)
-        assert not ret
+        assert not ret[0]
         etabs.SapModel.FrameObj.SetLocalAxes(below_col, angle)
         ret = etabs.prop_frame.check_if_dimention_of_above_column_is_greater_than_below_column(below_col, above_col)
-        assert ret
+        assert ret[0]
 
 
 if __name__ == '__main__':

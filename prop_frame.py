@@ -14,8 +14,9 @@ class CompareTwoColumnsEnum(enum.IntEnum):
     local_axes = 4
     section_dimension = 5
     rebar_number = 6
-    OK = 7
-    not_checked = 8
+    rebar_slop = 7
+    OK = 8
+    not_checked = 9
 
 
 class PropFrame:
@@ -210,8 +211,8 @@ class PropFrame:
         if need_to_convert_dimention:
             x_above, y_above = y_above, x_above
         if x_above > x_below or y_above > y_below:
-            return True
-        return False
+            return True, (x_above, y_above, x_below, y_below)
+        return False, (x_above, y_above, x_below, y_below)
 
     def compare_two_columns(self,
                             below_col: str,
@@ -248,19 +249,25 @@ class PropFrame:
             self.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
         if not rotation_is_ok:
             return CompareTwoColumnsEnum.local_axes
-        if self.check_if_dimention_of_above_column_is_greater_than_below_column(
+        is_dimention_greater, dimentions = \
+            self.check_if_dimention_of_above_column_is_greater_than_below_column(
                                                                         below_col,
                                                                         above_col,
                                                                         below_sec,
                                                                         above_sec,
                                                                         rotation_is_ok,
                                                                         need_to_convert_dimention,
-        ):
+        )
+        if is_dimention_greater:
             return CompareTwoColumnsEnum.section_dimension
         # Control number of rebars
         if need_to_convert_dimention:
             n3_above, n2_above = n2_above, n3_above
         if n3_above > n3_below or n2_above > n2_below:
             return CompareTwoColumnsEnum.rebar_number
+        # Rebar Slop error
+        x_above, y_above, x_below, y_below = dimentions
+        if (x_below - x_above) > 10 or (y_below - y_above) > 10:
+            return CompareTwoColumnsEnum.rebar_slop
         # There is no error
         return CompareTwoColumnsEnum.OK
