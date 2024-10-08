@@ -86,6 +86,20 @@ def test_add_rebar():
     assert math.isclose(fya, fy)
     assert math.isclose(fua, fu)
 
+@open_etabs_file('shayesteh.EDB')
+def test_add_steel():
+    name = 'STEEL_AIII'
+    fy = 240
+    fu = 360
+    etabs.set_current_unit('kgf', 'm')
+    etabs.material.add_steel(name=name, fy=fy, fu=fu)
+    steels = etabs.material.get_material_of_type(1)
+    assert name in steels
+    etabs.set_current_unit('N', 'mm')
+    fya, fua = etabs.material.get_steel_fy_fu(name)
+    assert math.isclose(fya, fy)
+    assert math.isclose(fua, fu)
+
 
 
 if __name__ == '__main__':

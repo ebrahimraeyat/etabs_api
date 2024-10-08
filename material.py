@@ -30,6 +30,9 @@ class Material:
 
     def get_rebar_fy_fu(self, rebar):
         return self.SapModel.PropMaterial.GetORebar(rebar)[0:2]
+    
+    def get_steel_fy_fu(self, steel):
+        return self.SapModel.PropMaterial.GetOSteel(steel)[0:2]
 
     @change_unit('N', 'mm')
     def get_S340_S400_rebars(self):
@@ -150,6 +153,22 @@ class Material:
         self.add_material(name, type_=6)
         self.SapModel.PropMaterial.SetMPIsotropic(name, e, nu, a)
         self.SapModel.PropMaterial.SetORebar(name, fy, fu, ry * fy, ry * fu, 1, 1, 0.01, 0.09, False)
+        self.etabs.set_current_unit('kgf', 'm')
+        self.SapModel.PropMaterial.SetWeightAndMass(name, 1, 7850)
+    
+    @change_unit(force='N', length='mm')
+    def add_steel(self,
+                  name: str,
+                  fy: int,
+                  fu: int,
+    ):
+        ry = 1.25
+        e = 2e5
+        nu = 0.2
+        a = 0.0000117
+        self.add_material(name, type_=1)
+        self.SapModel.PropMaterial.SetMPIsotropic(name, e, nu, a)
+        self.SapModel.PropMaterial.SetOSteel_1(name, fy, fu, ry * fy, ry * fu, 1, 1, 0.015, 0.11, 0.17, -0.1)
         self.etabs.set_current_unit('kgf', 'm')
         self.SapModel.PropMaterial.SetWeightAndMass(name, 1, 7850)
 
