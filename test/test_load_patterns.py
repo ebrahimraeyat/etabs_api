@@ -47,6 +47,11 @@ def test_get_drift_load_pattern_names():
     assert len(names) == 2
     assert names == ['EXDRIFT', 'EYDRIFT']
 
+@open_etabs_file('steel.EDB')
+def test_get_notional_load_pattern_names():
+    names = etabs.load_patterns.get_notional_load_pattern_names()
+    assert len(names) == 12
+
 @open_etabs_file('shayesteh.EDB')
 def test_get_load_patterns():
     load_pattern_names = etabs.load_patterns.get_load_patterns()

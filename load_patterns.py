@@ -63,6 +63,13 @@ class LoadPatterns:
                 names.append(lp)
         return names
         
+    def get_notional_load_pattern_names(self):
+        '''
+        notional loadType number is 12
+        '''
+        n = self.map_pattern_to_number.get("Notional", 12)
+        return self.get_special_load_pattern_names(n)
+    
     def get_drift_load_pattern_names(self):
         '''
         Drift loadType number is 37 in etabs v19 and 61 in etabs v20
