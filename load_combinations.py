@@ -219,7 +219,13 @@ class LoadCombination:
             dynamic=dynamic,
             )
         if notional_loads:
-            self.etabs.load_patterns.add_notional_loads(notional_loads)
+            etabs_notional_loads = self.etabs.load_patterns.get_notional_load_pattern_names()
+            current_notional_loads = set()
+            for nl in etabs_notional_loads:
+                current_notional_loads.add(nl[1:-1])
+            diff = set(notional_loads).difference(current_notional_loads)
+            if len(diff) > 0:
+                self.etabs.load_patterns.add_notional_loads(diff)
         return data
     
     def create_load_combinations_from_loads(self,
