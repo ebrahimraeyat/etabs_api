@@ -23,7 +23,14 @@ class LoadCombination:
     
     def get_load_combination_names(self):
         return self.SapModel.RespCombo.GetNameList()[1]
-
+    
+    def delete_load_combinations(self, combo_names):
+        rets = set()
+        for combo_name in combo_names:
+            ret = self.etabs.SapModel.RespCombo.Delete(combo_name)
+            rets.add(ret)
+        return rets
+    
     def add_load_combination(
         self,
         combo_name: str,

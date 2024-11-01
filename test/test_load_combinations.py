@@ -114,6 +114,16 @@ def test_generate_concrete_load_combinations_notional_loads():
     assert data
 
 @open_etabs_file('shayesteh.EDB')
+def test_delete_load_combinations():
+    etabs_load_combinations = etabs.load_combinations.get_load_combination_names()
+    del_combos = etabs_load_combinations[:2]
+    etabs.load_combinations.delete_load_combinations(del_combos)
+    etabs_load_combinations = etabs.load_combinations.get_load_combination_names()
+    n1 = len(set(etabs_load_combinations).difference(del_combos))
+    n2 = len(etabs_load_combinations)
+    assert n1 == n2
+    
+@open_etabs_file('shayesteh.EDB')
 def test_add_load_combination():
     load_combinations = []
     for i in range(1, 5):
