@@ -1305,7 +1305,7 @@ def generate_concrete_load_combinations(
     for number, combos in mabhas6_load_combinations.items():
         if add_notional_loads:
             is_gravity = True
-            for lateral_load in ('EX', 'EXP', 'EXN', 'EY', 'EYP', 'EYN', 'EX1', 'EXP1', 'EXN1', 'EY1', 'EYP1', 'EYN1',
+            for lateral_load in ('EX', 'EXP', 'EXN', 'EY', 'EYP', 'EYN', 'EX1', 'EXP1', 'EXN1', 'EY1', 'EYP1', 'EYN1', 'EV',
                                     'SXE', 'SYE', 'SX', 'SY', 'AngularDynamic'):
                 if lateral_load in combos.keys():
                     is_gravity = False
