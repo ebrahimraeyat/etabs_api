@@ -15,6 +15,11 @@ def test_get_material_of_type():
     assert len(rebars) == 3
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_all_rebars():
+    rebars = etabs.material.get_all_rebars()
+    assert len(rebars) == 32
+
+@open_etabs_file('shayesteh.EDB')
 def test_get_S340_S400_rebars():
     s340, s400 = etabs.material.get_S340_S400_rebars()
     assert set(s340) == {'RMAT-1'}

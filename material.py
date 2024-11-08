@@ -17,6 +17,9 @@ class Material:
 
     def material_type(self, name):
         return self.SapModel.PropMaterial.GetTypeOAPI(name)[0]
+    
+    def get_all_rebars(self):
+        return self.SapModel.PropRebar.GetNameList()[1]
 
     def get_material_of_type(self, type_):
         '''
@@ -60,8 +63,14 @@ class Material:
         tie_rebar_sizes = set()
         main_rebar_sizes = set()
         all_rebars = {}
-        rebars = self.SapModel.PropRebar.GetNameListWithData()
-        for name, size in zip(rebars[1], rebars[3]):
+        rebar_names = self.get_all_rebars()
+        for name in rebar_names:
+            if self.etabs.software == "ETABS":
+                size = self.SapModel.PropRebar.GetRebarProps(name)[1]
+            elif self.etabs.software == "SAP2000":
+                size = self.SapModel.PropRebar.GetProp(name)[1]
+
+        # for name, size in zip(rebars[1], rebars[3]):
             if not name.startswith('#') or not name.endswith('M') and int(size) == size:
                 size = int(size)
                 if  size in [10, 12]:

@@ -35,6 +35,17 @@ def test_get_etabs_main_version():
     ver = etabs.get_etabs_main_version()
     assert ver == version
 
+@open_etabs_file('sap2000.sdb')
+def test_get_sap_main_version():
+    import os
+    software = os.environ.get('software_name', "ETABS")
+    os.environ.setdefault('software_name', "SAP2000")
+    ver = etabs.get_etabs_main_version()
+    assert ver == version
+    os.environ.setdefault('software_name', software)
+
+
+
 @open_etabs_file('shayesteh.EDB')
 def test_get_filename_with_suffix():
     name = etabs.get_filename_with_suffix()
@@ -230,6 +241,11 @@ def test_get_story_stiffness_2800_way():
 def test_set_current_unit():
     etabs.set_current_unit('kgf', 'm')
     assert etabs.SapModel.GetPresentUnits_2()[:-1] == [5, 6, 2]
+    assert etabs.SapModel.GetPresentUnits() == 8
+
+@open_etabs_file('sap2000.sdb')
+def test_set_current_unit_sap():
+    etabs.set_current_unit('kgf', 'm')
     assert etabs.SapModel.GetPresentUnits() == 8
 
 @open_etabs_file('shayesteh.EDB')
@@ -624,6 +640,6 @@ def test_save_in_folder_and_add_name():
 
 
 if __name__ == '__main__':
-    test_scale_response_spectrums2()
+    test_get_sap_main_version()
 
 

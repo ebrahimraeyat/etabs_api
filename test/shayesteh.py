@@ -1,17 +1,19 @@
 import os
 from pathlib import Path
+from typing import Union
 import tempfile
 
 import etabs_obj
 
 global etabs
 global open_model
-version = int(os.environ.get('version', 21))
+version = int(os.environ.get('software_version', 21))
+software = str(os.environ.get('software_name', "ETABS"))
 
 test_folder = Path(__file__).parent
 
 def etabs_model(
-        edb: str="shayesteh.EDB",
+        filename: Union[str, None]= None,
         version: int=0, # 19, 20, 21
         ):
     '''
@@ -20,20 +22,28 @@ def etabs_model(
     '''
     # if version == 21:
     #     return None, None
-    suffix = edb.split('.')[1]
-    if suffix == 'EDB':
-        software = 'ETABS'
-    elif suffix == 'FDB':
-        software = 'SAFE'
+    if filename is None:
+        if software == "ETABS":
+            filename = "shayesteh.EDB"
+        elif software == 'SAFE':
+            filename = "shayeste.EDB"
+        elif software == 'SAP2000':
+            filename = "sap2000.SDB"
+    suffix = filename.split('.')[1]
+    # if suffix.lower() == 'edb':
+    #     software = 'ETABS'
+    # elif suffix.lower() == 'fdb':
+    # elif suffix.lower() == 'sdb':
+    #     software = 'SAP2000'
     new_instance = False
     try:
-        etabs = etabs_obj.EtabsModel(backup=False)
+        etabs = etabs_obj.EtabsModel(backup=False, software=software)
         if etabs.success:
             if version != 0 and etabs.etabs_main_version != version:
                 raise FileNotFoundError
             filename = etabs.SapModel.GetModelFilename()
             if not filename:
-                open_model(etabs, edb)
+                open_model(etabs, filename)
                 filename = etabs.SapModel.GetModelFilename()
             filepath = Path(filename)
             if 'test.' in filepath.name:
@@ -46,7 +56,7 @@ def etabs_model(
         etabs = etabs_obj.EtabsModel(
                 attach_to_instance=False,
                 backup = False,
-                model_path = Path(__file__).parent / 'files' / edb,
+                model_path = Path(__file__).parent / 'files' / filename,
                 software_exe_path=rf'G:\program files\Computers and Structures\{software} {version}\{software}.exe'
             )
         new_instance = True

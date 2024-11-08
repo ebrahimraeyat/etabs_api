@@ -27,7 +27,7 @@ def find_etabs(
     backup=False,
     filename=None,
     show_warning: bool = True,
-    software: str='etabs',
+    # software: str='ETABS',
     ):
     '''
     try to find etabs in this manner:
@@ -37,6 +37,12 @@ def find_etabs(
     run : if True it runs the model
     backup: if True it backup from the main file
     '''
+    software_name = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/civilTools").GetInt("software_name", 0)
+    software = {
+        0: "ETABS",
+        1: "SAP2000",
+        2: "SAFE",
+        }.get(software_name, 'ETABS')
 
     # try to connect to opening etabs software
     etabs = etabs_obj.EtabsModel(backup=backup, software=software)

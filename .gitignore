@@ -156,6 +156,8 @@ ENV/
 *.ico
 *.ebk
 
+# SAP2000
+*.$2k
 
 # tex
 *.aux
@@ -171,4 +173,4 @@ ENV/
 
 # securiry
 test/etabs_api/test.*
-
+test/files/backups/

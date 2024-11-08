@@ -58,24 +58,27 @@ class EtabsModel:
                 self,
                 attach_to_instance: bool = True,
                 backup : bool = True,
-                software : str = 'ETABS', # 'SAFE'
+                software : str = 'ETABS', # 'SAFE', 'SAP2000'
                 model_path: Union[str, Path] = '',
                 software_exe_path: str = '',
                 ):
         self.software = software
         self.etabs = None
         self.success = False
+        helper = comtypes.client.CreateObject(f'{software}v1.Helper')
+        exec(f"helper = helper.QueryInterface(comtypes.gen.{software}v1.cHelper)")
         if attach_to_instance:
             try:
-                self.etabs = comtypes.client.GetActiveObject(f"CSI.{software}.API.ETABSObject")
+                if software in ("ETABS", "SAFE"):
+                    self.etabs = helper.GetObject(f"CSI.{software}.API.ETABSObject")
+                elif software == "SAP2000":
+                    self.etabs = helper.GetObject(f"CSI.{software}.API.SapObject")
                 self.success = True
             except (OSError, comtypes.COMError):
                 print("No running instance of the program found or failed to attach.")
                 self.success = False
-            else:
-                helper = comtypes.client.CreateObject('ETABSv1.Helper')
-                helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
-                if hasattr(helper, 'GetObjectProcess'):
+            finally:
+                if not self.success and  hasattr(helper, 'GetObjectProcess'):
                     try:
                         import psutil
                     except ImportError:
@@ -89,7 +92,10 @@ class EtabsModel:
                             pid = proc.pid
                             break
                     if pid is not None:
-                        self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.ETABSObject", pid)
+                        if software in ("ETABS", "SAFE"):
+                            self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.ETABSObject", pid)
+                        elif software == 'SAP2000':
+                            self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.SapObject", pid)
                         self.success = True
                 # sys.exit(-1)
         else:
@@ -202,25 +208,26 @@ class EtabsModel:
     def backup_model(self, name=None):
         max_num = 0
         backup_path=None
+        asli_file_path = self.get_filename()
         if name is None:
+            suffix = asli_file_path.suffix
             filename = self.get_file_name_without_suffix()
             file_path = self.get_filepath()
             backup_path = file_path / 'backups'
             if not backup_path.exists():
                 import os
                 os.mkdir(str(backup_path))
-            for edb in backup_path.glob(f'BACKUP_{filename}*.EDB'):
-                num = edb.name.rstrip('.EDB')[len('BACKUP_') + len(filename) + 1:]
+            for edb in backup_path.glob(f'BACKUP_{filename}*{suffix}'):
+                num = edb.name.rstrip(suffix)[len('BACKUP_') + len(filename) + 1:]
                 try:
                     num = int(num)
                     max_num = max(max_num, num)
                 except ValueError:
                     continue
-            name = f'BACKUP_{filename}_{max_num + 1}.EDB'
-        if not name.lower().endswith('.edb'):
-            name += '.EDB'
-        asli_file_path = self.get_filename()
-        asli_file_path = asli_file_path.with_suffix('.EDB')
+            name = f'BACKUP_{filename}_{max_num + 1}{suffix}'
+        if not name.lower().endswith(suffix.lower()):
+            name += suffix
+        asli_file_path = asli_file_path.with_suffix(suffix)
         if backup_path is None:
             new_file_path = asli_file_path.parent / name
         else:
@@ -230,7 +237,9 @@ class EtabsModel:
 
     def remove_backups(self):
         file_path = self.get_filepath() / 'backups'
-        for edb in file_path.glob('BACKUP_*.EDB'):
+        asli_file_path = self.get_filename()
+        suffix = asli_file_path.suffix
+        for edb in file_path.glob(f'BACKUP_*{suffix}'):
             edb.unlink()
         return None
 
@@ -284,15 +293,18 @@ class EtabsModel:
         self.SapModel.SetPresentUnits(number)
     
     def get_current_unit(self):
-        force_enum, len_enum, *argv = self.SapModel.GetPresentUnits_2()
-        for key, value in EtabsModel.force_units.items():
-            if force_enum == value:
-                force = key
-                break
-        for key, value in EtabsModel.length_units.items():
-            if len_enum == value:
-                length = key
-                break
+        unit_num = self.SapModel.GetPresentUnits()
+        for unit_str, n in self.enum_units.items():
+            if n == unit_num:
+                force, length = unit_str.split("_")[0:2]
+        # for key, value in EtabsModel.force_units.items():
+        #     if force_enum == value:
+        #         force = key
+        #         break
+        # for key, value in EtabsModel.length_units.items():
+        #     if len_enum == value:
+        #         length = key
+        #         break
         return force, length
 
     def get_file_name_without_suffix(self):
