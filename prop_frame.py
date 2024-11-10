@@ -63,7 +63,7 @@ class PropFrame:
         ):
         self.SapModel.PropFrame.SetRectangle(name, concrete, height, width)
         ret = self.SapModel.propframe.SetRebarColumn(
-            name, rebar_mat, tie_mat, 1, 0, cover, 0,
+            name, rebar_mat, tie_mat, 1, 1, cover, 0,
             number_3dir_main_bars, number_2dir_main_bars,
             main_rebar_size, tie_rebar_size, tie_space,
             number_2dir_tie_bars, number_3dir_tie_bars, design,
