@@ -58,17 +58,17 @@ class FrameObj:
     def set_end_length_offsets(self,
                                value: float=0.5,
                                ):
-        # beams, columns = self.get_beams_columns(types=range(1,10))
-        # for frame in beams + columns:
-        #     self.SapModel.FrameObj.SetEndLengthOffset(frame, True, 0, 0, value, 0)
-
-        cols = ['UniqueName', 'OffsetOpt', 'OffsetI', 'OffsetJ', 'RigidFact', 'SelfWtOpt']
-        table_key = 'Frame Assignments - End Length Offsets'
-        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
-        df.RigidFact = str(value)
-        if self.etabs.etabs_main_version < 20:
-            df.columns = ['UniqueName', 'Offset Option', 'Offset I', 'Offset J', 'Rigid Factor', 'Self Weight Option']
-        self.etabs.database.write(table_key, df)
+        self.etabs.SapModel.SelectObj.All()
+        self.etabs.SapModel.FrameObj.SetEndLengthOffset('', False, 0, 0, value, 2)
+        self.etabs.SapModel.FrameObj.SetEndLengthOffset('', True, 0, 0, value, 2)
+        self.etabs.SapModel.SelectObj.ClearSelection()
+        # cols = ['UniqueName', 'OffsetOpt', 'OffsetI', 'OffsetJ', 'RigidFact', 'SelfWtOpt']
+        # table_key = 'Frame Assignments - End Length Offsets'
+        # df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        # df.RigidFact = str(value)
+        # if self.etabs.etabs_main_version < 20:
+        #     df.columns = ['UniqueName', 'Offset Option', 'Offset I', 'Offset J', 'Rigid Factor', 'Self Weight Option']
+        # self.etabs.database.write(table_key, df)
 
     def is_frame_on_story(self, frame, story=None):
         if story is None:

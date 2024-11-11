@@ -379,7 +379,7 @@ def test_set_end_length_offsets():
     etabs.frame_obj.set_end_length_offsets(0.5)
     table_key = 'Frame Assignments - End Length Offsets'
     df = etabs.database.read(table_key, to_dataframe=True)
-    assert set(df.RigidFact.unique()) == {'0.5', '0'}
+    assert set(df.RigidFact.unique()) == {'0.5'}
 
 @open_etabs_file('shayesteh.EDB')
 def test_delete_frames():
