@@ -1386,6 +1386,28 @@ class FrameObj:
             for frame in frames:
                 self.SapModel.FrameObj.Delete(frame)
 
+    def set_lateral_bracing(self,
+                            names: list,
+                            type_: int=2, # 1: Point bracing, 2: Uniform bracing
+                            loc: int=1, # 1: top, 2: bottom, 3: all (top and bottom)
+                            dist1: float=0, # the location of the point bracing. When type_ = 2, this is the location of the start of the uniform bracing
+                            dist2: float=1, # This items is not used when type_ = 1. When type_ = 2, this is the location of the end of the uniform bracing
+                            relative: bool=True,
+                            ):
+        rets = []
+        for name in names:
+            ret = self.SapModel.FrameObj.SetLateralBracing(
+                name,
+                type_,
+                loc,
+                dist1,
+                dist2,
+                relative,
+            )
+            rets.append(ret)
+        return rets
+
+
 
 
 

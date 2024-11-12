@@ -407,8 +407,14 @@ def test_assign_wall_loads_to_etabs():
     np.testing.assert_allclose(ret[10], -665)
     np.testing.assert_allclose(ret[11], -665)
 
+@open_etabs_file('steel.EDB')
+def test_set_lateral_bracing():
+    names = ['94', '95', '96']
+    ret = etabs.frame_obj.set_lateral_bracing(names)
+    assert set(ret) == {0}
+
 if __name__ == '__main__':
-    test_assign_wall_loads_to_etabs()
+    test_set_lateral_bracing()
 
 
 
