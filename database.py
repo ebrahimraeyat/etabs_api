@@ -1,22 +1,17 @@
-from pathlib import Path
-import sys
-from typing import Iterable, Union
 import copy
-
-from numpy import int16
+from typing import Iterable, Union
 
 import pandas as pd
-pd.options.mode.chained_assignment = None
+from astropy.extern.ply.yacc import VersionError
+from numpy import int16
 
+pd.options.mode.chained_assignment = None
 
 __all__ = ['DatabaseTables']
 
+
 class DatabaseTables:
-    def __init__(
-                self,
-                SapModel=None,
-                etabs=None,
-                ):
+    def __init__(self, SapModel=None, etabs=None, ):
         if not SapModel:
             self.etabs = etabs
             self.SapModel = etabs.SapModel
@@ -26,17 +21,13 @@ class DatabaseTables:
     @staticmethod
     def reshape_data(FieldsKeysIncluded, table_data):
         n = len(FieldsKeysIncluded)
-        data = [list(table_data[i:i+n]) for i in range(0, len(table_data), n)]
+        data = [list(table_data[i:i + n]) for i in range(0, len(table_data), n)]
         return data
 
     @staticmethod
-    def reshape_data_to_df(
-                FieldsKeysIncluded,
-                table_data,
-                cols:list=None,
-                ) -> 'pandas.DataFrame':
+    def reshape_data_to_df(FieldsKeysIncluded, table_data, cols: list = None, ) -> 'pandas.DataFrame':
         n = len(FieldsKeysIncluded)
-        data = [list(table_data[i:i+n]) for i in range(0, len(table_data), n)]
+        data = [list(table_data[i:i + n]) for i in range(0, len(table_data), n)]
         df = pd.DataFrame(data, columns=FieldsKeysIncluded)
         if cols is not None:
             df = df[cols]
@@ -48,11 +39,7 @@ class DatabaseTables:
             return True
         return False
 
-    def read(self,
-                table_key : str,
-                to_dataframe : bool = False,
-                cols : list = None,
-                ):
+    def read(self, table_key: str, to_dataframe: bool = False, cols: list = None, ):
         ret = self.read_table(table_key)
         if not ret:
             return None
@@ -78,18 +65,12 @@ class DatabaseTables:
         data = list(df.values.reshape(1, df.size)[0])
         return fields, data
 
-    def write(self,
-            table_key : str,
-            data : Union[list, pd.core.frame.DataFrame],
-            fields : Union[list, tuple, bool] = None,
-            ) -> None:
+    def write(self, table_key: str, data: Union[list, pd.core.frame.DataFrame],
+              fields: Union[list, tuple, bool] = None, ) -> None:
         self.apply_data(table_key, data, fields)
-        
-    def apply_data(self,
-            table_key : str,
-            data : Union[list, pd.core.frame.DataFrame],
-            fields : Union[list, tuple, bool] = None,
-            ) -> tuple:
+
+    def apply_data(self, table_key: str, data: Union[list, pd.core.frame.DataFrame],
+                   fields: Union[list, tuple, bool] = None, ) -> tuple:
         if type(data) == pd.core.frame.DataFrame:
             if fields is None:
                 fields, data = self.get_fields_and_data_from_dataframe(data)
@@ -112,8 +93,8 @@ class DatabaseTables:
         NumInfoMsgs = 0
         ImportLog = ''
         [NumFatalErrors, NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog,
-            ret] = self.SapModel.DatabaseTables.ApplyEditedTables(FillImportLog, NumFatalErrors,
-                                                            NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog)
+         ret] = self.SapModel.DatabaseTables.ApplyEditedTables(FillImportLog, NumFatalErrors, NumErrorMsgs, NumWarnMsgs,
+                                                               NumInfoMsgs, ImportLog)
         return NumFatalErrors, ret
 
     def read_table(self, table_key):
@@ -125,12 +106,11 @@ class DatabaseTables:
         TableData = []
         if not self.table_exist(table_key):
             return None
-        return self.SapModel.DatabaseTables.GetTableForDisplayArray(table_key, FieldKeyList, GroupName, TableVersion, FieldsKeysIncluded, NumberRecords, TableData)
+        return self.SapModel.DatabaseTables.GetTableForDisplayArray(table_key, FieldKeyList, GroupName, TableVersion,
+                                                                    FieldsKeysIncluded, NumberRecords, TableData)
 
     @staticmethod
-    def remove_df_columns(df,
-            columns : Iterable = ('GUID', 'Notes'),
-            ):
+    def remove_df_columns(df, columns: Iterable = ('GUID', 'Notes'), ):
         for col in columns:
             if col in df.columns:
                 del df[col]
@@ -139,11 +119,8 @@ class DatabaseTables:
         df = self.reshape_data_to_df(FieldsKeysIncluded, TableData)
         ret = self.write_seismic_user_coefficient_df(df)
         return ret
-    
-    def write_seismic_user_coefficient_df(self, 
-            df,
-            loads_type : dict = {},
-            ):
+
+    def write_seismic_user_coefficient_df(self, df, loads_type: dict = {}, ):
         if self.etabs.etabs_main_version < 20:
             new_columns = copy.deepcopy(self.etabs.auto_seismic_user_coefficient_columns_part1)
             if len(df.columns) == len(new_columns) + 2:
@@ -164,20 +141,10 @@ class DatabaseTables:
         ret = self.apply_data(table_key, df)
         return ret[1:]
 
-    def expand_seismic_load_patterns(self,
-        equal_names : dict = {
-            'XDir' : 'EX',
-            'XDirPlusE' : 'EXP',
-            'XDirMinusE' : 'EXN',
-            'YDir' : 'EY',
-            'YDirPlusE' : 'EYP',
-            'YDirMinusE' : 'EYN',
-            },
-            replace_ex : bool = False,
-            replace_ey : bool = False,
-            drift_prefix : str = '',
-            drift_suffix : str = '_DRIFT',
-            ):
+    def expand_seismic_load_patterns(self, equal_names: dict = {'XDir': 'EX', 'XDirPlusE': 'EXP', 'XDirMinusE': 'EXN',
+                                                                'YDir': 'EY', 'YDirPlusE': 'EYP',
+                                                                'YDirMinusE': 'EYN', }, replace_ex: bool = False,
+                                     replace_ey: bool = False, drift_prefix: str = '', drift_suffix: str = '_DRIFT', ):
         self.etabs.unlock_model()
         self.etabs.lock_and_unlock_model()
         self.etabs.load_patterns.select_all_load_patterns()
@@ -189,7 +156,7 @@ class DatabaseTables:
         df = df.loc[filt]
         self.remove_df_columns(df, ('OverStory', 'OverDiaph', 'OverEcc'))
         # obtain multi assign loads
-        d = {'Yes' : 1, 'No' : 0}
+        d = {'Yes': 1, 'No': 0}
         cols = list(equal_names.keys())
         for col in cols:
             df[col] = df[col].map(d)
@@ -216,17 +183,8 @@ class DatabaseTables:
             load_type = self.etabs.seismic_drift_load_type if name in drift_load_names else 5
             for col in cols:
                 if row[col] == 1:
-                    if all((
-                            col == 'XDir',
-                            is_ex,
-                            load_type == 5,
-                            not replace_ex,
-                        )) or all((
-                            col == 'YDir',
-                            is_ey,
-                            load_type == 5,
-                            not replace_ey,
-                        )):
+                    if all((col == 'XDir', is_ex, load_type == 5, not replace_ex,)) or all(
+                            (col == 'YDir', is_ey, load_type == 5, not replace_ey,)):
                         continue
                     load_name = equal_names[col]
                     if name in drift_load_names:
@@ -260,10 +218,7 @@ class DatabaseTables:
             df[col] = df[col].map(d)
         return df, converted_loads
 
-
-    def expand_loadcases(self,
-            loads_expanded : Union[dict, bool] = None,
-            ):
+    def expand_loadcases(self, loads_expanded: Union[dict, bool] = None, ):
         if loads_expanded is None:
             ret = self.expand_seismic_load_patterns()
             if ret is None:
@@ -301,10 +256,8 @@ class DatabaseTables:
                             zip_loadcases[loadcase].append(name)
         return new_loadcase_df, zip_loadcases
 
-    def expand_linear_loadcombos(self,
-            loads_expanded : Union[dict, bool] = None,
-            loadcombos_df : Union[pd.DataFrame, bool] = None,
-            ):
+    def expand_linear_loadcombos(self, loads_expanded: Union[dict, bool] = None,
+                                 loadcombos_df: Union[pd.DataFrame, bool] = None, ):
         if loads_expanded is None:
             ret = self.expand_loadcases()
             if ret is None:
@@ -343,10 +296,8 @@ class DatabaseTables:
                             zip_loadcombos[loadcombo].append(name)
         return new_loadcombo_df, zip_loadcombos
 
-    def expand_envelop_loadcombos(self,
-            loads_expanded : Union[dict, bool] = None,
-            loadcombos_df : Union[pd.DataFrame, bool] = None,
-            ):
+    def expand_envelop_loadcombos(self, loads_expanded: Union[dict, bool] = None,
+                                  loadcombos_df: Union[pd.DataFrame, bool] = None, ):
         if loads_expanded is None:
             ret = self.expand_loadcases()
             if ret is None:
@@ -364,32 +315,29 @@ class DatabaseTables:
         filt = new_loadcombo_df['LoadName'].isin(zip_loadcases)
         df_loadcombos_include_zip_loadcases = new_loadcombo_df.loc[filt]
         df_loadcombos_not_include_zip_loadcases = new_loadcombo_df.loc[~filt]
-        df_loadcombos_include_zip_loadcases.loc[:, 'LoadName'] = df_loadcombos_include_zip_loadcases.loc[:, 'LoadName'].map(loads_expanded)
+        df_loadcombos_include_zip_loadcases.loc[:, 'LoadName'] = df_loadcombos_include_zip_loadcases.loc[:,
+                                                                 'LoadName'].map(loads_expanded)
         df_loadcombos_include_zip_loadcases = df_loadcombos_include_zip_loadcases.explode('LoadName')
         df = df_loadcombos_not_include_zip_loadcases.append(df_loadcombos_include_zip_loadcases)
         return df
 
-    def expand_loadcombos(self,
-            convert_loadcases : dict):
+    def expand_loadcombos(self, convert_loadcases: dict):
         df_linear_combos, convert_lcombos = self.expand_linear_loadcombos(convert_loadcases)
         additional_convert_lcombos = convert_lcombos.copy()
         while additional_convert_lcombos:
-            df_linear_combos, additional_convert_lcombos = self.expand_linear_loadcombos(additional_convert_lcombos, df_linear_combos)
+            df_linear_combos, additional_convert_lcombos = self.expand_linear_loadcombos(additional_convert_lcombos,
+                                                                                         df_linear_combos)
             convert_lcombos.update(additional_convert_lcombos)
         df_envelop_combos = self.expand_envelop_loadcombos(convert_lcombos)
         df = df_linear_combos.append(df_envelop_combos)
         return df, convert_lcombos
 
-    def expand_design_combos(self,
-            convert_loadcombos : dict,
-            ):
+    def expand_design_combos(self, convert_loadcombos: dict, ):
         expanded_dfs = dict()
-        table_keys = {
-            'concrete': 'Concrete Frame Design Load Combination Data',
-            'steel': 'Steel Design Load Combination Data',
-            'shearwall': 'Shear Wall Design Load Combination Data',
-            'slab': 'Concrete Slab Design Load Combination Data',
-        }
+        table_keys = {'concrete': 'Concrete Frame Design Load Combination Data',
+                      'steel': 'Steel Design Load Combination Data',
+                      'shearwall': 'Shear Wall Design Load Combination Data',
+                      'slab': 'Concrete Slab Design Load Combination Data', }
         for type_ in ('concrete', 'steel', 'shearwall', 'slab'):
             table_key = table_keys[type_]
             df = self.expand_table(table_key, convert_loadcombos, 'ComboName')
@@ -397,10 +345,7 @@ class DatabaseTables:
                 expanded_dfs[table_key] = df
         return expanded_dfs
 
-    def set_expand_seismic_load_patterns(self,
-            df : pd.core.frame.DataFrame,
-            converted_loads : dict,
-            ):
+    def set_expand_seismic_load_patterns(self, df: pd.core.frame.DataFrame, converted_loads: dict, ):
         fields, data = self.get_fields_and_data_from_dataframe(df)
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         self.write_seismic_user_coefficient(table_key, fields, data)
@@ -412,27 +357,16 @@ class DatabaseTables:
         dflp = dflp.loc[filt]
         self.apply_data(table_key, dflp)
 
-    def set_expand_loadcases(self,
-            df : pd.core.frame.DataFrame,
-            converted_loadcases : dict,
-            ):
+    def set_expand_loadcases(self, df: pd.core.frame.DataFrame, converted_loadcases: dict, ):
         table_key = 'Load Case Definitions - Summary'
         df_loadcases_summary = self.read(table_key, to_dataframe=True)
         self.remove_df_columns(df_loadcases_summary)
         df_loadcases_summary = self.expand_table(df_loadcases_summary, converted_loadcases, 'Name')
         self.apply_data(table_key, df_loadcases_summary)
         table_key = 'Load Case Definitions - Linear Static'
-        equal_fields = {
-            'Name' : 'Name',
-            'Group' : 'Exclude Group',
-            'MassSource' : 'Mass Source',
-            'StiffType' : 'Stiffness Type',
-            'LoadType' : 'Load Type',
-            'LoadName' : 'Load Name',
-            'LoadSF' : 'LoadSF',
-            'DesignType' : 'Design Type',
-            'UserDesType' : 'User Design Type',
-            }
+        equal_fields = {'Name': 'Name', 'Group': 'Exclude Group', 'MassSource': 'Mass Source',
+                        'StiffType': 'Stiffness Type', 'LoadType': 'Load Type', 'LoadName': 'Load Name',
+                        'LoadSF': 'LoadSF', 'DesignType': 'Design Type', 'UserDesType': 'User Design Type', }
         etabs_fields = []
         fields = []
         for col in df.columns:
@@ -454,9 +388,7 @@ class DatabaseTables:
                 lsf = [float(i) for i in lsf]
                 self.SapModel.LoadCases.StaticLinear.SetLoads(loadcase, n, n * ('Load',), lcs, lsf)
 
-    def set_expand_load_combinations(self,
-        df : pd.DataFrame,
-        ):
+    def set_expand_load_combinations(self, df: pd.DataFrame, ):
         table_key = 'Load Combination Definitions'
         fields = ('Name', 'Type', 'Is Auto', 'Load Name', 'SF', 'Notes')
         df = df[['Name', 'Type', 'IsAuto', 'LoadName', 'SF', 'Notes']]
@@ -472,9 +404,7 @@ class DatabaseTables:
                 scale_factor = float(row['SF'])
                 self.SapModel.RespCombo.SetCaseList(name, type_, loadname, scale_factor)
 
-    def apply_expand_design_combos(self,
-            expanded_tables : dict,
-            ):
+    def apply_expand_design_combos(self, expanded_tables: dict, ):
         for table_key, df in expanded_tables.items():
             if len(df.columns) == 3:
                 fields = ('Design Type', 'Combo Type', 'Combo Name')
@@ -482,20 +412,9 @@ class DatabaseTables:
                 fields = ('Combo Type', 'Combo Name')
             self.apply_data(table_key, df, fields)
 
-    def expand_loads(self,
-        equal_names : dict = {
-            'XDir' : 'EX',
-            'XDirPlusE' : 'EPX',
-            'XDirMinusE' : 'ENX',
-            'YDir' : 'EY',
-            'YDirPlusE' : 'EPY',
-            'YDirMinusE' : 'ENY',
-            },
-            replace_ex : bool = False,
-            replace_ey : bool = False,
-            drift_prefix : str = '',
-            drift_suffix : str = '_DRIFT',
-            ):
+    def expand_loads(self, equal_names: dict = {'XDir': 'EX', 'XDirPlusE': 'EPX', 'XDirMinusE': 'ENX', 'YDir': 'EY',
+                                                'YDirPlusE': 'EPY', 'YDirMinusE': 'ENY', }, replace_ex: bool = False,
+                     replace_ey: bool = False, drift_prefix: str = '', drift_suffix: str = '_DRIFT', ):
         yield ("Get expanding seismic load patterns ...", 5)
         ret = self.expand_seismic_load_patterns(equal_names, replace_ex, replace_ey, drift_prefix, drift_suffix)
         if ret is None:
@@ -519,11 +438,7 @@ class DatabaseTables:
         yield ("Expanding Load Patterns Finished ...", 100)
         yield True
 
-    def expand_table(self,
-            df : Union[pd.DataFrame, str],
-            expand : dict,
-            col_name : str,
-            ):
+    def expand_table(self, df: Union[pd.DataFrame, str], expand: dict, col_name: str, ):
         expand_keys = list(expand.keys())
         if type(df) == str:
             df = self.read(df, to_dataframe=True)
@@ -559,11 +474,9 @@ class DatabaseTables:
             return
         import copy
         fields_keys_included1 = copy.deepcopy(
-            self.etabs.auto_seismic_user_coefficient_columns_part1 + 
-            self.etabs.auto_seismic_user_coefficient_columns_part2 +
-            ['C', 'K'], 
-            )
-        
+            self.etabs.auto_seismic_user_coefficient_columns_part1 + self.etabs.auto_seismic_user_coefficient_columns_part2 + [
+                'C', 'K'], )
+
         extra_fields = ('OverStory', 'OverDiaph', 'OverEcc')
         if input_df.shape[1] < len(fields_keys_included1):
             i_ecc_ow_story = fields_keys_included1.index(self.etabs.ecc_overwrite_story)
@@ -580,8 +493,7 @@ class DatabaseTables:
         for i, row in input_df.iterrows():
             case = row['Name']
             if case in cases:
-                ecc_length = df[
-                    (df['OutputCase'] == case)]
+                ecc_length = df[(df['OutputCase'] == case)]
                 for k, (_, row_aj) in enumerate(ecc_length.iterrows()):
                     story = row_aj['Story']
                     diaph = row_aj['Diaph']
@@ -601,8 +513,7 @@ class DatabaseTables:
         for row in additional_rows:
             input_df = input_df.append(row)
         self.apply_data(table_key, input_df, fields_keys_included1)
-    
-    
+
     def write_daynamic_aj_user_coefficient(self, df=None):
         if df is None:
             df = self.etabs.get_dynamic_magnification_coeff_aj()
@@ -611,24 +522,13 @@ class DatabaseTables:
         loadcases = list(df['OutputCase'].unique())
         self.etabs.load_cases.select_load_cases(loadcases)
         table_key = 'Load Case Definitions - Response Spectrum'
-        fields = [
-                'Name', 'MassSource', 'LoadName', 'Function', 'TransAccSF',
-                'CoordSys', 'Angle', 'ModalCase', 'ModalCombo',
-                'DirCombo', 'EccenRatio', 
-                ]
-        col_map = {
-                    'MassSource': 'Mass Source',
-                    'LoadName': 'Load Name',
-                    'TransAccSF': 'Trans Accel SF',
-                    'CoordSys': 'Coordinate System',
-                    'ModalCase': 'Modal Case',
-                    'ModalCombo': 'Modal Combo Method',
-                    'DirCombo': 'Directional Combo Type',
-                    'EccenRatio': 'Eccentricity Ratio', 
-                    'OverDiaph': 'Diaphragm Overwrite',
-                    'OverEccen': 'Eccentricity OverWrite',
-                    'OverStory': 'Story Overwrite',
-                    }
+        fields = ['Name', 'MassSource', 'LoadName', 'Function', 'TransAccSF', 'CoordSys', 'Angle', 'ModalCase',
+                  'ModalCombo', 'DirCombo', 'EccenRatio', ]
+        col_map = {'MassSource': 'Mass Source', 'LoadName': 'Load Name', 'TransAccSF': 'Trans Accel SF',
+                   'CoordSys': 'Coordinate System', 'ModalCase': 'Modal Case', 'ModalCombo': 'Modal Combo Method',
+                   'DirCombo': 'Directional Combo Type', 'EccenRatio': 'Eccentricity Ratio',
+                   'OverDiaph': 'Diaphragm Overwrite', 'OverEccen': 'Eccentricity OverWrite',
+                   'OverStory': 'Story Overwrite', }
         df1 = self.read(table_key, to_dataframe=True, cols=fields)
         extra_fields = ('OverStory', 'OverDiaph', 'OverEccen')
         for field in extra_fields:
@@ -640,8 +540,7 @@ class DatabaseTables:
         for i, row in df1.iterrows():
             case = row['Name']
             if case in loadcases:
-                ecc_length = df[
-                    (df['OutputCase'] == case)]
+                ecc_length = df[(df['OutputCase'] == case)]
                 for k, (_, row_aj) in enumerate(ecc_length.iterrows()):
                     story = row_aj['Story']
                     diaph = row_aj['Diaph']
@@ -659,7 +558,7 @@ class DatabaseTables:
                         additional_rows.append(new_row)
         for row in additional_rows:
             df1 = df1.append(row)
-        if self.etabs.etabs_main_version  < 20:
+        if self.etabs.etabs_main_version < 20:
             df1 = df1.rename(col_map, axis=1)
         self.SapModel.SetModelIsLocked(False)
         self.apply_data(table_key, df1)
@@ -682,10 +581,8 @@ class DatabaseTables:
         return story_rigidity
 
     def get_stories_displacement_in_xy_modes(self):
-        asli_file_path, _ = self.etabs.save_in_folder_and_add_name(
-            folder_name = 'story_stiffness',
-            name = 'modal_stiffness',
-            )
+        asli_file_path, _ = self.etabs.save_in_folder_and_add_name(folder_name='story_stiffness',
+                                                                   name='modal_stiffness', )
         story_point = self.etabs.story.add_points_in_center_of_rigidity_and_assign_diph()
         modal = self.etabs.load_cases.get_modal_loadcase_name()
         self.etabs.analyze.set_load_cases_to_analyze([modal])
@@ -721,11 +618,7 @@ class DatabaseTables:
         self.SapModel.File.OpenFile(str(asli_file_path))
         return x_results, y_results, wx, wy
 
-    def multiply_seismic_loads(
-            self,
-            x: float = .67,
-            y=None,
-            ):
+    def multiply_seismic_loads(self, x: float = .67, y=None, ):
         if not y:
             y = x
         self.SapModel.SetModelIsLocked(False)
@@ -758,10 +651,7 @@ class DatabaseTables:
         # self.SapModel.File.Save(str(edb_filename))
         return NumFatalErrors, ret
 
-    def get_story_forces(
-                    self,
-                    loadcases: list=None,
-                    ):
+    def get_story_forces(self, loadcases: list = None, ):
         if not loadcases:
             loadcases = self.etabs.load_patterns.get_ex_ey_earthquake_name()
         self.etabs.run_analysis()
@@ -778,9 +668,7 @@ class DatabaseTables:
         story_forces = list(result)
         return story_forces, loadcases, FieldsKeysIncluded
 
-    def select_design_load_combinations(self,
-            types : list = ['concrete'],
-            ):
+    def select_design_load_combinations(self, types: list = ['concrete'], ):
         load_combinations = set()
         type_combos = dict()
         for type_ in types:
@@ -791,35 +679,22 @@ class DatabaseTables:
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay('')
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
         return type_combos
-    
-    def select_load_cases_combinations(self,
-                                       load_cases: list=[],
-                                       load_combinations: list=[],
-            ):
+
+    def select_load_cases_combinations(self, load_cases: list = [], load_combinations: list = [], ):
         self.etabs.run_analysis()
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay([])
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay([])
         self.SapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(load_cases)
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
 
-    def get_beams_forces(self,
-                        load_combinations : list = None,
-                        beams : list = None,
-                        cols : list = None,
-                        ) -> 'pandas.DataFrame':
-        return self.get_element_forces(
-            element_type='Beams',
-            load_combinations=load_combinations,
-            elements=beams,
-            cols=cols,
-        )
+    def get_beams_forces(self, load_combinations: list = None, beams: list = None,
+                         cols: list = None, ) -> 'pandas.DataFrame':
+        return self.get_element_forces(element_type='Beams', load_combinations=load_combinations, elements=beams,
+                                       cols=cols, )
 
-    def get_element_forces(self,
-                        element_type : str = 'Beams', # 'Columns'
-                        load_combinations : list = None,
-                        elements : list = None,
-                        cols : list = None,
-                        ) -> 'pandas.DataFrame':
+    def get_element_forces(self, element_type: str = 'Beams',  # 'Columns'
+                           load_combinations: list = None, elements: list = None,
+                           cols: list = None, ) -> 'pandas.DataFrame':
         '''
         cols : columns in dataframe that we want to get
         '''
@@ -834,11 +709,8 @@ class DatabaseTables:
             df = df[df['UniqueName'].isin(elements)]
         return df
 
-    def get_beams_torsion(self,
-                        load_combinations : list = None,
-                        beams : list = None,
-                        cols : list = None,
-                        ) -> pd.DataFrame:
+    def get_beams_torsion(self, load_combinations: list = None, beams: list = None,
+                          cols: list = None, ) -> pd.DataFrame:
         if cols is None:
             cols = ['Story', 'Beam', 'UniqueName', 'T']
         self.etabs.set_current_unit('tonf', 'm')
@@ -854,9 +726,8 @@ class DatabaseTables:
         df = self.read(table_key, to_dataframe=True)
         return list(df['ComboName'])
 
-    def get_design_load_combinations(self,
-            type_ : str = 'concrete', # 'steel', 'shearwall', 'slab'
-            ):
+    def get_design_load_combinations(self, type_: str = 'concrete',  # 'steel', 'shearwall', 'slab'
+                                     ):
         if type_ == 'concrete':
             table_key = 'Concrete Frame Design Load Combination Data'
         elif type_ == 'steel':
@@ -872,33 +743,45 @@ class DatabaseTables:
             df = df[df['DesignType'] == 'Steel Frame']
         return list(df['ComboName'])
 
-    def create_section_cuts(self,
-            group : str,
-            prefix : str = 'SEC',
-            angles : list = range(0, 180, 15),
-            ):
+    def create_section_cuts(self, group: str, prefix: str = 'SEC', angles: list = range(0, 180, 15), ):
         if self.etabs.etabs_main_version < 20:
-            fields = ('Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y', 'Rotation About X')
+            fields = (
+                'Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y',
+                'Rotation About X')
         else:
             fields = ('Name', 'DefinedBy', 'Group', 'ResultType', 'ResultLoc', 'RotAboutZ', 'RotAboutY', 'RotAboutX')
         data = []
         for angle in angles:
             name = f'{prefix}{angle}'
-            data.append(
-            (
-                name,
-                'Group',
-                group,
-                'Analysis',
-                'Default',
-                str(angle),
-                '0',
-                '0',
-            )
-            )
+            data.append((name, 'Group', group, 'Analysis', 'Default', str(angle), '0', '0',))
         data = self.unique_data(data)
         table_key = 'Section Cut Definitions'
         self.write(table_key, data, fields)
+
+    def create_section_cuts_with_quad(self, name: str, quadPoint1: list, quadPoint2: list, quadPoint3: list,
+                                                 quadPoint4: list, resultLoc: list, group: str = 'All'):
+        if self.etabs.etabs_main_version > 20:
+            data = []
+            fields = ('Name', 'DefinedBy', 'Group', 'ResultType', 'ResultLoc', 'LocX', 'LocY', 'LocZ', 'RotAboutZ',
+                      'RotAboutY', 'RotAboutX', 'AxisAngle', 'ElementSide', 'NumQuads', 'QuadNum', 'PointNum', 'QuadX',
+                      'QuadY', 'QuadZ', 'GUID')
+            data.append((name, 'Quads', group, 'Analysis', 'User Defined', resultLoc[0], resultLoc[1], resultLoc[2], '0',
+                     '0', '0', '', 'Top or Right or Positive3', '1', '1', '1', quadPoint1[0], quadPoint1[1],
+                     quadPoint1[2], ''))
+            data.append((name, '', '', '', '', '', '', '', '', '', '', '', '', '', '1', '2', quadPoint2[0], quadPoint2[1],
+                     quadPoint2[2], ''))
+            data.append((name, '', '', '', '', '', '', '', '', '', '', '', '', '', '1', '3', quadPoint3[0], quadPoint3[1],
+                     quadPoint3[2], ''))
+            data.append((name, '', '', '', '', '', '', '', '', '', '', '', '', '', '1', '4', quadPoint4[0], quadPoint4[1],
+                     quadPoint4[2], ''))
+
+            data = self.unique_data(data)
+            table_key = 'Section Cut Definitions'
+            self.write(table_key, data, fields)
+        else:
+            # TODO: implement < 20 version
+            print("Not implemented for versions < 20")
+            return None
 
     def get_section_cuts(self, cols=['Name', 'Group', 'RotAboutZ']):
         table = 'Section Cut Definitions'
@@ -915,25 +798,16 @@ class DatabaseTables:
         re_dict = df1.set_index('Name').to_dict()['RotAboutZ']
         return re_dict
 
-    def get_section_cuts_base_shear(self,
-            loadcases : list = None,
-            section_cuts: list = None,
-            ):
+    def get_section_cuts_base_shear(self, loadcases: list = None, section_cuts: list = None, ):
         self.etabs.run_analysis()
         table = 'Section Cut Forces - Analysis'
         columns = ['SectionCut', 'OutputCase', 'F1', 'F2']
         self.etabs.load_cases.select_load_cases(loadcases)
         df = self.read(table, to_dataframe=True, cols=columns)
-        df = df[
-                (df['OutputCase'].isin(loadcases)) &
-                (df['SectionCut'].isin(section_cuts))
-                ]
+        df = df[(df['OutputCase'].isin(loadcases)) & (df['SectionCut'].isin(section_cuts))]
         return df
 
-    def get_joint_design_reactions(self,
-        types : list = ['concrete', 'steel'],
-        select_combos : bool = True,
-        ):
+    def get_joint_design_reactions(self, types: list = ['concrete', 'steel'], select_combos: bool = True, ):
         if select_combos:
             self.select_design_load_combinations(types)
         table_key = 'Joint Design Reactions'
@@ -941,19 +815,16 @@ class DatabaseTables:
         if 'StepType' in df.columns:
             cols = ['UniqueName', 'OutputCase', 'StepType', 'FZ', 'MX', 'MY']
             df = df[cols]
-            df['StepType'].fillna('Max', inplace=True)
-            # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']
-            # df.drop(columns=['StepType'], inplace=True)
+            df['StepType'].fillna('Max',
+                                  inplace=True)  # df['OutputCase'] = df['OutputCase'] + '_' + df['StepType']  # df.drop(columns=['StepType'], inplace=True)
         else:
             cols = ['UniqueName', 'OutputCase', 'FZ', 'MX', 'MY']
             df = df[cols]
             df['StepType'] = 'Max'
         df.dropna(inplace=True)
         return df
-    
-    def get_all_joint_design_reactions(self,
-        select_combos : bool = True,
-        ):
+
+    def get_all_joint_design_reactions(self, select_combos: bool = True, ):
         self.etabs.run_analysis()
         if select_combos:
             self.etabs.load_combinations.select_load_combinations()
@@ -970,8 +841,7 @@ class DatabaseTables:
         df.dropna(inplace=True)
         return df
 
-    def get_frame_assignment_summary(self,
-            frames : list = None):
+    def get_frame_assignment_summary(self, frames: list = None):
         table_key = 'Frame Assignments - Summary'
         df = self.read(table_key, to_dataframe=True)
         if 'AxisAngle' in df.columns:
@@ -1025,9 +895,7 @@ class DatabaseTables:
         df = self.read(table_key, to_dataframe=True, cols=cols)
         return df
 
-    def get_points_connectivity(self,
-            stories : tuple = (),
-            ):
+    def get_points_connectivity(self, stories: tuple = (), ):
         table_key = 'Point Object Connectivity'
         if stories:
             cols = ['UniqueName', 'Story', 'X', 'Y', 'Z']
@@ -1041,10 +909,8 @@ class DatabaseTables:
         df[['X', 'Y', 'Z']] = df[['X', 'Y', 'Z']].apply(pd.to_numeric, downcast='float')
         return df
 
-    def get_frame_points_xyz(self,
-            frames : Union[list, None] = None,
-            frame_type : str = 'Beam',  # 'Column'
-            ) -> 'pandas.DataFrame':
+    def get_frame_points_xyz(self, frames: Union[list, None] = None, frame_type: str = 'Beam',  # 'Column'
+                             ) -> 'pandas.DataFrame':
         if frames is None:
             frames = self.SapModel.SelectObj.GetSelected()[2]
         df_frames = self.get_frame_connectivity(frame_type=frame_type)
@@ -1063,10 +929,8 @@ class DatabaseTables:
             df_frames[col_name] = df_frames['UniquePtJ'].map(s)
         return df_frames
 
-    def get_basepoints_coord_and_dims(self,
-        joint_design_reactions_df : Union['pandas.DataFrame', None] = None,
-        base_columns_df : Union['pandas.DataFrame', None] = None,
-        ):
+    def get_basepoints_coord_and_dims(self, joint_design_reactions_df: Union['pandas.DataFrame', None] = None,
+                                      base_columns_df: Union['pandas.DataFrame', None] = None, ):
         '''
         get base points coordinates and related column dimensions
         '''
@@ -1118,55 +982,38 @@ class DatabaseTables:
 
     def get_strip_connectivity(self):
         table_key = 'Strip Object Connectivity'
-        cols = ['Name', 'NumSegs', 'StartPoint', 'EndPoint', 'WStartLeft',
-            'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
+        cols = ['Name', 'NumSegs', 'StartPoint', 'EndPoint', 'WStartLeft', 'WStartRight', 'WEndLeft', 'WEndRight',
+                'AutoWiden', 'Layer']
         if self.etabs.software == 'ETABS':
             cols.insert(1, 'Story')
         df = self.read(table_key, to_dataframe=True, cols=cols)
         return df
 
-    def create_area_spring_table(self,
-            names_props : list,
-            ) -> None:
+    def create_area_spring_table(self, names_props: list, ) -> None:
         table_key = 'Spring Property Definitions - Area Springs'
         fields = ('Name', 'SubModulus', 'NonlinOpt')
         data = []
         for name, submodulus in names_props:
-            data.append(
-            (name, submodulus, 'Compression Only')
-            )
+            data.append((name, submodulus, 'Compression Only'))
         data = self.unique_data(data)
         self.etabs.set_current_unit('kgf', 'cm')
         self.apply_data(table_key, data, fields)
 
-    def create_punching_shear_general_table(self,
-            punches : list,
-            ) -> None:
+    def create_punching_shear_general_table(self, punches: list, ) -> None:
         table_key = 'Concrete Slab Design Overwrites - Punching Shear - General'
-        fields = ('UniqueName', 'CheckPunchingShear', 'LocationType', 'Perimeter',
-                'EffDepthType', 'EffDepth', 'OpeningDef'
-                )
+        fields = (
+            'UniqueName', 'CheckPunchingShear', 'LocationType', 'Perimeter', 'EffDepthType', 'EffDepth', 'OpeningDef')
         data = []
         for punch in punches:
-            data.append(
-            (punch.id,
-            'Program Determined',
-            punch.Location,
-            'Specified Perimeter',
-            # f'{punch.bx}',
-            # f'{punch.by}',
-            # f'{punch.angle.Value}',
-            'Specified',
-            f'{punch.d}',
-            'Specified',
-            ))
+            data.append((punch.id, 'Program Determined', punch.Location, 'Specified Perimeter',  # f'{punch.bx}',
+                         # f'{punch.by}',
+                         # f'{punch.angle.Value}',
+                         'Specified', f'{punch.d}', 'Specified',))
         data = self.unique_data(data)
         self.etabs.set_current_unit('kgf', 'mm')
         self.apply_data(table_key, data, fields)
 
-    def create_punching_shear_perimeter_table(self,
-            punches : list,
-            ) -> None:
+    def create_punching_shear_perimeter_table(self, punches: list, ) -> None:
         try:
             from safe.punch import punch_funcs
         except:
@@ -1179,14 +1026,7 @@ class DatabaseTables:
             nulls, null_points = punch_funcs.punch_null_points(punch)
             for i, (point, is_null) in enumerate(zip(null_points, nulls), start=1):
                 x, y = point.x, point.y
-                data.append(
-                    (name,
-                    str(i),
-                    f'{x}',
-                    f'{y}',
-                    '0',
-                    is_null,
-                ))
+                data.append((name, str(i), f'{x}', f'{y}', '0', is_null,))
         data = self.unique_data(data)
         self.etabs.set_current_unit('kgf', 'mm')
         self.apply_data(table_key, data, fields)
@@ -1194,10 +1034,7 @@ class DatabaseTables:
     def get_hight_pressure_columns(self):
         return self.get_axial_pressure_columns()
 
-
-    def get_axial_pressure_columns(self,
-                                   limit: float= 0.3,
-        ):
+    def get_axial_pressure_columns(self, limit: float = 0.3, ):
         self.etabs.set_current_unit('N', 'mm')
         cols = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P']
         column_forces = self.get_element_forces(element_type='Columns', cols=cols)
@@ -1231,14 +1068,13 @@ class DatabaseTables:
         column_forces[limit_ag_fc] = limit * column_forces['t2'] * column_forces['t3'] * column_forces['fc']
         import numpy as np
         column_forces['Result'] = np.where(column_forces['P'] > column_forces[limit_ag_fc], True, False)
-        fields = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section',  't2', 't3', 'fc', limit_ag_fc, 'Result']
+        fields = ['Story', 'Column', 'OutputCase', 'UniqueName', 'P', 'section', 't2', 't3', 'fc', limit_ag_fc,
+                  'Result']
         df = column_forces[fields]
         return df
-    
-    def set_floor_cracking(self,
-        names: Union[list, bool]=None,
-        type_: str='Frame', # 'Area
-        ):
+
+    def set_floor_cracking(self, names: Union[list, bool] = None, type_: str = 'Frame',  # 'Area
+                           ):
         table_key = f"{type_} Assignments - Floor Cracking"
         if names is None:
             if type_ == 'Frame':
@@ -1253,12 +1089,7 @@ class DatabaseTables:
             df.columns = ['UniqueName', 'Consider']
         self.write(table_key=table_key, data=df)
 
-    def create_nonlinear_loadcases(self,
-        dead: list,
-        supper_dead: list,
-        lives: list,
-        lives_percentage: float = 0.25,
-        ):
+    def create_nonlinear_loadcases(self, dead: list, supper_dead: list, lives: list, lives_percentage: float = 0.25, ):
         if self.etabs.etabs_main_version < 20:
             load_sf = 'Load SF'
             load_type = 'Load Type'
@@ -1269,14 +1100,9 @@ class DatabaseTables:
             load_type = 'LoadType'
             cracked_option = 'CrackedOpt'
             load_name = 'LoadName'
-        cols = ['Name',
-                # 'Mass Source', 'Initial Condition',
-                load_type,
-                load_name,
-                load_sf,
-                # 'Modal Case',
-                cracked_option,
-                # 'Displ Tolerance', 'Max Iterations',
+        cols = ['Name',  # 'Mass Source', 'Initial Condition',
+                load_type, load_name, load_sf,  # 'Modal Case',
+                cracked_option,  # 'Displ Tolerance', 'Max Iterations',
                 ]
         import pandas as pd
         df = pd.DataFrame(columns=cols)
@@ -1305,11 +1131,8 @@ class DatabaseTables:
         print(df)
         self.write(table_key, df)
         return lc1, lc2, lc3
-    
-    def add_grid_lines(self,
-                       data: list,
-                       len_unit: str='mm',
-                       ):
+
+    def add_grid_lines(self, data: list, len_unit: str = 'mm', ):
         self.etabs.unlock_model()
         self.etabs.set_current_unit('N', len_unit)
         table_key = 'Grid Definitions - Grid Lines'
@@ -1322,10 +1145,7 @@ class DatabaseTables:
         fields = ['Name', grid_line_type, 'ID', 'Ordinate', bubble_location, 'Visible']
         self.etabs.database.apply_data(table_key, data, fields)
 
-    def set_cracking_analysis_option(self,
-        min_tension_ratio: float= .0018,
-        min_compression_ratio: float=0,
-        ):
+    def set_cracking_analysis_option(self, min_tension_ratio: float = .0018, min_compression_ratio: float = 0, ):
         assert min_tension_ratio < 1
         assert min_compression_ratio < 1
         table_key = 'Analysis Options - Cracking Analysis Options'
@@ -1334,12 +1154,8 @@ class DatabaseTables:
         if self.etabs.etabs_main_version < 20:
             df.columns = ['Reinforcement Source', 'Minimum Tension Ratio', 'Minimum Compression Ratio']
         self.etabs.database.write(table_key, df)
-    
-    def area_mesh_joints(self,
-            areas: list = [],
-            types: list = ['Floor'],
-            map_dict: dict={},
-            ) -> tuple:
+
+    def area_mesh_joints(self, areas: list = [], types: list = ['Floor'], map_dict: dict = {}, ) -> tuple:
         '''
         map_dict: A dictionary for mapping mesh points name to int point name
         return joint numbers of 3 and 4 elements nodes
@@ -1377,10 +1193,7 @@ class DatabaseTables:
                 lambda x: dict(zip(x['ElmName'], zip(x['ElmJt1'], x['ElmJt2'], x['ElmJt3'], x['ElmJt4'])))).to_dict()
         return d3, d4, un
 
-    def get_map_mesh_points(self,
-            shell_names: list = [],
-            start_value: int=0,
-            ) -> tuple:
+    def get_map_mesh_points(self, shell_names: list = [], start_value: int = 0, ) -> tuple:
         '''
         start_value: the numbers that point numbers starts from it
         return joint numbers of 3 and 4 elements nodes
@@ -1397,19 +1210,18 @@ class DatabaseTables:
         maped_points = {point_id: i for i, point_id in enumerate(unique_values, start=start_value + 1)}
         return maped_points
 
-        
-
 
 if __name__ == '__main__':
     from pathlib import Path
+
     current_path = Path(__file__).parent
     import sys
+
     sys.path.insert(0, str(current_path))
     from etabs_obj import EtabsModel
+
     etabs = EtabsModel(backup=False)
     SapModel = etabs.SapModel
     joint_design_reactions = etabs.database.get_joint_design_reactions()
-    basepoints_coord_and_dims = etabs.database.get_basepoints_coord_and_dims(
-                joint_design_reactions
-            )
+    basepoints_coord_and_dims = etabs.database.get_basepoints_coord_and_dims(joint_design_reactions)
     print('Wow')
