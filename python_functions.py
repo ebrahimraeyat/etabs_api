@@ -101,3 +101,35 @@ def get_unique_load_combinations(
                 un_combo_list.extend([comb, "Linear Add", lc, sf])
     return un_combo_list
     
+
+def filter_and_sort(elements):
+    """
+    Filters and sorts a list of floats and bounding ranges.
+
+    Parameters:
+    elements (list): A list containing floats and bounding ranges (lists of two floats).
+
+    Returns:
+    list: A sorted list of floats and bounding ranges, with floats within any bounding range removed.
+    """
+    floats = []
+    bounds = []
+    
+    # Separate floats and bounds
+    for elem in elements:
+        if isinstance(elem, list):
+            bounds.append(elem)
+        else:
+            floats.append(elem)
+
+    # Filter out floats that are within any bounding range
+    filtered_floats = []
+    for f in floats:
+        if not any(b[0] <= f <= b[1] for b in bounds):
+            filtered_floats.append(f)
+    bounds.sort(key=lambda x: x[0])
+    combined_list = filtered_floats + bounds
+    sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, list) else x)
+    return sorted_combined
+
+

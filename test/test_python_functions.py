@@ -50,3 +50,23 @@ def test_get_unique_load_combinations():
              'COMBO4', 'Linear Add', 'Dead', '0.9',
              ]
     assert ret == desired
+
+def test_filter_and_sort():
+    """
+    Tests the filter_and_sort function with various cases.
+    """
+    # Test cases
+    test_cases = [
+        ([2, [3, 5], 0.5, 4, [6, 7]], [0.5, 2, [3, 5], [6, 7]]),
+        ([1, [2, 3], 2.5, 3, [4, 5]], [1, [2, 3], [4, 5]]),
+        ([1.5, [1, 2], 3, [3, 4], 2.5], [[1,2], 2.5, [3, 4]]),
+        ([5, [1, 6], 2, 4, [7, 8]], [[1,6], [7, 8]]),
+        ([0, [1, 2], 1, [3, 4]], [0, [1,2], [3, 4]])
+    ]
+
+    for i, (input_data, expected) in enumerate(test_cases):
+        result = python_functions.filter_and_sort(input_data)
+        assert result == expected, f"Test case {i + 1} failed: expected {expected}, got {result}"
+    
+if __name__ == "__main__":
+    test_filter_and_sort()
