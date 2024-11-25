@@ -1406,6 +1406,29 @@ class FrameObj:
             )
             rets.append(ret)
         return rets
+    
+    def get_lateral_bracing(self,
+                            name: list,
+                            ):
+        tops = []
+        bots = []
+        try:
+            ret = self.SapModel.FrameObj.GetLateralBracing(name)
+        except IndexError:
+            return tops, bots
+        for i in range(ret[0]):
+            if ret[2][i] == 1: # point bracing
+                bound = ret[6][i]
+            else:
+                bound = [ret[6][i], ret[7][i]]
+            if ret[3][i] == 1: # top
+                tops.append(bound)
+            if ret[3][i] == 2: # bot
+                bots.append(bound)
+            if ret[3][i] == 3: # top & bot
+                tops.append(bound)
+                bots.append(bound)
+        return tops, bots
 
 
 

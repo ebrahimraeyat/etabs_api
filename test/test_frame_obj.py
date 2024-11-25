@@ -413,8 +413,23 @@ def test_set_lateral_bracing():
     ret = etabs.frame_obj.set_lateral_bracing(names)
     assert set(ret) == {0}
 
+@open_etabs_file('steel.EDB')
+def test_get_lateral_bracing():
+    etabs.set_current_unit('N', 'm')
+    name = '94'
+    ret = etabs.frame_obj.get_lateral_bracing(name)
+    assert ret[0] == []
+    assert ret[1] == []
+    etabs.frame_obj.set_lateral_bracing([name], 1, 3, 3, relative=False)
+    ret = etabs.frame_obj.set_lateral_bracing([name], 2, 1, 1, 2, relative=False)
+    assert set(ret) == {0}
+    ret = etabs.frame_obj.get_lateral_bracing(name)
+    assert set(ret[1]) == set([3])
+    assert [1,2] in ret[0]
+    assert 3 in ret[0]
+
 if __name__ == '__main__':
-    test_set_lateral_bracing()
+    test_get_lateral_bracing()
 
 
 
