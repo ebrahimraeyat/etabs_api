@@ -24,3 +24,12 @@ def test_select_concrete_columns():
     sel_frames = etabs.select_obj.get_selected_obj_type(2)
     for col in sel_frames:
         assert col in columns
+
+@open_etabs_file('steel.EDB')
+def test_get_selected_beams_and_columns():
+    etabs.SapModel.FrameObj.SetSelected('94', True)
+    etabs.SapModel.FrameObj.SetSelected('95', True)
+    etabs.SapModel.FrameObj.SetSelected('96', True)
+    beams, columns = etabs.select_obj.get_selected_beams_and_columns(type_=1)
+    assert set(beams) == {'94', '95', '96'}
+    assert len(columns) == 0

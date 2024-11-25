@@ -63,5 +63,14 @@ class SelectObj:
         all_floors = self.etabs.area.get_names_of_areas_of_type(type_='floor')
         selected_floors = set(all_selected_areas).intersection(all_floors)
         return selected_floors
+    
+    def get_selected_beams_and_columns(self, type_:int=2):
+        "type_: 1=steel and 2=concrete"
+        all_selected_frames = self.get_selected_obj_type(n=2)
+        beams, columns = self.etabs.frame_obj.get_beams_columns(type_=type_)
+        selected_beams = set(all_selected_frames).intersection(beams)
+        selected_columns = set(all_selected_frames).intersection(columns)
+        return selected_beams, selected_columns
+
 
     
