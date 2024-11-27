@@ -132,4 +132,63 @@ def filter_and_sort(elements):
     sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, list) else x)
     return sorted_combined
 
+def rectangle_vertexes(
+                       bx,
+                       by,
+                       center=(0, 0),
+                       ):
+    dx = bx / 2
+    dy = by / 2
+    v1 = (center[0] - dx, center[1] - dy)
+    v2 = (center[0] + dx, center[1] - dy)
+    v3 = (center[0] + dx, center[1] + dy)
+    v4 = (center[0] - dx, center[1] + dy)
+    return [v1, v2, v3, v4, v1]
+
+def rebar_centers(
+    width: float,
+    height: float,
+    N: int,
+    M: int,
+    corner_diameter: int,
+    longitudinal_diameter: int,
+    tie_diameter: int = 10,
+    cover: int = 40,
+    center=(0, 0),
+):
+    corners = []
+    longitudinals = []
+    c = cover + tie_diameter + corner_diameter / 2
+    # c1 = cover + tie_diameter + longitudinal_diameter / 2
+    b = width - 2 * (cover + tie_diameter) - corner_diameter
+    dx = b / (N - 1)
+    h = height - 2 * (cover + tie_diameter) - corner_diameter
+    dy = h / (M - 1)
+    x1 = -width / 2 + c
+    y1 = -height / 2 + c
+    x2 = width / 2 - c
+    y2 = height / 2 - c
+    for i in range(N):
+        for j in range(M):
+            if i in (0, N -1) and j in (0, M - 1):
+                x = -width / 2 + (c + i * dx)
+                y = -height / 2 + (c + j * dy)
+                corners.append((x + center[0], y + center[1]))
+                continue
+            x = -width / 2 + (c + i * dx)
+            y = -height / 2 + (c + j * dy)
+            if x1 + 1 < x < x2 - 1 and y1 + 1 < y < y2 - 1:
+                continue
+            epsilon = (corner_diameter - longitudinal_diameter) / 2
+            if i == 0:
+                x -= epsilon
+            if i == N - 1:
+                x += epsilon
+            if j == 0:
+                y -= epsilon
+            if j == M - 1:
+                y += epsilon
+            longitudinals.append((x + center[0], y + center[1]))
+    return corners, longitudinals
+
 
