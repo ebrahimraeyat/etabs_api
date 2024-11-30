@@ -662,11 +662,13 @@ class FrameObj:
             unit: Union[str, bool]=None,
             ):
         if unit is not None:
-            force_unit, _ = self.etabs.get_current_unit()
-            self.etabs.set_current_unit(force_unit, unit)
+            curr_unit = self.etabs.get_current_unit()
+            self.etabs.set_current_unit(curr_unit[0], unit)
         p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(name)
         x1, y1, z1 = self.SapModel.PointObj.GetCoordCartesian(p1_name)[:3]
         x2, y2, z2 = self.SapModel.PointObj.GetCoordCartesian(p2_name)[:3]
+        if unit is not None:
+            self.etabs.set_current_unit(*curr_unit)
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
 
     def offset_frame(self, 
