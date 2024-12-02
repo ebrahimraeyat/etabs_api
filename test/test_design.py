@@ -2,10 +2,12 @@ import sys
 from pathlib import Path
 import pytest
 
+import pandas as pd
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import etabs, open_etabs_file
+from shayesteh import etabs, open_etabs_file, get_temp_filepath
 
 @open_etabs_file('shayesteh.EDB')
 def test_set_concrete_framing_type():
@@ -147,4 +149,30 @@ def test_model_designed():
     etabs.start_design()
     assert etabs.design.model_designed()
     assert not etabs.design.model_designed(type_='Steel')
+
+def test_get_overwrites_of_frames():
+    import csv
+
+    # Define the data as a list of lists
+    data = [
+        ['Item', 'Value', 'Options'],
+        ['Set Restrain', '[]', ''],
+        ['Structural Category', '1', '1,2,3,4'],
+        ['Design Type', 'Column', 'Beam,Column'],
+        ['Deflection Type', 'Program Determined', ''],
+        ['DL Ratio', '0', ''],
+        ['SDL+LL Ratio', '0', '']
+    ]
+
+    # Open a file and write the data
+    csv_file = get_temp_filepath('csv', 'test')
+    
+    with open(csv_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(data)  # Write all rows at once
+    df = etabs.design.get_overwrites_of_frames(csv_file, [])
+    df2 = pd.read_csv(csv_file)
+    pd.testing.assert_frame_equal(df, df2)
+
+
 
