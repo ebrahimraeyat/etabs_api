@@ -209,8 +209,8 @@ class EtabsModel:
         max_num = 0
         backup_path=None
         asli_file_path = self.get_filename()
+        suffix = asli_file_path.suffix
         if name is None:
-            suffix = asli_file_path.suffix
             filename = self.get_file_name_without_suffix()
             file_path = self.get_filepath()
             backup_path = file_path / 'backups'
