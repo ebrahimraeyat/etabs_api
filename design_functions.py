@@ -32,3 +32,26 @@ def get_overwrites_of_frames(
                     results.append([row['Item'], new_value, row['Options'] + ',various'])
             df = pd.DataFrame(results, columns=['Item', 'Value', 'Options'])
     return df
+
+def save_overwrites_of_frames(
+                              updated_df,
+                              original_df,
+                              relevant_columns,
+                              overwrites_csv_file=None,
+                              ):
+    if len(original_df.columns) > 3:
+        current_frames = original_df.columns[3:]
+    for index, row in updated_df.iterrows():
+        if row['Value'] == "various":
+            # If the user has modified it, we keep it as is (do nothing)
+            if len(original_df.columns) == 3:
+                continue
+            new_frames = set(relevant_columns).difference(current_frames)
+            if len(new_frames) > 0:
+                original_df.loc[index, new_frames] = original_df['Value'][index]
+        else:
+            # Update original DataFrame with the new value
+            original_df.loc[index, relevant_columns] = row['Value']
+    if overwrites_csv_file and Path(overwrites_csv_file).parent.exists():
+        original_df.to_csv(overwrites_csv_file, index=False)
+    return original_df
