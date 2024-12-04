@@ -102,12 +102,42 @@ def get_unique_load_combinations(
     return un_combo_list
     
 
+# def filter_and_sort1(elements):
+#     """
+#     Filters and sorts a list of floats and bounding ranges.
+
+#     Parameters:
+#     elements (list): A list containing floats and bounding ranges (lists of two floats).
+
+#     Returns:
+#     list: A sorted list of floats and bounding ranges, with floats within any bounding range removed.
+#     """
+#     floats = []
+#     bounds = []
+    
+#     # Separate floats and bounds
+#     for elem in elements:
+#         if isinstance(elem, list):
+#             bounds.append(elem)
+#         else:
+#             floats.append(elem)
+
+#     # Filter out floats that are within any bounding range
+#     filtered_floats = []
+#     for f in floats:
+#         if not any(b[0] <= f <= b[1] for b in bounds):
+#             filtered_floats.append(f)
+#     bounds.sort(key=lambda x: x[0])
+#     combined_list = filtered_floats + bounds
+#     sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, list) else x)
+#     return sorted_combined
+
 def filter_and_sort(elements):
     """
     Filters and sorts a list of floats and bounding ranges.
 
     Parameters:
-    elements (list): A list containing floats and bounding ranges (lists of two floats).
+    elements (list): A list containing floats and bounding ranges (tuples of two floats).
 
     Returns:
     list: A sorted list of floats and bounding ranges, with floats within any bounding range removed.
@@ -117,19 +147,29 @@ def filter_and_sort(elements):
     
     # Separate floats and bounds
     for elem in elements:
-        if isinstance(elem, list):
+        if isinstance(elem, (tuple, list)) and len(elem) == 2:
             bounds.append(elem)
         else:
             floats.append(elem)
 
+    # Combine overlapping bounds
+    combined_bounds = []
+    for b in sorted(bounds, key=lambda x: x[0]):
+        if not combined_bounds or combined_bounds[-1][1] < b[0]:
+            combined_bounds.append(b)
+        else:
+            combined_bounds[-1] = (combined_bounds[-1][0], max(combined_bounds[-1][1], b[1]))
+
     # Filter out floats that are within any bounding range
     filtered_floats = []
     for f in floats:
-        if not any(b[0] <= f <= b[1] for b in bounds):
+        if not any(b[0] <= f <= b[1] for b in combined_bounds):
             filtered_floats.append(f)
-    bounds.sort(key=lambda x: x[0])
-    combined_list = filtered_floats + bounds
-    sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, list) else x)
+
+    # Combine filtered floats and combined bounds
+    combined_list = filtered_floats + combined_bounds
+    sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, (list, tuple)) else x)
+    
     return sorted_combined
 
 def rectangle_vertexes(
@@ -190,5 +230,4 @@ def rebar_centers(
                 y += epsilon
             longitudinals.append((x + center[0], y + center[1]))
     return corners, longitudinals
-
 

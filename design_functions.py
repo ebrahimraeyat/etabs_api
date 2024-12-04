@@ -41,12 +41,12 @@ def save_overwrites_of_frames(
                               ):
     if len(original_df.columns) > 3:
         current_frames = original_df.columns[3:]
+        new_frames = list(set(relevant_columns).difference(current_frames))
     for index, row in updated_df.iterrows():
         if row['Value'] == "various":
             # If the user has modified it, we keep it as is (do nothing)
             if len(original_df.columns) == 3:
                 continue
-            new_frames = set(relevant_columns).difference(current_frames)
             if len(new_frames) > 0:
                 original_df.loc[index, new_frames] = original_df['Value'][index]
         else:
