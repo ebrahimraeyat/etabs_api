@@ -1,39 +1,29 @@
 '''
 Design Module
 '''
-
-
-
-from pathlib import Path
-import sys
 from typing import Union
 
 import pandas as pd
-pd.options.mode.chained_assignment = None
 
+pd.options.mode.chained_assignment = None
 
 __all__ = ['Design']
 
+
 class Design:
-    def __init__(
-                self,
-                etabs=None,
-                ):
+    def __init__(self, etabs=None, ):
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
-    def get_code(self,
-            type_ : str = 'Concrete',  # 'Steel'
-            ):
-            if type_ == 'Concrete':
-                return self.SapModel.DesignConcrete.getCode()[0]
-            elif type_ == 'Steel':
-                return self.SapModel.DesignSteel.getCode()[0]
+    def get_code(self, type_: str = 'Concrete',  # 'Steel'
+                 ):
+        if type_ == 'Concrete':
+            return self.SapModel.DesignConcrete.getCode()[0]
+        elif type_ == 'Steel':
+            return self.SapModel.DesignSteel.getCode()[0]
 
-    def get_code_string(self,
-        type_: str = 'Concrete', # 'Steel'
-        code : Union[str, None] = None,
-        ):
+    def get_code_string(self, type_: str = 'Concrete',  # 'Steel'
+                        code: Union[str, None] = None, ):
         ''' 
         get code of design in format 'ACI 318-14' and return 'ACI318_14'
         '''
@@ -46,22 +36,13 @@ class Design:
             code += '_IBC2009'
         return code
 
-    def set_overwrite(self,
-        name: str,
-        item: int,
-        value: float,
-        type_: str = 'Concrete', # 'Steel'
-        code: Union[str, bool] = None,
-        ):
+    def set_overwrite(self, name: str, item: int, value: float, type_: str = 'Concrete',  # 'Steel'
+                      code: Union[str, bool] = None, ):
         if code is None:
             code = self.get_code_string(type_)
         exec(f"self.SapModel.Design{type_}.{code}.SetOverwrite('{name}',{item}, {value})")
 
-    def set_concrete_framing_type(self,
-        type_: str = 2,
-        beams: bool = True,
-        columns: bool = True,
-        ):
+    def set_concrete_framing_type(self, type_: str = 2, beams: bool = True, columns: bool = True, ):
         '''
         type_:
             0 = Program Default
@@ -73,48 +54,32 @@ class Design:
         beam_names, column_names = self.etabs.frame_obj.get_beams_columns(type_=2)
         if columns:
             for name in column_names:
-                self.set_overwrite(
-                    name = name,
-                    item = 1, # Framing Type
-                    value = type_, # Sway special
-                    )
+                self.set_overwrite(name=name, item=1,  # Framing Type
+                    value=type_,  # Sway special
+                )
         if beams:
             for name in beam_names:
-                self.set_overwrite(
-                    name = name,
-                    item = 1, # Framing Type
-                    value = type_, # Sway special
-                    )
-                
-    def set_preference(self,
-        item: int,
-        value,
-        type_: str = 'Concrete', # 'Steel'
-        code: Union[str, bool] = None,
-        ):
+                self.set_overwrite(name=name, item=1,  # Framing Type
+                    value=type_,  # Sway special
+                )
+
+    def set_preference(self, item: int, value, type_: str = 'Concrete',  # 'Steel'
+                       code: Union[str, bool] = None, ):
         if code is None:
             code = self.get_code_string(type_)
         exec(f"self.SapModel.Design{type_}.{code}.SetPreference({item}, {value})")
 
-    def model_designed(self,
-                       type_: str='Concrete',
-                       ):
+    def model_designed(self, type_: str = 'Concrete', ):
         all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
         import python_functions
-        if (
-            type_ == 'Concrete' and
-            python_functions.is_text_in_list_elements(all_table, 'Concrete Beam Design Summary')
-        ) or (
-            type_ == 'Steel' and
-            python_functions.is_text_in_list_elements(all_table, 'Steel Frame Design Summary')
-        ):
+        if (type_ == 'Concrete' and python_functions.is_text_in_list_elements(all_table,
+                                                                              'Concrete Beam Design Summary')) or (
+                type_ == 'Steel' and python_functions.is_text_in_list_elements(all_table,
+                                                                               'Steel Frame Design Summary')):
             return True
         return False
 
-    def set_phi_joint_shear(self,
-        value=0.75,
-        code=None,
-        ):
+    def set_phi_joint_shear(self, value=0.75, code=None, ):
         if code is None:
             code = self.get_code_string('Concrete')
         item = 15
@@ -123,19 +88,13 @@ class Design:
         elif '08' in code:
             item = 10
         self.set_preference(item, value, code=code)
-    
-    def get_rho_of_beams(
-            self,
-            names: "list[str]",
-            distances: "list[Union[float, str], float, str]"='middle', # start, end
-            locations: "Union[list[str], str]" = 'top',
-            torsion_areas: "Union[list[float], bool]" = None,
-            frame_areas: "Union[list[float], bool]" = None,
-            covers: "list[float]"= [6],
-            additionals_rebars: "Union[list[float], float]"=0,
-            widths: "Union[list[float], None]" = None,
-            heights: "Union[list[float], None]" = None,
-    ) -> "tuple(list, list)":
+
+    def get_rho_of_beams(self, names: "list[str]", distances: "list[Union[float, str], float, str]" = 'middle',
+            # start, end
+            locations: "Union[list[str], str]" = 'top', torsion_areas: "Union[list[float], bool]" = None,
+            frame_areas: "Union[list[float], bool]" = None, covers: "list[float]" = [6],
+            additionals_rebars: "Union[list[float], float]" = 0, widths: "Union[list[float], None]" = None,
+            heights: "Union[list[float], None]" = None, ) -> "tuple(list, list)":
         from scipy.interpolate import interp1d
         rhos = []
         texts = []
@@ -226,24 +185,19 @@ class Design:
             texts.append(text)
         self.etabs.set_current_unit(*units)
         return rhos, texts
-    
-    def get_deflection_of_beams(self,
-        dead: list,
-        supper_dead: list,
-        lives: list,
-        beam_names: "Union[list[str], pd.DataFrame]",
-        distances_for_calculate_rho: "list[Union[float, str], float, str]"='middle', # start, end
-        locations: "Union[list[str], str]" = 'top',
-        torsion_areas: "Union[list[float], bool]" = None,
-        frame_areas: "Union[list[float], bool]" = None,
-        covers: "Union[list[float, int], float, int]"= 6,
-        lives_percentage: float = 0.25,
-        filename: str='',
-        points_for_get_deflection: "Union[list[str], bool]" = None,
-        is_consoles: "Union[list[bool], bool]"=False,
-        rhos: "Union[list[float, bool], bool]" = None,
-        additionals_rebars: "Union[list[float, int], int, float]"=0,
-        ):
+
+    def get_deflection_of_beams(self, dead: list, supper_dead: list, lives: list,
+                                beam_names: "Union[list[str], pd.DataFrame]",
+                                distances_for_calculate_rho: "list[Union[float, str], float, str]" = 'middle',
+                                # start, end
+                                locations: "Union[list[str], str]" = 'top',
+                                torsion_areas: "Union[list[float], bool]" = None,
+                                frame_areas: "Union[list[float], bool]" = None,
+                                covers: "Union[list[float, int], float, int]" = 6, lives_percentage: float = 0.25,
+                                filename: str = '', points_for_get_deflection: "Union[list[str], bool]" = None,
+                                is_consoles: "Union[list[bool], bool]" = False,
+                                rhos: "Union[list[float, bool], bool]" = None,
+                                additionals_rebars: "Union[list[float, int], int, float]" = 0, ):
         '''
         dead: a list of Dead loads
         supper_dead: a list of supper Dead loads
@@ -262,7 +216,7 @@ class Design:
         rho: As / bd
         additional_rebars: Add this to rebar area for calculating rho
         '''
-            # prepare inputs for calculate deflections
+        # prepare inputs for calculate deflections
         if isinstance(beam_names, pd.DataFrame):
             def add_beam_prop_to_df(row):
                 torsion_rebar = 'Torsion Rebar'
@@ -283,7 +237,7 @@ class Design:
                 row['d'] = h - cover
                 row['frame_area'] = b * row['d']
                 return row
-            
+
             df = beam_names.apply(add_beam_prop_to_df, axis=1)
             beam_names = df['Name']
             torsion_areas = df['Torsion Rebar']
@@ -306,17 +260,9 @@ class Design:
             points_for_get_deflection = len(beam_names) * [None]
         # Get rhos of beams
         if rhos is None:
-            rhos, texts = self.get_rho_of_beams(
-                beam_names,
-                distances=distances,
-                locations=locations,
-                torsion_areas=torsion_areas,
-                frame_areas=frame_areas,
-                covers = covers,
-                additionals_rebars=additionals_rebars,
-                widths = widths,
-                heights = heights,
-            )
+            rhos, texts = self.get_rho_of_beams(beam_names, distances=distances, locations=locations,
+                torsion_areas=torsion_areas, frame_areas=frame_areas, covers=covers,
+                additionals_rebars=additionals_rebars, widths=widths, heights=heights, )
         units = self.etabs.get_current_unit()
         self.etabs.set_current_unit('N', 'cm')
         # Save As etabs model with filename
@@ -332,23 +278,15 @@ class Design:
         # Set frame stiffness modifiers
         print("Set frame stiffness modifiers ...")
         beams, columns = self.etabs.frame_obj.get_beams_columns()
-        self.etabs.frame_obj.assign_frame_modifiers(
-            frame_names=beams + columns,
-            i22=1,
-            i33=1,
-        )
+        self.etabs.frame_obj.assign_frame_modifiers(frame_names=beams + columns, i22=1, i33=1, )
         print("Set Slab stiffness modifiers ...")
         self.etabs.area.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)
         print("Set floor cracking for beams and floors ...")
         self.etabs.database.set_floor_cracking(type_='Frame')
         self.etabs.database.set_floor_cracking(type_='Area')
         print("Create nonlinear load cases ...")
-        lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(
-            dead=dead,
-            supper_dead=supper_dead,
-            lives=lives,
-            lives_percentage=lives_percentage,
-            )
+        lc1, lc2, lc3 = self.etabs.database.create_nonlinear_loadcases(dead=dead, supper_dead=supper_dead, lives=lives,
+            lives_percentage=lives_percentage, )
         print("Create deflection load combinations ...")
         self.SapModel.RespCombo.Add('deflection1', 0)
         self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
@@ -372,20 +310,10 @@ class Design:
             print(f'\n{rho=}\n{landa=}')
             p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(beam_name)
             beams_points.append([p1_name, p2_name])
-            if (
-                point_for_get_deflection is None and \
-                not is_console and \
-                isinstance(distance, str)
-                ):
-                point_for_get_deflection = self.etabs.points.add_point_on_beam(
-                    name=beam_name,
-                    distance=distance,
-                    unlock_model=False,
-                    )
-            if (
-                point_for_get_deflection is None and \
-                is_console
-                ):
+            if (point_for_get_deflection is None and not is_console and isinstance(distance, str)):
+                point_for_get_deflection = self.etabs.points.add_point_on_beam(name=beam_name, distance=distance,
+                    unlock_model=False, )
+            if (point_for_get_deflection is None and is_console):
                 point_for_get_deflection = p2_name
             new_points_for_get_deflection.append(point_for_get_deflection)
             print("Create deflection load combinations ...")
@@ -413,8 +341,9 @@ class Design:
                 def1 = p2_def1 - p1_def1
                 def2 = p2_def2 - p1_def2
             else:
-                def_def1 =  pts_displacements.loc[(new_points_for_get_deflection[i], 'deflection1'), ('Uz', 'min')]
-                def_def2 =  pts_displacements.loc[(new_points_for_get_deflection[i], f'deflection2_beam{beam_name}'), ('Uz', 'min')]
+                def_def1 = pts_displacements.loc[(new_points_for_get_deflection[i], 'deflection1'), ('Uz', 'min')]
+                def_def2 = pts_displacements.loc[
+                    (new_points_for_get_deflection[i], f'deflection2_beam{beam_name}'), ('Uz', 'min')]
                 print(f'\n{def_def1=}, {def_def2=}')
                 def1 = def_def1 - (p1_def1 + p2_def1) / 2
                 def2 = def_def2 - (p1_def2 + p2_def2) / 2
@@ -423,14 +352,9 @@ class Design:
             deflections2.append(abs(def2))
         self.etabs.set_current_unit(*units)
         return deflections1, deflections2, texts
-        
-def get_deflection_check_result(
-    def1: float,
-    def2: float,
-    ln: float,
-    short_term: float=360,
-    long_term: float=480,
-    ):
+
+
+def get_deflection_check_result(def1: float, def2: float, ln: float, short_term: float = 360, long_term: float = 480, ):
     allow_def1 = ln / short_term
     allow_def2 = ln / long_term
     ret = f'Ln = {ln:.0f} Cm\n'
@@ -450,15 +374,15 @@ def get_deflection_check_result(
     return ret
 
 
-        
-
-
 if __name__ == '__main__':
     from pathlib import Path
+
     current_path = Path(__file__).parent
     import sys
+
     sys.path.insert(0, str(current_path))
     from etabs_obj import EtabsModel
+
     etabs = EtabsModel(backup=False)
     etabs.design.get_code()
     print('Wow')
