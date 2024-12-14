@@ -1,5 +1,9 @@
 from pathlib import Path
-import os, sys
+import os
+import sys
+import math
+
+import numpy as np
 
 def flatten_list(nested_list):
     return [item for sublist in nested_list for item in (flatten_list(sublist) if isinstance(sublist, list) else [sublist])]
@@ -100,37 +104,6 @@ def get_unique_load_combinations(
                 sf = float(split_content[i+1])
                 un_combo_list.extend([comb, "Linear Add", lc, sf])
     return un_combo_list
-    
-
-# def filter_and_sort1(elements):
-#     """
-#     Filters and sorts a list of floats and bounding ranges.
-
-#     Parameters:
-#     elements (list): A list containing floats and bounding ranges (lists of two floats).
-
-#     Returns:
-#     list: A sorted list of floats and bounding ranges, with floats within any bounding range removed.
-#     """
-#     floats = []
-#     bounds = []
-    
-#     # Separate floats and bounds
-#     for elem in elements:
-#         if isinstance(elem, list):
-#             bounds.append(elem)
-#         else:
-#             floats.append(elem)
-
-#     # Filter out floats that are within any bounding range
-#     filtered_floats = []
-#     for f in floats:
-#         if not any(b[0] <= f <= b[1] for b in bounds):
-#             filtered_floats.append(f)
-#     bounds.sort(key=lambda x: x[0])
-#     combined_list = filtered_floats + bounds
-#     sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, list) else x)
-#     return sorted_combined
 
 def filter_and_sort(elements):
     """
@@ -142,6 +115,7 @@ def filter_and_sort(elements):
     Returns:
     list: A sorted list of floats and bounding ranges, with floats within any bounding range removed.
     """
+    elements = set(elements)
     floats = []
     bounds = []
     
@@ -151,7 +125,6 @@ def filter_and_sort(elements):
             bounds.append(elem)
         else:
             floats.append(elem)
-
     # Combine overlapping bounds
     combined_bounds = []
     for b in sorted(bounds, key=lambda x: x[0]):
@@ -169,9 +142,21 @@ def filter_and_sort(elements):
     # Combine filtered floats and combined bounds
     combined_list = filtered_floats + combined_bounds
     sorted_combined = sorted(combined_list, key=lambda x: x[0] if isinstance(x, (list, tuple)) else x)
-    
     return sorted_combined
 
+def find_roots(x,y):
+    s = np.abs(np.diff(np.sign(y))).astype(bool)
+    z = x[:-1][s] + np.diff(x)[s]/(np.abs(y[1:][s]/y[:-1][s])+1)
+    return z
+
+def get_sign_of_value(value, tol=.001):
+    if math.isclose(value, 0, abs_tol=tol):
+        return '0'
+    elif value > 0:
+        return '+'
+    else:
+        return '-'
+    
 def rectangle_vertexes(
                        bx,
                        by,
