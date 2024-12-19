@@ -529,10 +529,29 @@ def test_get_segments_of_frame():
 #     assert (0.5, 'top_bot') in top_bot_point_restraints
 #     assert (4, 'bot') in top_bot_point_restraints
 
+def test_segment():
+    x_values = np.array([0, .5,1,1.25,1.5,2,2.5,3,3.5,3.75,4,4.5,5])
+    m_values = np.array([0,-19,-32,-37,-40,-41,-37,-27,-10,0,12,40,74])
+    start_restraint = design_functions.PointRestraint('A', x_values[0], 'FF', x_values, m_values)
+    end_restraint = design_functions.PointRestraint('B', x_values[-1], 'FF', x_values, m_values)
+    segment = design_functions.Segment(start_restraint, end_restraint)
+    assert segment.name == 'A-B'
+    assert segment.length == x_values[-1] - x_values[0]
+    assert segment.restraints == 'FF'
+    assert segment.kr == 1
+
+def test_beam():
+    x_values = np.array([0, .5,1,1.25,1.5,2,2.5,3,3.5,3.75,4,4.5,5])
+    m_values = np.array([0,-19,-32,-37,-40,-41,-37,-27,-10,0,12,40,74])
+    combos = {'comb1': (x_values, m_values)}
+    beam = design_functions.Beam(
+        '3', 8, None, '', '', [], 'FF', 'FF', 
+        combos, is_composite=True, tolerance=.001
+    )
 
 
 if __name__ == '__main__':
-    test_get_segments_of_frame()
+    test_beam()
 
 
 
