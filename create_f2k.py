@@ -3,15 +3,11 @@ from typing import Iterable, Union
 
 import numpy as np
 
-
 __all__ = ['Safe', 'CreateF2kFile']
 
 
-class Safe():
-    def __init__(self,
-            input_f2k_path : Path = None,
-            output_f2k_path : Path = None,
-        ) -> None:
+class Safe:
+    def __init__(self, input_f2k_path: Path = None, output_f2k_path: Path = None, ) -> None:
         self.input_f2k_path = input_f2k_path
         if output_f2k_path is None:
             output_f2k_path = input_f2k_path
@@ -38,15 +34,13 @@ class Safe():
                     if table_key and context:
                         tables_contents[table_key] = context
                     context = ''
-                    table_key = line[n+1:-2]
+                    table_key = line[n + 1:-2]
                 else:
                     context += line
         self.tables_contents = tables_contents
         return tables_contents
 
-    def get_points_coordinates(self,
-            content : str = None,
-            ) -> dict:
+    def get_points_coordinates(self, content: str = None, ) -> dict:
         if content is None:
             content = self.tables_contents["OBJECT GEOMETRY - POINT COORDINATES"]
         lines = content.split('\n')
@@ -66,24 +60,19 @@ class Safe():
             points_coordinates[point_name] = coordinates
         return points_coordinates
 
-    def is_point_exist(self,
-            coordinate : list,
-            content : Union[str, bool] = None,
-            ):
+    def is_point_exist(self, coordinate: list, content: Union[str, bool] = None, ):
         points_coordinates = self.get_points_coordinates(content)
         for id, coord in points_coordinates.items():
             if coord == coordinate:
                 return id
         return None
-                    
+
     def add_content_to_table(self, table_key, content):
         curr_content = self.tables_contents.get(table_key, '')
         self.tables_contents[table_key] = curr_content + content
         return None
 
-    def force_length_unit(self,
-        content : Union[str, bool] = None,
-        ):
+    def force_length_unit(self, content: Union[str, bool] = None, ):
         if content is None:
             if self.tables_contents is None:
                 self.get_tables_contents()
@@ -111,7 +100,7 @@ class Safe():
             writer.write("\nEND TABLE DATA")
         return None
 
-    def get_force_units(self, force_unit : str):
+    def get_force_units(self, force_unit: str):
         '''
         force_unit can be 'N', 'KN', 'Kgf', 'tonf'
         '''
@@ -120,13 +109,13 @@ class Safe():
         elif force_unit == 'KN':
             return dict(N=.001, KN=1, Kgf=.00981, tonf=9.81)
         elif force_unit == 'Kgf':
-            return dict(N=1/9.81, KN=1000/9.81, Kgf=1, tonf=1000)
+            return dict(N=1 / 9.81, KN=1000 / 9.81, Kgf=1, tonf=1000)
         elif force_unit == 'tonf':
             return dict(N=.000981, KN=.981, Kgf=.001, tonf=1)
         else:
             raise KeyError
 
-    def get_length_units(self, length_unit : str):
+    def get_length_units(self, length_unit: str):
         '''
         length_unit can be 'mm', 'cm', 'm'
         '''
@@ -147,14 +136,9 @@ class CreateF2kFile(Safe):
     append : if False, it create f2k file from scratch, if True,
                 it adds contents to current file
     '''
-    def __init__(self,
-            input_f2k,
-            etabs = None,
-            load_cases : list = None,
-            case_types : list = None,
-            model_datum : float = None,
-            append: bool = False,
-            ):
+
+    def __init__(self, input_f2k, etabs=None, load_cases: list = None, case_types: list = None,
+                 model_datum: float = None, append: bool = False, ):
         if not append:
             input_f2k.touch()
         super().__init__(input_f2k)
@@ -181,7 +165,7 @@ class CreateF2kFile(Safe):
     def initiate(self):
         table_key = "PROGRAM CONTROL"
         content = f'ProgramName="SAFE 2014"   Version=14.0.0   ProgLevel="Post Tensioning"   CurrUnits="N, mm, C"  ModelDatum={self.model_datum}\n'
-        self.tables_contents[table_key] =  content
+        self.tables_contents[table_key] = content
 
     def add_grids(self):
         table_key = 'Grid Definitions - Grid Lines'
@@ -189,18 +173,11 @@ class CreateF2kFile(Safe):
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         filt = df.LineType.isin(('X (Cartesian)', 'Y (Cartesian)'))
         df = df.loc[filt]
-        replacements = {
-            'X (Cartesian)' : 'X',
-            'Y (Cartesian)' : 'Y',
-            }
-        df.replace({'LineType' : replacements}, inplace=True)
+        replacements = {'X (Cartesian)': 'X', 'Y (Cartesian)': 'Y', }
+        df.replace({'LineType': replacements}, inplace=True)
         df.insert(loc=0, column='CoordSys', value='CoordSys=GLOBAL')
-        df['ID'] = '"' +  df['ID'] + '"'
-        d = {
-            'LineType': 'AxisDir=',
-            'ID': 'GridID=',
-            'Ordinate' : 'Ordinate='
-            }
+        df['ID'] = '"' + df['ID'] + '"'
+        d = {'LineType': 'AxisDir=', 'ID': 'GridID=', 'Ordinate': 'Ordinate='}
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "GRID LINES"
         self.add_content_to_table(table_key, content)
@@ -221,7 +198,7 @@ class CreateF2kFile(Safe):
         df = df.loc[filt]
         df['Story'] = "SpecialPt=Yes"
         df['GlobalZ'] = f'{self.model_datum}'
-        d = {'ElmName' : 'Point=', 'GlobalX': 'GlobalX=', 'GlobalY': 'GlobalY=', 'GlobalZ': 'GlobalZ=', }
+        d = {'ElmName': 'Point=', 'GlobalX': 'GlobalX=', 'GlobalY': 'GlobalY=', 'GlobalZ': 'GlobalZ=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "OBJECT GEOMETRY - POINT COORDINATES"
         self.add_content_to_table(table_key, content)
@@ -256,11 +233,7 @@ class CreateF2kFile(Safe):
                     df = df.append(load_pats, ignore_index=True)
             except IndexError:
                 pass
-        d = {
-            'Name': 'LoadPat=',
-            'Type': 'Type=',
-            'SelfWtMult': 'SelfWtMult=',
-            }
+        d = {'Name': 'LoadPat=', 'Type': 'Type=', 'SelfWtMult': 'SelfWtMult=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD PATTERNS"
         self.add_content_to_table(table_key, content)
@@ -278,22 +251,15 @@ class CreateF2kFile(Safe):
         dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
         filt = df.Name.isin(dynamic_drift_loadcases)
         df = df.loc[~filt]
-        replacements = {
-            'Linear Static' : 'LinStatic',
-            'Response Spectrum' : 'LinStatic',
-            # 'Modal - Eigen' : 'LinModal',
-            }
-        df.replace({'Type' : replacements}, inplace=True)
-        d = {
-            'Name': 'LoadCase=',
-            'Type': 'Type=',
-            'DesignType' : 'DesignType='
-            }
+        replacements = {'Linear Static': 'LinStatic', 'Response Spectrum': 'LinStatic',  # 'Modal - Eigen' : 'LinModal',
+                        }
+        df.replace({'Type': replacements}, inplace=True)
+        d = {'Name': 'LoadCase=', 'Type': 'Type=', 'DesignType': 'DesignType='}
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD CASES 01 - GENERAL"
         self.add_content_to_table(table_key, content)
         return content
-    
+
     def add_modal_loadcase_definitions(self):
         table_key = 'Modal Case Definitions - Eigen'
         cols = ['Name', 'MaxModes', 'MinModes']
@@ -301,18 +267,13 @@ class CreateF2kFile(Safe):
         df.dropna(inplace=True)
         df['InitialCond'] = 'Zero'
         df['ModeType'] = 'Eigen'
-        d = {
-            'Name': 'LoadCase=',
-            'MaxModes' : 'MaxModes=',
-            'MinModes' : 'MinModes=',
-            'InitialCond' : 'InitialCond=',
-            'ModeType' : 'ModeType=',
-            }
+        d = {'Name': 'LoadCase=', 'MaxModes': 'MaxModes=', 'MinModes': 'MinModes=', 'InitialCond': 'InitialCond=',
+             'ModeType': 'ModeType=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD CASES 04 - MODAL"
         self.add_content_to_table(table_key, content)
         return content
-    
+
     def add_loadcase_definitions(self):
         table_key = 'Load Case Definitions - Linear Static'
         cols = ['Name', 'LoadName', 'LoadSF']
@@ -324,16 +285,12 @@ class CreateF2kFile(Safe):
             filt = df['Name'].isin(drifts)
             df = df.loc[~filt]
         df.dropna(inplace=True)
-        d = {
-            'Name': 'LoadCase=',
-            'LoadName': 'LoadPat=',
-            'LoadSF' : 'SF='
-            }
+        d = {'Name': 'LoadCase=', 'LoadName': 'LoadPat=', 'LoadSF': 'SF='}
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD CASES 06 - LOADS APPLIED"
         self.add_content_to_table(table_key, content)
         return content
-    
+
     def add_response_spectrum_loadcases_and_loadpatts(self):
         lcs = self.etabs.load_cases.get_response_spectrum_loadcase_name()
         dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
@@ -348,7 +305,7 @@ class CreateF2kFile(Safe):
         table_key = "LOAD PATTERNS"
         self.add_content_to_table(table_key, content_loadpatts)
         return content_loadcase
-        
+
     def add_point_loads(self):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Joint Design Reactions"
@@ -376,29 +333,15 @@ class CreateF2kFile(Safe):
         except (AttributeError, TypeError):
             df['xdim'] = 0
             df['ydim'] = 0
-        d = {
-            'UniqueName': 'Point=',
-            'OutputCase': 'LoadPat=',
-            'FX'  : 'Fx=',
-            'FY'  : 'Fy=',
-            'FZ'  : 'Fgrav=',
-            'MX'  : 'Mx=',
-            'MY'  : 'My=',
-            'MZ'  : 'Mz=',
-            'xdim' : 'XDim=',
-            'ydim' : 'YDim=',
-            }
+        d = {'UniqueName': 'Point=', 'OutputCase': 'LoadPat=', 'FX': 'Fx=', 'FY': 'Fy=', 'FZ': 'Fgrav=', 'MX': 'Mx=',
+             'MY': 'My=', 'MZ': 'Mz=', 'xdim': 'XDim=', 'ydim': 'YDim=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD ASSIGNMENTS - POINT LOADS"
         self.add_content_to_table(table_key, content)
         return content
-    
-    def add_load_combinations(
-                self,
-                types: Iterable = ('Envelope', 'Linear Add'),
-                load_combinations: Union[list, bool] = None,
-                ignore_dynamics : bool = False,
-        ):
+
+    def add_load_combinations(self, types: Iterable = ('Envelope', 'Linear Add'),
+                              load_combinations: Union[list, bool] = None, ignore_dynamics: bool = False, ):
         self.etabs.load_cases.select_all_load_cases()
         table_key = "Load Combination Definitions"
         cols = ['Name', 'LoadName', 'Type', 'SF']
@@ -428,13 +371,7 @@ class CreateF2kFile(Safe):
         else:
             df['strength'] = 'No'
 
-        d = {
-            'Name': 'Combo=',
-            'LoadName': 'Load=',
-            'Type' : 'Type=',
-            'SF' : 'SF=',
-            'strength' : 'DSStrength=',
-            }
+        d = {'Name': 'Combo=', 'LoadName': 'Load=', 'Type': 'Type=', 'SF': 'SF=', 'strength': 'DSStrength=', }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "LOAD COMBINATIONS"
         self.add_content_to_table(table_key, content)
@@ -459,11 +396,7 @@ class CreateF2kFile(Safe):
         self.write()
 
     @staticmethod
-    def add_assign_to_fields_of_dataframe(
-        df,
-        assignment : dict,
-        content : bool = True,
-        ):
+    def add_assign_to_fields_of_dataframe(df, assignment: dict, content: bool = True, ):
         '''
         adding a prefix to each member of dataframe for example:
         LIVE change to Type=LIVE
@@ -475,24 +408,14 @@ class CreateF2kFile(Safe):
             return df.to_string(header=False, index=False)
         return df
 
+
 def get_design_type(case_name, etabs):
     '''
     get a load case name and return design type of it appropriate
     to write in f2k file
     '''
-    map_dict = {
-        1 : 'DEAD',
-        2 : '"SUPER DEAD"',
-        3 : 'LIVE',
-        4 : '"REDUCIBLE LIVE"',
-        5 : 'QUAKE',
-        6 : 'WIND',
-        7 : 'SNOW',
-        8 : 'OTHER',
-        11 : 'LIVE',
-        37 : None,
-    }
+    map_dict = {1: 'DEAD', 2: '"SUPER DEAD"', 3: 'LIVE', 4: '"REDUCIBLE LIVE"', 5: 'QUAKE', 6: 'WIND', 7: 'SNOW',
+                8: 'OTHER', 11: 'LIVE', 37: None, }
     type_num = etabs.SapModel.LoadCases.GetTypeOAPI_1(case_name)[2]
     design_type = map_dict.get(type_num, 'OTHER')
     return design_type
-

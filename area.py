@@ -1,10 +1,10 @@
 from typing import Union
-import math
-import pandas as pd
 
+import pandas as pd
 
 if __name__ == '__main__':
     import sys
+
     FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
     sys.path.append(FREECADPATH)
 try:
@@ -19,21 +19,21 @@ __all__ = ['Area']
 
 class Area:
     def __init__(
-                self,
-                etabs=None,
-                ):
+            self,
+            etabs=None,
+    ):
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
     def get_names_of_areas_of_type(
             self,
             type_='floor',
-            story : Union[str, bool] = None,
-            ):
+            story: Union[str, bool] = None,
+    ):
         '''
         type_: wall:1, floor:2
         '''
-        map_dict = {'wall':1, 'floor':2}
+        map_dict = {'wall': 1, 'floor': 2}
         type_ = map_dict.get(type_, 5)
         names = []
         try:
@@ -45,10 +45,10 @@ class Area:
                 if self.SapModel.AreaObj.GetDesignOrientation(name)[0] == type_:
                     names.append(name)
         return names
-    
+
     def get_slab_names(self,
-        types: list=['Slab', 'Waffle'],
-        ):
+                       types: list = ['Slab', 'Waffle'],
+                       ):
         '''
         get slab names with type in types
         '''
@@ -60,11 +60,11 @@ class Area:
         return df['UniqueName']
 
     def export_freecad_slabs(self,
-        doc : 'App.Document' = None,
-        soil_name : str = 'SOIL',
-        soil_modulus : float = 2,
-        slab_sec_name : Union[str, None] = None,
-            ):
+                             doc: 'App.Document' = None,
+                             soil_name: str = 'SOIL',
+                             soil_modulus: float = 2,
+                             slab_sec_name: Union[str, None] = None,
+                             ):
         if doc is None:
             doc = FreeCAD.ActiveDocument
         foun = doc.Foundation
@@ -77,7 +77,7 @@ class Area:
         self.SapModel.PropMaterial.SetMaterial(f'C{fc}', 2)
         self.SapModel.PropMaterial.SetOConcrete(f'C{fc}', fc, False, 0, 1, 1, .002, .005)
         self.SapModel.PropArea.SetSlab(slab_sec_name, 5, 2, f'C{fc}', foun_height)
-        
+
         slab_names = []
         if foun.foundation_type == 'Strip':
             # write soil table
@@ -158,9 +158,9 @@ class Area:
         return points
 
     def create_area_by_coord(self,
-            points : 'Base.Vector',
-            prop_name : Union[str, bool] = None,
-            ):
+                             points: 'Base.Vector',
+                             prop_name: Union[str, bool] = None,
+                             ):
         n = len(points)
         xs = [p.x for p in points]
         ys = [p.y for p in points]
@@ -171,7 +171,7 @@ class Area:
             ret = self.SapModel.AreaObj.AddByCoord(n, xs, ys, zs, '', prop_name)
         return ret[3]
 
-    def export_freecad_openings(self, doc : 'App.Document' = None):
+    def export_freecad_openings(self, doc: 'App.Document' = None):
         self.etabs.set_current_unit('kN', 'mm')
         if doc is None:
             doc = FreeCAD.ActiveDocument
@@ -190,8 +190,8 @@ class Area:
             self.SapModel.AreaObj.SetOpening(name, True)
 
     def export_freecad_strips(self,
-                              doc : 'App.Document' = None,
-                              story: str='',
+                              doc: 'App.Document' = None,
+                              story: str = '',
                               ):
         self.etabs.set_current_unit('N', 'mm')
         z_level = 0
@@ -202,7 +202,7 @@ class Area:
         data = []
         for o in doc.Objects:
             if hasattr(o, 'Proxy') and \
-                hasattr(o.Proxy, 'Type') and \
+                    hasattr(o.Proxy, 'Type') and \
                     o.Proxy.Type == 'Strip':
                 layer = o.layer
                 strip_name = o.Label
@@ -218,13 +218,13 @@ class Area:
                             point.x + placement.x,
                             point.y + placement.y,
                             z_level,
-                            )
+                        )
                         p1_name = p1[0]
                         p2 = self.SapModel.PointObj.AddCartesian(
                             points[1].x + placement.x,
                             points[1].y + placement.y,
                             z_level,
-                            )
+                        )
                         p2_name = p2[0]
                         data.extend((
                             strip_name,
@@ -236,13 +236,13 @@ class Area:
                             f'{ewr}',
                             'No',
                             layer,
-                            ))
+                        ))
                     elif j > 1:
                         p = self.SapModel.PointObj.AddCartesian(
                             point.x + placement.x,
                             point.y + placement.y,
                             z_level,
-                            )
+                        )
                         p_name = p[0]
                         data.extend((
                             strip_name,
@@ -254,7 +254,7 @@ class Area:
                             f'{ewr}',
                             '',
                             '',
-                            ))
+                        ))
         fields = [
             'Name',
             'Strip Start Point',
@@ -269,13 +269,13 @@ class Area:
         df = self.etabs.database.reshape_data_to_df(fields, data)
         if self.etabs.etabs_main_version > 19:
             df.columns = ['Name', 'StartPoint', 'EndPoint', 'WStartLeft',
-                        'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
+                          'WStartRight', 'WEndLeft', 'WEndRight', 'AutoWiden', 'Layer']
         if self.etabs.software == 'ETABS':
             df.insert(loc=1, column='Story', value=story)
         table_key = 'Strip Object Connectivity'
         self.etabs.database.write(table_key, df)
 
-    def export_freecad_stiff_elements(self, doc : 'App.Document' = None):
+    def export_freecad_stiff_elements(self, doc: 'App.Document' = None):
         self.etabs.set_current_unit('kN', 'mm')
         self.SapModel.PropMaterial.SetMaterial('CONCRETE_ZERO', 2)
         self.SapModel.PropMaterial.SetWeightAndMass('CONCRETE_ZERO', 1, 0)
@@ -285,54 +285,54 @@ class Area:
         if doc is None:
             doc = FreeCAD.ActiveDocument
         for o in doc.Objects:
-            if (hasattr(o, "Proxy") and 
-                hasattr(o.Proxy, "Type") and 
-                o.Proxy.Type == "Punch"
-                ):
+            if (hasattr(o, "Proxy") and
+                    hasattr(o.Proxy, "Type") and
+                    o.Proxy.Type == "Punch"
+            ):
                 points = self.get_sort_points(o.rect.Edges)
                 self.create_area_by_coord(points, prop_name='COL_STIFF')
-    
-    def export_freecad_wall_loads(self, doc : 'App.Document' = None):
+
+    def export_freecad_wall_loads(self, doc: 'App.Document' = None):
         if doc is None:
             doc = FreeCAD.ActiveDocument
         for o in doc.Objects:
-            if (hasattr(o, "Proxy") and 
-                hasattr(o.Proxy, "Type") and 
-                o.Proxy.Type == "Wall"
-                ):
+            if (hasattr(o, "Proxy") and
+                    hasattr(o.Proxy, "Type") and
+                    o.Proxy.Type == "Wall"
+            ):
                 mass_per_area = o.weight
                 height = o.Height.Value / 1000
                 p1 = o.Base.start_point
                 p2 = o.Base.end_point
                 self.etabs.set_current_unit('kgf', 'mm')
-                frame = self.SapModel.FrameObj.AddByCoord(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z,'', 'None')
+                frame = self.SapModel.FrameObj.AddByCoord(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, '', 'None')
                 name = frame[0]
                 loadpat = self.etabs.load_patterns.get_special_load_pattern_names(1)[0]
                 self.etabs.set_current_unit('kgf', 'm')
                 self.etabs.frame_obj.assign_gravity_load_from_wall(
-                    name = name,
-                    loadpat = loadpat,
-                    mass_per_area = mass_per_area,
-                    height = height,
+                    name=name,
+                    loadpat=loadpat,
+                    mass_per_area=mass_per_area,
+                    height=height,
                 )
 
     def export_freecad_soil_support(self,
-        slab_names : list,
-        soil_modulus : float = 2,
-        soil_name : str = 'SOIL1',
-        ):
+                                    slab_names: list,
+                                    soil_modulus: float = 2,
+                                    soil_name: str = 'SOIL1',
+                                    ):
         self.etabs.set_current_unit('kgf', 'cm')
         if soil_modulus is not None:
             self.SapModel.PropAreaSpring.SetAreaSpringProp(
-                soil_name, 0, 0, soil_modulus , 3)
+                soil_name, 0, 0, soil_modulus, 3)
         for s in slab_names:
             self.SapModel.AreaObj.SetSpringAssignment(s, soil_name)
 
     def set_uniform_gravity_load(self,
-        area_names : list,
-        load_pat : str,
-        value : float,
-        ) -> None:
+                                 area_names: list,
+                                 load_pat: str,
+                                 value: float,
+                                 ) -> None:
         self.etabs.set_current_unit('kgf', 'm')
         for area_name in area_names:
             self.SapModel.AreaObj.SetLoadUniform(
@@ -342,15 +342,13 @@ class Area:
                 6,  # Dir
             )
 
-
     @staticmethod
     def get_vertex_from_point(point):
         return Part.Vertex(point.x, point.y, point.z)
-    
 
     def calculate_slab_weight_per_area(self,
-                                    slabs: Union[list, bool] = None,
-                                    ):
+                                       slabs: Union[list, bool] = None,
+                                       ):
         self.etabs.set_current_unit('kgf', 'm')
         table_key = "Slab Property Definitions"
         df = self.etabs.database.read(table_key, to_dataframe=True)
@@ -405,17 +403,19 @@ class Area:
             )
         df = pd.concat([df_thickness, df_ribbed, df_waffle])
         df['Weight Kg/m^2'] = df['h_equal'] * df['UnitWeight'] * df['WMod']
-        cols = ['Name', 'PropType', 'Material', 'UnitWeight', 'Thickness', 'RibWidth', 'WMod', 'h_equal', 'Weight Kg/m^2']
+        cols = ['Name', 'PropType', 'Material', 'UnitWeight', 'Thickness', 'RibWidth', 'WMod', 'h_equal',
+                'Weight Kg/m^2']
         df = df[cols]
         return df
 
     def calculate_deck_weight_per_area(self,
-                                    decks: Union[list, bool] = None,
-                                    use_user_deck_weight: bool = True
-                                    ):
+                                       decks: Union[list, bool] = None,
+                                       use_user_deck_weight: bool = True
+                                       ):
         self.etabs.set_current_unit('kgf', 'm')
         table_key = "Deck Property Definitions"
-        cols = ['Name', 'DeckType', 'MaterialSlb', 'MaterialDck', 'SlabDepth', 'RibDepth', 'RibWidthTop', 'RibWidthBot', 'RibSpacing', 'DeckShrThk', 'DeckUnitWt', 'WMod']
+        cols = ['Name', 'DeckType', 'MaterialSlb', 'MaterialDck', 'SlabDepth', 'RibDepth', 'RibWidthTop', 'RibWidthBot',
+                'RibSpacing', 'DeckShrThk', 'DeckUnitWt', 'WMod']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         if decks is not None:
             filt = df['Name'].isin(decks)
@@ -460,10 +460,10 @@ class Area:
                 t_deck=df['DeckShrThk'],
             )
             df['deck_weight'] = df['h_eq_deck'] * df['UnitWeightDeck']
-            
+
         df['weight Kg/m^2'] = df['slab_weight'] + df['deck_weight']
         return df
-        
+
     def get_all_slab_types(self) -> dict:
         '''
         Return all slab types in etabs model definition
@@ -474,9 +474,9 @@ class Area:
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         df = df.set_index('Name')
         return df.to_dict()['PropType']
-    
+
     def get_expanded_shell_uniform_load_sets(self,
-                                             areas: Union[list, bool]= None,
+                                             areas: Union[list, bool] = None,
                                              ) -> pd.DataFrame:
         '''
         Example:
@@ -505,7 +505,8 @@ class Area:
             filt = df1['UniqueName'].isin(areas)
             df1 = df1.loc[filt]
         if df1 is None or df1.empty:
-            return pd.DataFrame(columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue', 'Direction'])
+            return pd.DataFrame(
+                columns=['Story', 'Label', 'UniqueName', 'LoadSet', 'LoadPattern', 'LoadValue', 'Direction'])
         table_key = 'Shell Uniform Load Sets'
         df2 = self.etabs.database.read(table_key, to_dataframe=True)
         del df2['GUID']
@@ -513,10 +514,10 @@ class Area:
         del df['Name']
         df['Direction'] = 'Gravity'
         return df
-    
+
     def get_shell_uniform_loads(self,
-                                areas: Union[list, bool]= None,
-                                df1: Union[pd.DataFrame, bool]= None,
+                                areas: Union[list, bool] = None,
+                                df1: Union[pd.DataFrame, bool] = None,
                                 ) -> pd.DataFrame:
         '''
         Get All uniform loads on areas include uniforms and uniform load sets
@@ -535,7 +536,7 @@ class Area:
             df2.rename(columns={'Dir': 'Direction'}, inplace=True)
         df = pd.concat([df1, df2])
         return df
-    
+
     def expand_uniform_load_sets_and_apply_to_model(self,
                                                     df: Union[pd.DataFrame, bool] = None,
                                                     ):
@@ -551,29 +552,29 @@ class Area:
         self.etabs.database.apply_data(table_key, df)
         self.etabs.database.apply_data('Area Load Assignments - Uniform Load Sets', df2)
         return True
-    
+
     def reset_slab_sections_modifiers(self,
-            slabs: list=[],
-            ):
+                                      slabs: list = [],
+                                      ):
         if not slabs:
             slabs = self.get_all_slab_types().keys()
         for slab in slabs:
-            self.SapModel.PropArea.SetModifiers(slab, 10*[1])
+            self.SapModel.PropArea.SetModifiers(slab, 10 * [1])
 
     def assign_slab_modifiers(self,
-            slab_names: list=[],
-            f11: Union[None, float]=None,
-            f22: Union[None, float]=None,
-            f12: Union[None, float]=None,
-            m11: Union[None, float]=None,
-            m22: Union[None, float]=None,
-            m12: Union[None, float]=None,
-            v13: Union[None, float]=None,
-            v23: Union[None, float]=None,
-            mass: Union[None, float]=None,
-            weight: Union[None, float]=None,
-            reset: bool=False,
-            ):
+                              slab_names: list = [],
+                              f11: Union[None, float] = None,
+                              f22: Union[None, float] = None,
+                              f12: Union[None, float] = None,
+                              m11: Union[None, float] = None,
+                              m22: Union[None, float] = None,
+                              m12: Union[None, float] = None,
+                              v13: Union[None, float] = None,
+                              v23: Union[None, float] = None,
+                              mass: Union[None, float] = None,
+                              weight: Union[None, float] = None,
+                              reset: bool = False,
+                              ):
         '''
         reset means to set all slab section properties set to 1
         '''
@@ -584,15 +585,15 @@ class Area:
         mod_names = [f11, f22, f12, m11, m22, m12, v13, v23, mass, weight]
         for name in slab_names:
             modifiers = list(self.SapModel.AreaObj.GetModifiers(name)[0])
-            for i, mod in enumerate(mod_names):    
+            for i, mod in enumerate(mod_names):
                 if mod:
                     modifiers[i] = mod
             self.SapModel.AreaObj.SetModifiers(name, modifiers)
-    
+
     def save_as_deflection_filename(self,
                                     slab_name: str,
-                                    filename: str='',
-    ):
+                                    filename: str = '',
+                                    ):
         file_path = self.etabs.get_filepath()
         deflection_path = file_path / 'deflections'
         if not deflection_path.exists():
@@ -605,30 +606,30 @@ class Area:
             self.SapModel.File.Save(str(deflection_path / filename))
 
     def design_slabs(self,
-                    slab_names: list,
-                    s: float,
-                    d: float,
-                    tw: float,
-                    hc: float,
-                    as_top: float,
-                    as_bot: float,
-                    fill: bool=False,
-                    two_way: bool=True,
-                    design: bool=True,
-    ):
+                     slab_names: list,
+                     s: float,
+                     d: float,
+                     tw: float,
+                     hc: float,
+                     as_top: float,
+                     as_bot: float,
+                     fill: bool = False,
+                     two_way: bool = True,
+                     design: bool = True,
+                     ):
         kwargs = {'slab_names': slab_names,
-                     'f11': 1,
-                     'f22': 1,
-                     'f12': 1,
-                     'm11': 0.25,
-                     'm22': 0.25,
-                     'm12': 0.25,
-                     'v13': 1,
-                     'v23': 1,
-                     'mass': 1,
-                     'weight': 1,
-                     'reset': True,
-        }
+                  'f11': 1,
+                  'f22': 1,
+                  'f12': 1,
+                  'm11': 0.25,
+                  'm22': 0.25,
+                  'm12': 0.25,
+                  'v13': 1,
+                  'v23': 1,
+                  'mass': 1,
+                  'weight': 1,
+                  'reset': True,
+                  }
         self.assign_slab_modifiers(**kwargs)
         rho_top, rho_bot = calculate_rho(s, d, tw, hc, as_top, as_bot, fill=fill, two_way=two_way)
         self.etabs.database.set_cracking_analysis_option(rho_bot, rho_top)
@@ -636,20 +637,20 @@ class Area:
             self.etabs.start_slab_design()
 
     def get_deflection_of_slab(self,
-        dead: list,
-        supper_dead: list,
-        lives: list,
-        slab_name: str,
-        s: float,
-        d: float,
-        tw: float,
-        hc: float,
-        as_top: float,
-        as_bot: float,
-        two_way: bool=True,
-        lives_percentage: float = 0.25,
-        filename: str='',
-        ):
+                               dead: list,
+                               supper_dead: list,
+                               lives: list,
+                               slab_name: str,
+                               s: float,
+                               d: float,
+                               tw: float,
+                               hc: float,
+                               as_top: float,
+                               as_bot: float,
+                               two_way: bool = True,
+                               lives_percentage: float = 0.25,
+                               filename: str = '',
+                               ):
         '''
         dead: a list of Dead loads
         supper_dead: a list of supper Dead loads
@@ -702,7 +703,7 @@ class Area:
             supper_dead=supper_dead,
             lives=lives,
             lives_percentage=lives_percentage,
-            )
+        )
         print("Create deflection load combinations ...")
         self.SapModel.RespCombo.Add('deflection1', 0)
         self.SapModel.RespCombo.SetCaseList('deflection1', 0, lc2, 1)
@@ -718,20 +719,22 @@ class Area:
             self.etabs.analyze.set_load_cases_to_analyze((lc1, lc2))
         self.etabs.run_analysis()
         return text
-    
+
     def get_mesh_results(self,
                          slabs: list,
-                         case_name: str='deflection1',
-                         type_: str='Combo'
+                         case_name: str = 'deflection1',
+                         type_: str = 'Combo'
                          ) -> dict:
         '''
         returns mesh result suitable for show in FreeCAD
         '''
-    
+
         map_dict = self.etabs.database.get_map_mesh_points()
         mesh_joint = self.etabs.database.area_mesh_joints(slabs, ['Floor'], map_dict=map_dict)
-        points = self.etabs.points.get_objects_and_elements_joints_coordinate(map_dict=map_dict, joints=list(mesh_joint[2]))
-        disps = self.etabs.results.get_points_displacement(list(mesh_joint[2]), lp_name=case_name, type_=type_, item_type_elm=1, map_dict=map_dict)
+        points = self.etabs.points.get_objects_and_elements_joints_coordinate(map_dict=map_dict,
+                                                                              joints=list(mesh_joint[2]))
+        disps = self.etabs.results.get_points_displacement(list(mesh_joint[2]), lp_name=case_name, type_=type_,
+                                                           item_type_elm=1, map_dict=map_dict)
         results = [{'time': 1, 'disp': disps}]
 
         el3 = {}
@@ -757,26 +760,26 @@ class Area:
             "Penta6Elem": {},
             "Penta15Elem": {},
             "Results": results
-            }
+        }
         return m
-    
+
     def delete_areas(self,
-                      areas: Union[list, None]=None,
-                      ) -> None:
+                     areas: Union[list, None] = None,
+                     ) -> None:
         if areas is None:
-            self.SapModel.AreaObj.Delete('ALL', ItemType=1) # Group
+            self.SapModel.AreaObj.Delete('ALL', ItemType=1)  # Group
         else:
             for area in areas:
                 self.SapModel.AreaObj.Delete(area)
 
     def get_points_coordinate_of_all_areas(self,
-                                           type_: str='floor', # 'wall'
-                                           z: bool= False,
+                                           type_: str = 'floor',  # 'wall'
+                                           z: bool = False,
                                            ):
-        design_types = {'wall': 1, 'floor':2, 'opening':4}
+        design_types = {'wall': 1, 'floor': 2, 'opening': 4}
         type_ = design_types.get(type_, 0)
         (n, names, design, _, delim, _,
-        x_coords, y_coords, z_coords, _) = self.etabs.SapModel.AreaObj.GetAllAreas()
+         x_coords, y_coords, z_coords, _) = self.etabs.SapModel.AreaObj.GetAllAreas()
         i = 0
         ret = dict()
         for count, j in enumerate(delim):
@@ -801,7 +804,7 @@ def deck_plate_equivalent_height_according_to_volume(
         tw_bot,
         hc,
         t_deck,
-        ) -> float:
+) -> float:
     '''
     s: Spacing of Ribs
     d: Overall Depth
@@ -815,6 +818,7 @@ def deck_plate_equivalent_height_according_to_volume(
     equal_length = s - eps_width + 2 * oblique_len
     return equal_length * t_deck / s
 
+
 def calculate_equivalent_height_according_to_volume(
         s1,
         s2,
@@ -822,7 +826,7 @@ def calculate_equivalent_height_according_to_volume(
         tw1,
         tw2,
         hc,
-        ) -> float:
+) -> float:
     '''
     s1: Spacing of Ribs that are Parallel to Slab 1-Axis
     s2: Spacing of Ribs that are Parallel to Slab 2-Axis
@@ -836,6 +840,7 @@ def calculate_equivalent_height_according_to_volume(
     equal_height = d - (s1 - tw1) * (s2 - tw2) * hw / (s1 * s2)
     return equal_height
 
+
 def calculate_rho(
         s: float,
         d: float,
@@ -843,9 +848,9 @@ def calculate_rho(
         hc: float,
         as_top: float,
         as_bot: float,
-        fill: bool=False,
-        two_way: bool=True,
-    ) -> tuple:
+        fill: bool = False,
+        two_way: bool = True,
+) -> tuple:
     '''
     s: Spacing of Ribs that are Parallel to Slab 1-Axis
     d: Overall Depth
@@ -881,6 +886,7 @@ def calculate_rho(
     rho_bot = as_bot / (s * h)
     return rho_top, rho_bot
 
+
 def centroid_of_polygon(vertices):
     '''
     vertices: a list of pair (x, y) like [(x0, y0), (x1, y1), ...]
@@ -902,7 +908,6 @@ def centroid_of_polygon(vertices):
     return x, y
 
 
-
 if __name__ == '__main__':
     import sys
     from pathlib import Path
@@ -921,6 +926,7 @@ if __name__ == '__main__':
     etabs_api_path = Path(__file__).parent
     sys.path.insert(0, str(etabs_api_path))
     from etabs_obj import EtabsModel
+
     # etabs = EtabsModel(backup=False, software='SAFE')
     etabs = EtabsModel(backup=False)
     etabs.area.calculate_deck_weight_per_area()
