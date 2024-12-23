@@ -414,6 +414,16 @@ def test_set_lateral_bracing():
     assert set(ret) == {0}
 
 @open_etabs_file('steel.EDB')
+def test_get_section_type_and_geometry():
+    names = ['94', '95', '96']
+    ret = etabs.frame_obj.get_section_type_and_geometry(names)
+    assert set(ret.keys()) == set(names)
+    for name in names:
+        assert ret[name]['design_type'] == 'Beam'
+        assert ret[name]['section_type'] == ['I', 'W']
+    assert len(ret) == len(names)
+
+@open_etabs_file('steel.EDB')
 def test_get_lateral_bracing():
     etabs.set_current_unit('N', 'm')
     name = '94'

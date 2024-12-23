@@ -856,6 +856,7 @@ class DatabaseTables:
 
     def get_design_load_combinations(self,
             type_ : str = 'concrete', # 'steel', 'shearwall', 'slab'
+            combo_types: list = ['Strength', 'Deflection']
             ):
         if type_ == 'concrete':
             table_key = 'Concrete Frame Design Load Combination Data'
@@ -868,6 +869,9 @@ class DatabaseTables:
         df = self.read(table_key, to_dataframe=True)
         if df is None:
             return None
+        if combo_types and 'ComboType' in df.columns:
+            filt = df['ComboType'].isin(combo_types)
+            df = df.loc[filt]
         if type_ == 'steel':
             df = df[df['DesignType'] == 'Steel Frame']
         return list(df['ComboName'])

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Iterable, Union
 import math
+import copy
 
 from python_functions import change_unit
 
@@ -54,6 +55,70 @@ class FrameObj:
         ):
         for frame in frame_names:
             self.set_section_name(frame, name)
+
+    def get_section_type_and_geometry(self, frame_names: list) -> dict:
+        '''
+        return the section type, design type and geometrical properties of frames
+        '''
+        frame_props = self.SapModel.PropFrame.GetAllFrameProperties()
+        all_frames = self.SapModel.FrameObj.GetAllFrames()
+        section_types_map = {
+            1 : ['I', 'W'],
+            2 : ['Channel', 'U'],
+            3 : ['T', 'T'],
+            4 : ['Angle', 'L'],
+            6 : ['Box', 'HS'],
+            8 : ['Rectangular', 'R'],
+            9 : ['Circle', 'C'],
+        }
+        section_type_and_geometry = dict()
+        profiles = {}
+        for frame_name in frame_names:
+            i = all_frames[1].index(frame_name)
+            section_name = all_frames[2][i]
+            profile = profiles.get(section_name, None)
+            if profile is None:
+                if section_name:
+                    section_index = frame_props[1].index(section_name)
+                    section_type_num = frame_props[2][section_index]
+                    section_type = section_types_map.get(section_type_num, None)
+                else:
+                    section_type = None
+                width = frame_props[4][section_index]
+                height = frame_props[3][section_index]
+                tw = frame_props[6][section_index] # TW
+                tf = frame_props[5][section_index] # TF
+                width_b = frame_props[7][section_index] # widthB
+                tf_b = frame_props[8][section_index] # TFB
+                sec_type = section_type[1]
+                if self.is_beam(frame_name):
+                    sec_type += 'B'
+                if self.is_column(frame_name):
+                    sec_type += 'C'
+                profile={
+                    'section_type': sec_type,
+                    'b': width,
+                    'd': height,
+                    't_w': tw,
+                    't_f': tf,
+                    'width_b': width_b,
+                    'tf_b': tf_b,
+                }
+                profiles[section_name] = profile
+            if self.is_beam(frame_name):
+                design_type = 'Beam'
+            elif self.is_column(frame_name):
+                design_type = 'Column'
+            elif self.is_brace(frame_name):
+                design_type= 'Brace'
+            x1, y1, z1 = (all_frames[6][i], all_frames[7][i], all_frames[8][i])
+            x2, y2, z2 = (all_frames[9][i], all_frames[10][i], all_frames[11][i])
+            length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+            props = copy.deepcopy(profile)
+            props['length'] = length
+            props['design_type'] = design_type
+            section_type_and_geometry[frame_name] = props
+        return section_type_and_geometry
 
     def set_end_length_offsets(self,
                                value: float=0.5,
