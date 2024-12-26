@@ -96,13 +96,13 @@ class FrameObj:
                 if self.is_column(frame_name):
                     sec_type += 'C'
                 profile={
-                    'section_type': sec_type,
+                    'sec_type': sec_type,
                     'b': width,
                     'd': height,
                     't_w': tw,
                     't_f': tf,
-                    'width_b': width_b,
-                    'tf_b': tf_b,
+                    # 'width_b': width_b,
+                    # 'tf_b': tf_b,
                 }
                 profiles[section_name] = profile
             if self.is_beam(frame_name):
@@ -115,8 +115,8 @@ class FrameObj:
             x2, y2, z2 = (all_frames[9][i], all_frames[10][i], all_frames[11][i])
             length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
             props = copy.deepcopy(profile)
-            props['length'] = length
-            props['design_type'] = design_type
+            # props['length'] = length
+            # props['design_type'] = design_type
             section_type_and_geometry[frame_name] = props
         return section_type_and_geometry
 
