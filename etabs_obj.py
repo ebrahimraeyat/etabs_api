@@ -962,8 +962,8 @@ class EtabsModel:
         return new_data, fields
 
     def scale_response_spectrums(self,
-        ex_name : str,
-        ey_name : str,
+        ex_name : Union[str, list],
+        ey_name : Union[str, list],
         x_specs : list,
         y_specs : list,
         x_scale_factor : float = 0.9, # 0.85, 0.9, 1
@@ -977,17 +977,27 @@ class EtabsModel:
         ):
         assert x_scale_factor in (0.85, 0.9, 1)
         assert y_scale_factor in (0.85, 0.9, 1)
-        print(f'{ex_name=}, {ey_name=}, {x_specs=}, {y_specs=}, {x_scale_factor=}, {y_scale_factor=}, {tolerance=}')
+        if isinstance(ex_name, str):
+            ex_name = [ex_name]
+        if isinstance(ey_name, str):
+            ey_name = [ey_name]
+        ex_names = ex_name
+        ey_names = ey_name
+        print(f'{ex_names=}, {ey_names=}, {x_specs=}, {y_specs=}, {x_scale_factor=}, {y_scale_factor=}, {tolerance=}')
         self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=x_specs+y_specs)
         self.set_current_unit('kgf', 'm')
-        self.analyze.set_load_cases_to_analyze([ex_name, ey_name] + x_specs + y_specs)
-        vex, vey = self.results.get_base_react(
-                loadcases=[ex_name, ey_name],
-                directions=['x', 'y'],
+        self.analyze.set_load_cases_to_analyze(ex_names + ey_names + x_specs + y_specs)
+        V = self.results.get_base_react(
+                loadcases=ex_names + ey_names,
+                directions=len(ex_names) * ['x'] + len(ey_names) * ['y'],
                 absolute=True,
                 )
+        vexes = V[0:len(ex_names)]
+        veyes = V[len(ex_names):]
+        vex = sum(vexes)
+        vey = sum(veyes)
         if consider_min_static_base_shear:
             def acceleration(risk_level):
                 accs = {'کم': 0.20,
@@ -999,14 +1009,16 @@ class EtabsModel:
                 d = self.get_settings_from_model()
             acc = acceleration(d.get("risk_level"))
             importance_factor = float(d.get("importance_factor"))
-            cx, cy = self.load_patterns.get_earthquake_values([ex_name, ey_name])
-            wx = vex / cx
-            wy = vey / cy
+            earthquake_factors = self.load_patterns.get_earthquake_values(ex_names + ey_names)
+            cxes = earthquake_factors[0: len(ex_names)]
+            cyes = earthquake_factors[len(ex_names):]
+            wx = sum([vex / cx for vex, cx in zip(vexes, cxes)])
+            wy = sum([vey / cy for vey, cy in zip(veyes, cyes)])
             c_min = 0.12 * acc * importance_factor
             vx_min = c_min * wx
             vy_min = c_min * wy
-            print(f"{cx=}, {cy=}, {wx=}, {wy=}, {c_min=}, {vx_min=}, {vy_min=}")
-        print(f'{vex=}, {vey=}')
+            print(f"{cxes=}, {cyes=}, {wx=}, {wy=}, {c_min=}, {vx_min=}, {vy_min=}")
+        print(f'{vexes=}, {veyes=}')
         for i in range(num_iteration):
             vsx = self.results.get_base_react(
                     loadcases=x_specs,
@@ -1043,7 +1055,7 @@ class EtabsModel:
                     self.load_cases.multiply_response_spectrum_scale_factor(spec, scale)
         force = self.get_current_unit()[0]
         import pandas as pd
-        load_cases = [ex_name, ey_name] + x_specs + y_specs
+        load_cases = ['&'.join(ex_names),  '&'.join(ey_names)] + x_specs + y_specs
         base_shear = [vex, vey] + vsx + vsy
         ratios = [1, 1] + [vx / vex for vx in vsx] + [vy / vey for vy in vsy]
         final_scales = [1, 1] # Get final scales that applied in etabs model
@@ -1063,8 +1075,8 @@ class EtabsModel:
         return x_scales, y_scales, df
 
     def angles_response_spectrums_analysis(self,
-        ex_name : str,
-        ey_name : str,
+        ex_name : list,
+        ey_name : list,
         specs : list = None,
         section_cuts : list = None,
         scale_factor : float = 0.9, # 0.85, 0.9, 1
@@ -1073,11 +1085,17 @@ class EtabsModel:
         reset_scale : bool = True,
         analyze : bool = True,
         ):
-        print(f"{ex_name=}, {ey_name=}, {specs=}, {section_cuts=}")
+        if isinstance(ex_name, str):
+            ex_name = [ex_name]
+        if isinstance(ey_name, str):
+            ey_name = [ey_name]
+        ex_names = ex_name
+        ey_names = ey_name
+        print(f"{ex_names=}, {ey_names=}, {specs=}, {section_cuts=}")
         self.SapModel.File.Save()
         if reset_scale:
             self.load_cases.reset_scales_for_response_spectrums(loadcases=specs)
-        loadcases = [ex_name, ey_name] + specs
+        loadcases = ex_names + ey_names + specs
         base_shear_spec = {}
         base_shear_ex = {}
         base_shear_ey = {}
@@ -1102,8 +1120,8 @@ class EtabsModel:
                 angle_specs[angle] = spec
                 df_angle_section = df[(df['SectionCut'] == section_cut) & (df['angle'] == angle)][['F1', 'OutputCase']]
                 df_angle_section.set_index('OutputCase', inplace=True)
-                f_ex = abs(df_angle_section.loc[ex_name, 'F1'])
-                f_ey = abs(df_angle_section.loc[ey_name, 'F1'])
+                f_ex = abs(sum(df_angle_section.loc[ex_names, 'F1']))
+                f_ey = abs(sum(df_angle_section.loc[ey_names, 'F1']))
                 f_spec = abs(df_angle_section.loc[spec, 'F1'])
                 scale = scale_factor * math.sqrt(f_ex ** 2 + f_ey ** 2) / f_spec
                 spec_scales[spec] = scale
@@ -1133,8 +1151,10 @@ class EtabsModel:
             load_cases.append(angle_specs[angle])
             ret = self.SapModel.LoadCases.ResponseSpectrum.GetLoads(angle_specs[angle])
             final_scales.append(ret[3][0])
-        ex_name_col_title = f'{ex_name} ({force})'
-        ey_name_col_title = f'{ey_name} ({force})'
+        ex_names_str = '&'.join(ex_names)
+        ey_names_str = '&'.join(ey_names)
+        ex_name_col_title = ex_names_str + f' {force}'
+        ey_name_col_title = ey_names_str + f' {force}'
         spec_col_title = f'SPEC ({force})'
         df = pd.DataFrame({
             "Name": load_cases,
@@ -1145,7 +1165,7 @@ class EtabsModel:
             # 'Ratio': ratios,
             # 'Scale': final_scales,
             })
-        static_col_title = f"({ex_name}^2 + {ey_name}^2) ^0.5"
+        static_col_title = f"({ex_names_str}^2 + {ey_names_str}^2) ^0.5"
         df[static_col_title] = df.apply(
             lambda row: math.sqrt(row[ex_name_col_title] ** 2 + row[ey_name_col_title] ** 2),
             axis=1,
