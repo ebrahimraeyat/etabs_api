@@ -1,5 +1,6 @@
 from typing import Union
 import enum
+import math
 
 
 __all__ = ['PropFrame']
@@ -210,7 +211,9 @@ class PropFrame:
             self.check_if_rotation_of_two_columns_is_ok_and_need_to_convert_dimention(below_col, above_col)
         if need_to_convert_dimention:
             x_above, y_above = y_above, x_above
-        if x_above > x_below or y_above > y_below:
+        x_ratio = x_above / x_below
+        y_ratio = y_above / y_below
+        if (not math.isclose(x_ratio, 1) and x_ratio > 1) or (not math.isclose(y_ratio, 1) and y_ratio > 1):
             return True, (x_above, y_above, x_below, y_below)
         return False, (x_above, y_above, x_below, y_below)
 
