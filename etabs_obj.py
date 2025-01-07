@@ -27,6 +27,7 @@ from design import Design
 from prop_frame import PropFrame
 from diaphragm import Diaphragm
 from func import Func
+from pier import Pier
 
 __all__ = ['EtabsModel']
 
@@ -146,6 +147,8 @@ class EtabsModel:
             self.prop_frame = PropFrame(self)
             self.diaphragm = Diaphragm(self)
             self.func = Func(self)
+            self.pier = Pier(self)
+
             self.etabs_main_version = self.get_etabs_main_version()
             if self.etabs_main_version < 20:
                 self.seismic_drift_text = 'Seismic (Drift)'

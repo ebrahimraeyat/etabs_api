@@ -25,6 +25,12 @@ class Area:
         self.etabs = etabs
         self.SapModel = etabs.SapModel
 
+    def set_pier(self,
+                 names: list,
+                 pier_name: str="None",):
+        for name in names:
+            self.SapModel.AreaObj.SetPier(str(name), pier_name)
+
     def get_names_of_areas_of_type(
             self,
             type_='floor',

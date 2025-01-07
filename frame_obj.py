@@ -56,6 +56,12 @@ class FrameObj:
         for frame in frame_names:
             self.set_section_name(frame, name)
 
+    def set_pier(self,
+                 names: list,
+                 pier_name: str="None",):
+        for name in names:
+            self.SapModel.FrameObj.SetPier(str(name), pier_name)
+
     def get_section_type_and_geometry(self, frame_names: list) -> dict:
         '''
         return the section type, design type and geometrical properties of frames

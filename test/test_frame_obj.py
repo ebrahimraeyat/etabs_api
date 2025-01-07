@@ -41,6 +41,16 @@ def test_get_section_area():
     assert len(areas) == 149
     assert areas['B25X40'] == 1000
 
+@open_etabs_file('shayesteh.EDB')
+def test_set_pier():
+    names = (103, 104)
+    pier_name = 'P1'
+    etabs.frame_obj.set_pier(names, pier_name)
+    for name in names:
+        p_name = etabs.SapModel.FrameObj.GetPier(str(name))[0]
+        assert p_name == pier_name 
+    
+
 
 
 @open_etabs_file('shayesteh.EDB')
