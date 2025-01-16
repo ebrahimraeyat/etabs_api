@@ -33,6 +33,24 @@ class Points:
             x2, y2 = self.SapModel.PointObj.GetCoordCartesian(p2)[:2]
         d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         return d
+    
+    def get_distance_between_two_points(self,
+            p1 : Union[str, tuple],
+            p2 : Union[str, tuple],
+            ) -> tuple:
+        if isinstance(p1, tuple):
+            x1, y1, z1 = p1
+        else:
+            x1, y1, z1 = self.SapModel.PointObj.GetCoordCartesian(p1)[:3]
+        if isinstance(p2, tuple):
+            x2, y2, z2 = p2
+        else:
+            x2, y2, z2 = self.SapModel.PointObj.GetCoordCartesian(p2)[:3]
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        dz = abs(z2 - z1)
+        d = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        return dx, dy, dz, d
 
     def get_points_coords(self, points : Iterable):
         points_xyz = {}
