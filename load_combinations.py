@@ -22,7 +22,12 @@ class LoadCombination:
         self.SapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(load_combinations)
     
     def get_load_combination_names(self):
-        return self.SapModel.RespCombo.GetNameList()[1]
+        try:
+            load_combinations = self.SapModel.RespCombo.GetNameList()[1]
+        except IndexError:
+            print("There is no load combinations in this model")
+            load_combinations = []
+        return load_combinations
     
     def delete_load_combinations(self, combo_names):
         rets = set()
