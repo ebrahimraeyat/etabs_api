@@ -258,7 +258,7 @@ class Segment:
         return 1
     
     def get_kl(self):
-        return 1.4
+        return 1.0
         
     def get_alpha_m(self):
         start = self.start_restraint.location
