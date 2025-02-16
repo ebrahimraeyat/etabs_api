@@ -689,11 +689,25 @@ class Area:
         beams, columns = self.etabs.frame_obj.get_beams_columns()
         self.etabs.frame_obj.assign_frame_modifiers(
             frame_names=beams + columns,
+            area=1,
+            as2=1,
+            as3=1,
+            torsion=1,
             i22=1,
             i33=1,
         )
         print("Set Slab stiffness modifiers ...")
-        self.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)
+        self.assign_slab_modifiers(
+            f11=1,
+            f22=1,
+            f12=1,
+            m11=1,
+            m22=1,
+            m12=1,
+            v13=1,
+            v23=1,
+            reset=True,
+            )
         print("Set floor cracking for beams and floors ...")
         self.etabs.database.set_floor_cracking(type_='Frame')
         self.etabs.database.set_floor_cracking(type_='Area')
