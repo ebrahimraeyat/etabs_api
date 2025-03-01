@@ -813,20 +813,22 @@ class EtabsModel:
     def get_story_stiffness_modal_way(self):
         story_mass = self.database.get_story_mass()[::-1]
         story_mass = {key: value for key, value in story_mass}
-        stories = list(story_mass.keys())
+        storyname_and_levels = self.story.storyname_and_levels()
+        stories = sorted(storyname_and_levels, key=storyname_and_levels.get, reverse=True)[:-1]
         dx, dy, wx, wy = self.database.get_stories_displacement_in_xy_modes()
         story_stiffness = {}
-        n = len(story_mass)
-        for i, (phi_x, phi_y) in enumerate(zip(dx.values(), dy.values())):
-            if i == n - 1:
-                phi_neg_x = 0
-                phi_neg_y = 0
+        for i, story in enumerate(stories):
+            if story not in story_mass.keys():
+                continue
+            if story == stories[-1]:
+                phi_below_x = 0
+                phi_below_y = 0
             else:
-                story_neg = stories[i + 1]
-                phi_neg_x = dx[story_neg]
-                phi_neg_y = dy[story_neg]
-            d_phi_x = phi_x - phi_neg_x
-            d_phi_y = phi_y - phi_neg_y
+                below_story = stories[i + 1]
+                phi_below_x = dx.get(below_story)
+                phi_below_y = dy.get(below_story)
+            d_phi_x = dx.get(story) - phi_below_x
+            d_phi_y = dy.get(story) - phi_below_y
             sigma_x = 0
             sigma_y = 0
             for j in range(0, i + 1):
@@ -917,10 +919,13 @@ class EtabsModel:
                 story_stiffness = self.get_story_stiffness_modal_way()
             elif way == 'earthquake':
                 story_stiffness = self.get_story_stiffness_earthquake_way()
-        stories = list(story_stiffness.keys())
+        storyname_and_levels = self.story.storyname_and_levels()
+        stories = sorted(storyname_and_levels, key=storyname_and_levels.get, reverse=True)
         retval = []
         for i, story in enumerate(stories):
-            stiffness = story_stiffness[story]
+            stiffness = story_stiffness.get(story, None)
+            if stiffness is None:
+                continue
             kx = stiffness[0]
             ky = stiffness[1]
             if i == 0:
