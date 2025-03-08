@@ -27,3 +27,36 @@ def get_similar_points_in_two_models(
                         used_points.append(p2)
                         break
     return similar_points
+
+def transfer_loads_between_two_models(
+        model1,
+        model2,
+        level1: float,
+        level2: float,
+        map_loadcases: dict,
+        replace: bool=False,
+        ):
+    similar_points = get_similar_points_in_two_models(model1, model2, level1, level2)
+    not_applied_forces = []
+    model1.run_analysis()
+    model1.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
+    for lc in map_loadcases.keys():
+        model1.SapModel.Results.Setup.SetCaseSelectedForOutput(lc)
+    model2.unlock_model()
+    for p1, p2 in similar_points.items():
+        ret = model1.SapModel.Results.JointReact(p1, 0)
+        for i in range(ret[0]):
+            lc1 = ret[3][i]
+            fx = -ret[6][i]
+            fy = -ret[7][i]
+            fz = -ret[8][i]
+            mx = -ret[9][i]
+            my = -ret[10][i]
+            mz = -ret[11][i]
+            lc2 = map_loadcases.get(lc1, None)
+            if lc2 is not None:
+                point_load_value = [fx, fy, fz, mx, my, mz]
+                model2.SapModel.PointObj.SetLoadForce(p2, lc2, point_load_value, replace)
+            else:
+                not_applied_forces.append((p1, lc1))
+    return not_applied_forces
