@@ -101,8 +101,8 @@ class EtabsModel:
                 # sys.exit(-1)
         else:
             # sys.exit(-1)
-            helper = comtypes.client.CreateObject('ETABSv1.Helper')
-            helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
+            # helper = comtypes.client.CreateObject(f'{software}v1.Helper')
+            # helper = helper.QueryInterface(comtypes.gen.ETABSv1.cHelper)
             if software_exe_path:
                 try:
                     self.etabs = helper.CreateObject(software_exe_path)
@@ -111,7 +111,10 @@ class EtabsModel:
                     sys.exit(-1)
             else:
                 try:
-                    self.etabs = helper.CreateObjectProgID("CSI.ETABS.API.ETABSObject")
+                    if software in ("ETABS", "SAFE"):
+                        self.etabs = helper.CreateObjectProgID(f"CSI.{software}.API.ETABSObject")
+                    elif software == "SAP2000":
+                        self.etabs = helper.CreateObjectProgID(f"CSI.{software}.API.SapObject")
                 except (OSError, comtypes.COMError):
                     print("Cannot start a new instance of the program.")
                     sys.exit(-1)
