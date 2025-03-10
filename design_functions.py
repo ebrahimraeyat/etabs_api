@@ -32,13 +32,15 @@ def get_overwrites_of_frames(
             for index, row in df.iterrows():
                 values = row[relevant_columns].values
                 unique_values = set(values)
-
+                options = row['Options']
                 if len(unique_values) == 1:
                     new_value = unique_values.pop()
-                    results.append([row['Item'], new_value, row['Options']])
+                    # results.append([row['Item'], new_value, options])
                 else:
                     new_value = "various"
-                    results.append([row['Item'], new_value, row['Options'] + ',various'])
+                    if new_value not in options:
+                        options = options + f',{new_value}'
+                results.append([row['Item'], new_value, options])
             df = pd.DataFrame(results, columns=['Item', 'Value', 'Options'])
     return df
 
