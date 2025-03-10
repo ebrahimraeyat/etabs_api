@@ -105,7 +105,13 @@ def test_add_steel():
     assert math.isclose(fya, fy)
     assert math.isclose(fua, fu)
 
-
+@open_etabs_file("rashidzadeh.EDB")
+def test_get_frame_steel_fy_fu():
+    ret = etabs.material.get_frame_steel_fy_fu("414")
+    assert ret is None
+    fy, fu = etabs.material.get_frame_steel_fy_fu("404")
+    assert math.isclose(fy, 2400, abs_tol=1)
+    assert math.isclose(fu, 4200, abs_tol=1)
 
 if __name__ == '__main__':
     from pathlib import Path

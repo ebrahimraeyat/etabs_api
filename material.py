@@ -36,6 +36,17 @@ class Material:
     
     def get_steel_fy_fu(self, steel):
         return self.SapModel.PropMaterial.GetOSteel(steel)[0:2]
+    
+    def get_frame_steel_fy_fu(self,
+                              frame_name: str,
+                              unit: tuple= ("kgf", 'cm'),
+                              ):
+        self.etabs.set_current_unit(*unit)
+        material = self.etabs.prop_frame.get_material(frame_name)
+        if material is not None and self.material_type(material) == 1:
+            ret = self.SapModel.PropMaterial.GetOSteel(material)
+            return ret[:2]
+        return None
 
     @change_unit('N', 'mm')
     def get_S340_S400_rebars(self):

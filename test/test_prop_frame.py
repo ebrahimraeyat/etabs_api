@@ -132,6 +132,15 @@ def test_check_if_dimention_of_above_column_is_greater_than_below_column():
         ret = etabs.prop_frame.check_if_dimention_of_above_column_is_greater_than_below_column(below_col, above_col)
         assert ret[0]
 
+@open_etabs_file("rashidzadeh.EDB")
+def test_get_material():
+    mat = etabs.prop_frame.get_material('404')
+    assert mat == "STEEL"
+    mat = etabs.prop_frame.get_material('411')
+    assert mat == "C30"
+    
+
+
 
 if __name__ == '__main__':
     test_change_columns_section_fc_fy_cover_design()

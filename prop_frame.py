@@ -274,3 +274,10 @@ class PropFrame:
             return CompareTwoColumnsEnum.rebar_slop
         # There is no error
         return CompareTwoColumnsEnum.OK
+    
+    def get_material(self,
+                     frame_name: str,
+                     ):
+        section = self.SapModel.FrameObj.GetSection(frame_name)[0]
+        material = self.SapModel.PropFrame.GetMaterial(section)[0] if section else None
+        return material
