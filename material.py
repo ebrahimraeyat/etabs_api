@@ -41,7 +41,8 @@ class Material:
                               frame_name: str,
                               unit: tuple= ("kgf", 'cm'),
                               ):
-        self.etabs.set_current_unit(*unit)
+        if unit is not None:
+            self.etabs.set_current_unit(*unit)
         material = self.etabs.prop_frame.get_material(frame_name)
         if material is not None and self.material_type(material) == 1:
             ret = self.SapModel.PropMaterial.GetOSteel(material)
