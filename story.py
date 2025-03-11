@@ -73,6 +73,19 @@ class Story:
     def get_story_names(self):
         return self.SapModel.Story.GetNameList()[1]
     
+    def get_sorted_story_name(self,
+                              reverse: bool=True,
+                              include_base: bool=False,
+                              ):
+        storyname_and_levels = self.storyname_and_levels()
+        stories = sorted(storyname_and_levels, key=storyname_and_levels.get, reverse=reverse)
+        if not include_base:
+            if reverse:
+                stories = stories[:-1]
+            else:
+                stories = stories[1:]
+        return stories
+    
     def get_level_names(self):
         return self.SapModel.Story.GetStories()[1]
 

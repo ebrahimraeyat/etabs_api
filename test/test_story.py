@@ -94,3 +94,14 @@ def test_storyname_and_levels():
                     'STORY4': 15480.0, 
                     'STORY5': 18680.0,
                     })
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_sorted_story_name():
+    stories = etabs.story.get_sorted_story_name(reverse=True, include_base=True)
+    assert stories == ['STORY5', 'STORY4', 'STORY3', 'STORY2', 'STORY1', 'BASE']
+    stories = etabs.story.get_sorted_story_name(reverse=True, include_base=False)
+    assert stories == ['STORY5', 'STORY4', 'STORY3', 'STORY2', 'STORY1']
+    stories = etabs.story.get_sorted_story_name(reverse=False, include_base=False)
+    assert stories == ['STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
+    stories = etabs.story.get_sorted_story_name(reverse=False, include_base=True)
+    assert stories == ['BASE', 'STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
