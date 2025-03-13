@@ -385,10 +385,6 @@ class LoadPatterns:
             return False
         for name in names:
             self.SapModel.LoadPatterns.Add(name, type_)
-            self.SapModel.LoadCases.StaticLinear.SetCase(name)
-            self.SapModel.LoadCases.StaticLinear.SetLoads(
-                name, 1, ('Load',), (name,), (1.0,))
-
         return True
     
     def add_notional_loads(self,
