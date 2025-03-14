@@ -71,6 +71,9 @@ class SelectObj:
         selected_beams = set(all_selected_frames).intersection(beams)
         selected_columns = set(all_selected_frames).intersection(columns)
         return selected_beams, selected_columns
+    
+    def clear_selection(self):
+        self.SapModel.SelectObj.ClearSelection()
 
 
     
