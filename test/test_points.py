@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -74,3 +76,17 @@ def test_get_objects_and_elements_joints_coordinate():
 def test_get_maximum_point_number_in_model():
     n = etabs.points.get_maximum_point_number_in_model()
     assert n == 201
+
+@open_etabs_file('khiabany.EDB')
+def test_get_boundbox_coords():
+    # min_x, min_y, min_z, max_x, max_y, max_z
+    desired = (0., -1700.,  -300., 10690., 14050., 19080.)
+    etabs.set_current_unit('N', 'mm')
+    ret = etabs.points.get_boundbox_coords()
+    np.testing.assert_almost_equal(ret, desired, decimal=0)
+
+@open_etabs_file('khiabany.EDB')
+def test_get_unique_xyz_coordinates():
+    # min_x, min_y, min_z, max_x, max_y, max_z
+    xs, ys, zs = etabs.points.get_unique_xyz_coordinates()
+    assert len(zs) == 7

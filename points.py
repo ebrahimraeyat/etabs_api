@@ -1,6 +1,8 @@
 from typing import Iterable, Union
 import math
 
+import numpy as np
+
 class Points:
     def __init__(
                 self,
@@ -13,6 +15,21 @@ class Points:
         else:
             self.SapModel = SapModel
 
+    def get_point_names(self):
+        return self.SapModel.PointObj.GetNameList()[1]
+    
+    def get_unique_xyz_coordinates(self):
+        xs = set()
+        ys = set()
+        zs = set()
+        points = self.get_point_names()
+        for p in points:
+            x, y, z = self.get_point_coordinate(p)
+            xs.add(x)
+            ys.add(y)
+            zs.add(z)
+        return sorted(xs), sorted(ys), sorted(zs)
+    
     def set_point_restraint(self,
             point_names,
             restraint: list= [True, True, False, False, False, False]):
@@ -51,6 +68,11 @@ class Points:
         dz = abs(z2 - z1)
         d = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
         return dx, dy, dz, d
+    
+    def get_point_coordinate(self, name):
+        x, y, z, _ = self.SapModel.PointObj.GetCoordCartesian(name)
+        return x, y, z
+
 
     def get_points_coords(self, points : Iterable):
         points_xyz = {}
@@ -145,5 +167,25 @@ class Points:
         df = self.get_points_coordinates()
         max_number = df.UniqueName.max()
         return max_number
+    
+    def get_boundbox_coords(self):
+        points = self.get_point_names()
+        min_x = np.inf
+        min_y = np.inf
+        min_z = np.inf
+        max_x = -np.inf
+        max_y = -np.inf
+        max_z = -np.inf
+        for p in points:
+            x, y, z, _ = self.SapModel.PointObj.GetCoordCartesian(p)
+            min_x = min(x, min_x)
+            max_x = max(x, max_x)
+            min_y = min(y, min_y)
+            max_y = max(y, max_y)
+            min_z = min(z, min_z)
+            max_z = max(z, max_z)
+        return min_x, min_y, min_z, max_x, max_y, max_z
+
+
     
     
