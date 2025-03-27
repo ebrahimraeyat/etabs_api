@@ -158,6 +158,7 @@ ENV/
 
 # SAP2000
 *.$2k
+*.sbk
 
 # tex
 *.aux

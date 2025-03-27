@@ -151,8 +151,11 @@ class EtabsModel:
             self.diaphragm = Diaphragm(self)
             self.func = Func(self)
             self.pier = Pier(self)
+            self.set_special_values_according_to_software_and_version()
 
-            self.etabs_main_version = self.get_etabs_main_version()
+    def set_special_values_according_to_software_and_version(self):
+        self.etabs_main_version = self.get_etabs_main_version()
+        if self.software == "ETABS":
             if self.etabs_main_version < 20:
                 self.seismic_drift_text = 'Seismic (Drift)'
                 self.seismic_drift_load_type = 37
@@ -199,7 +202,7 @@ class EtabsModel:
                     'OverEcc',
                 ]
                 self.auto_notional_loads_columns = ['LoadPattern', 'BasePattern', 'LoadRatio', 'LoadDir']
-                
+            
 
     def get_etabs_main_version(self):
         ver = self.SapModel.GetVersion()

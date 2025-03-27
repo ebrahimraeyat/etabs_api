@@ -17,8 +17,8 @@ class DatabaseTables:
                 SapModel=None,
                 etabs=None,
                 ):
+        self.etabs = etabs
         if not SapModel:
-            self.etabs = etabs
             self.SapModel = etabs.SapModel
         else:
             self.SapModel = SapModel
@@ -876,11 +876,25 @@ class DatabaseTables:
             df = df[df['DesignType'] == 'Steel Frame']
         return list(df['ComboName'])
 
+    def create_section_cuts_sap(self,
+            group : str,
+            prefix : str = 'SEC',
+            angles : list = range(0, 180, 15),
+            ):
+        for angle in angles:
+            name = f'{prefix}{angle}'
+            self.SapModel.SectCut.SetByGroup(name, group, 1)
+            self.SapModel.SectCut.SetLocalAxesAnalysis (name, angle, 0, 0)
+        
+        
     def create_section_cuts(self,
             group : str,
             prefix : str = 'SEC',
             angles : list = range(0, 180, 15),
             ):
+        if self.etabs.software == "SAP2000":
+            self.create_section_cuts_sap(group, prefix, angles)
+            return True
         if self.etabs.etabs_main_version < 20:
             fields = ('Name', 'Defined By', 'Group', 'Result Type', 'Result Location', 'Rotation About Z', 'Rotation About Y', 'Rotation About X')
         else:
@@ -904,6 +918,13 @@ class DatabaseTables:
         table_key = 'Section Cut Definitions'
         self.write(table_key, data, fields)
 
+    def get_section_cuts_sap(self):
+        try:
+            ret = self.SapModel.SectCut.GetNameList()[1]
+        except:
+            ret = []
+        return ret
+    
     def get_section_cuts(self, cols=['Name', 'Group', 'RotAboutZ']):
         table = 'Section Cut Definitions'
         df = self.read(table, to_dataframe=True, cols=cols)
