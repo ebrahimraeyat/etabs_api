@@ -5,9 +5,10 @@ import tempfile
 
 import etabs_obj
 
-global etabs
-global open_model
+# global etabs
+# global open_model
 version = int(os.environ.get('software_version', 21))
+software = str(os.environ.get('software_name', "ETABS"))
 
 test_folder = Path(__file__).parent
 
@@ -115,8 +116,10 @@ def open_etabs_file(filename: str):
                 version = 0
             elif filename.lower().endswith(".edb"):
                 software_name = "ETABS"
+                version = int(os.environ.get('software_version', 21))
             elif filename.lower().endswith(".fdb"):
                 software_name = "SAFE"
+                version = int(os.environ.get('software_version', 21))
             os.environ.setdefault('software_name', software_name)
             if 'etabs' not in dir(__builtins__):
                 etabs, _ = etabs_model(version=version, software=software_name)
