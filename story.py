@@ -83,6 +83,23 @@ class Story:
     def get_story_names(self):
         return self.SapModel.Story.GetNameList()[1]
     
+    def get_sorted_story_and_levels(self,
+                              reverse: bool=True,
+                              include_base: bool=True,
+                              ) -> list:
+        '''
+        return sorted story according to levels, if include_base it includes Base:
+        [('Story1', level1), ('Story2', level2), ('Story3', level3), ... ]
+        '''
+        storyname_and_levels = self.storyname_and_levels()
+        storyname_and_levels = sorted(storyname_and_levels.items(), key=lambda item: item[1], reverse=reverse)
+        if not include_base:
+            if reverse:
+                storyname_and_levels = storyname_and_levels[:-1]
+            else:
+                storyname_and_levels = storyname_and_levels[1:]
+        return storyname_and_levels
+    
     def get_sorted_story_name(self,
                               reverse: bool=True,
                               include_base: bool=False,

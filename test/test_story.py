@@ -105,3 +105,14 @@ def test_get_sorted_story_name():
     assert stories == ['STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
     stories = etabs.story.get_sorted_story_name(reverse=False, include_base=True)
     assert stories == ['BASE', 'STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_sorted_story_and_levels():
+    l = etabs.story.get_sorted_story_and_levels(reverse=True, include_base=True)
+    assert [i[0] for i in l] == ['STORY5', 'STORY4', 'STORY3', 'STORY2', 'STORY1', 'BASE']
+    l = etabs.story.get_sorted_story_and_levels(reverse=True, include_base=False)
+    assert [i[0] for i in l] == ['STORY5', 'STORY4', 'STORY3', 'STORY2', 'STORY1']
+    l = etabs.story.get_sorted_story_and_levels(reverse=False, include_base=False)
+    assert [i[0] for i in l] == ['STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
+    l = etabs.story.get_sorted_story_and_levels(reverse=False, include_base=True)
+    assert [i[0] for i in l] == ['BASE', 'STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
