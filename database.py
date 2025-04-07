@@ -536,6 +536,15 @@ class DatabaseTables:
         df_include = df_include.explode(col_name)
         new_df = df_not_include.append(df_include)
         return new_df
+    
+    def get_story_mass_as_dict(self) -> dict:
+        self.etabs.set_current_unit('kgf', 'm')
+        self.etabs.run_analysis()
+        table_key = 'Centers Of Mass And Rigidity'
+        df = self.read(table_key, to_dataframe=True, cols=['Story', 'MassX'])
+        df['MassX'] = df['MassX'].astype(float)
+        d = df.groupby('Story').sum().to_dict()
+        return d.get('MassX', {})
 
     def get_story_mass(self):
         self.etabs.set_current_unit('kgf', 'm')

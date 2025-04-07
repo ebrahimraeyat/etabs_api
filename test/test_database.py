@@ -22,6 +22,13 @@ def test_get_story_mass():
     assert pytest.approx(float(story_mass[2][1]), abs=1) == 17696
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_story_mass_as_dict():
+    story_mass = etabs.database.get_story_mass_as_dict()
+    assert len(story_mass) == 5
+    assert pytest.approx(story_mass.get('STORY3'), abs=1) == 17696
+    assert pytest.approx(story_mass.get('STORY2'), abs=1) == 18032
+
+@open_etabs_file('shayesteh.EDB')
 def test_get_center_of_rigidity():
     cor = etabs.database.get_center_of_rigidity()
     assert len(cor) == 5
