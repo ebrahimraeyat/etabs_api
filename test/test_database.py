@@ -2,6 +2,8 @@ import pytest
 from pathlib import Path
 import sys
 
+import numpy as np
+
 FREECADPATH = 'G:\\program files\\FreeCAD 0.19\\bin'
 sys.path.append(FREECADPATH)
 import FreeCAD
@@ -48,6 +50,14 @@ def test_get_story_forces():
     forces, loadcases, _ = etabs.database.get_story_forces()
     assert len(forces) == 10
     assert loadcases == ('QX', 'QY')
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_story_forces_of_loadcases():
+    story_forces = etabs.database.get_story_forces_of_loadcases(loadcases=('QX', 'QY'))
+    assert len(story_forces) == 2
+    assert story_forces['QX']['STORY5'] == [0, 0]
+    assert story_forces['QX']['STORY4'] == [-40601.68, 0]
+    # assert np.testing.assert_allclose(story_forces['QX']['STORY4'], [-40601.68, 0])
 
 @open_etabs_file('shayesteh.EDB')
 def test_multiply_seismic_loads():

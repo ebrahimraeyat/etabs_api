@@ -786,6 +786,31 @@ class DatabaseTables:
         result = self.etabs.get_from_list_table(data, columns, values)
         story_forces = list(result)
         return story_forces, loadcases, FieldsKeysIncluded
+    
+    def get_story_forces_of_loadcases(
+                    self,
+                    loadcases: list=None,
+                    ):
+        if not loadcases:
+            loadcases = self.etabs.get_first_system_seismic()
+        all_loadcases = self.etabs.load_cases.get_load_cases()
+        invalid_cases = [lc for lc in loadcases if lc not in all_loadcases]
+        if invalid_cases:
+            raise NameError(f"Invalid load cases: {invalid_cases} (Available: {all_loadcases})")
+        self.etabs.run_analysis()
+        self.etabs.set_current_unit('kgf', 'm')
+        self.etabs.load_cases.select_load_cases(loadcases)
+        table_key = 'Story Forces'
+        df = self.read(table_key, to_dataframe=True, cols=['Story', 'OutputCase', 'Location', 'VX', 'VY']).query("Location == 'Bottom'")
+        del df['Location']
+        df[['VX', 'VY']] = df[['VX', 'VY']].astype(float)
+        story_forces = {}
+        for i, row in df.iterrows():
+            story, lc, vx, vy = row
+            d = story_forces.get(lc, {})
+            d[story] = [vx, vy]
+            story_forces[lc] = d
+        return story_forces
 
     def select_design_load_combinations(self,
             types : list = ['concrete'],
