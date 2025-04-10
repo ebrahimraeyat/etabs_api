@@ -63,6 +63,12 @@ def test_get_xy_seismic_load_patterns():
     assert len(names) == 6
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_xy_seismic_load_patterns_separate():
+    x_names, y_names = etabs.load_patterns.get_xy_seismic_load_patterns_separate()
+    assert len(x_names) == 3
+    assert len(y_names) == 3
+
+@open_etabs_file('shayesteh.EDB')
 def test_get_xy_spectral_load_patterns_with_angle():
     x_names, y_names = etabs.load_patterns.get_xy_spectral_load_patterns_with_angle(angle=0)
     assert set(x_names) == {'SPX', 'SX'}

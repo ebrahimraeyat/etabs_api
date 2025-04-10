@@ -241,3 +241,113 @@ class Story:
             if level < story_level:
                 points = self.SapModel.PointObj.GetNameListOnStory(name)[1]
                 self.etabs.points.set_point_restraint(points)
+
+    def get_diaphragm_force(self,
+                            loadcases: list,
+                            ):
+        self.etabs.run_analysis()
+        story_mass = self.etabs.database.get_story_mass_as_dict()
+        story_forces = self.etabs.database.get_story_forces_of_loadcases(loadcases)
+        stories = self.get_sorted_story_name(reverse=True, include_base=False)
+        diaphragm_forces = dict.fromkeys(loadcases)
+        cum_mass = 0
+        cum_masses = {}
+        for story in stories:
+            mass = story_mass.get(story)
+            cum_mass += mass
+            cum_masses[story] = (cum_mass)
+        for lc in loadcases:
+            d = dict.fromkeys(stories)
+            forces = story_forces.get(lc)
+            for story, (vx, vy) in forces.items():
+                mass = story_mass.get(story)
+                cum_mass = cum_masses.get(story)
+                fpx = vx * mass / cum_mass
+                fpy = vy * mass / cum_mass
+                d[story] = (fpx, fpy)
+            diaphragm_forces[lc] = d
+        return diaphragm_forces
+    
+    def get_diaphragm_earthquakes_factor(self,
+                                         x_names: Union[list, None]=None,
+                                         y_names: Union[list, None]=None,
+                                         x_amplified_earthquakes: float=1,
+                                         y_amplified_earthquakes: float=1,
+                                         ai: float=0.35,
+                            ):
+        if x_names is None:
+            x_names, y_names = self.etabs.load_patterns.get_xy_seismic_load_patterns_separate()
+        all_loadcases = self.etabs.load_cases.get_load_cases()
+        loadcases = list(x_names) + list(y_names)
+        for lp in (loadcases):
+            if lp not in all_loadcases:
+                raise NameError(f"The loadcase '{lp}' did not exist in model. please check that loadpattern and loadcases have similar name.")
+        self.etabs.run_analysis()
+        story_mass = self.etabs.database.get_story_mass_as_dict(unit=('N', 'm'))
+        story_forces = self.etabs.database.get_story_forces_of_loadcases(loadcases, unit=('N', 'm'))
+        stories = self.get_sorted_story_name(reverse=True, include_base=False)
+        diaphragm_earthquakes_factor = dict.fromkeys(loadcases)
+        cum_mass = 0
+        cum_masses = {}
+        for story in stories:
+            mass = story_mass.get(story) * 9.81
+            cum_mass += mass
+            cum_masses[story] = (cum_mass)
+        for lp in x_names:
+            d = dict.fromkeys(stories)
+            forces = story_forces.get(lp)
+            for story, (vx, vy) in forces.items():
+                cum_mass = cum_masses.get(story)
+                cp = vx / cum_mass
+                cp = abs(cp)
+                cp = max(0.5 * ai, cp)
+                cp = min(cp, ai)
+                d[story] = cp * x_amplified_earthquakes
+            diaphragm_earthquakes_factor[lp] = d
+        for lp in y_names:
+            d = dict.fromkeys(stories)
+            forces = story_forces.get(lp)
+            for story, (vx, vy) in forces.items():
+                cum_mass = cum_masses.get(story)
+                cp = vy / cum_mass
+                cp = abs(cp)
+                cp = max(0.5 * ai, cp)
+                cp = min(cp, ai)
+                d[story] = cp * y_amplified_earthquakes
+            diaphragm_earthquakes_factor[lp] = d
+        return diaphragm_earthquakes_factor
+    
+    def create_files_diaphragm_applied_forces(self,
+                                        stories: Union[list, None]=None,
+                                        x_amplified_earthquakes: float=1,
+                                        y_amplified_earthquakes: float=1,
+                                        ai: float=0.35,
+                                        d: dict={},
+                                        folder_name: str='diaphragm_forces',
+                                        ):
+        '''
+        ai: A * I
+        '''
+        diaphragm_earthquakes_factor = self.get_diaphragm_earthquakes_factor(
+            ai=ai,
+            x_amplified_earthquakes=x_amplified_earthquakes,
+            y_amplified_earthquakes=y_amplified_earthquakes,
+            )
+        all_stories = self.get_sorted_story_name(reverse=True, include_base=True)
+        if not d:
+            d = self.etabs.get_settings_from_model()
+        for story in stories:
+            asli_file_path, _ = self.etabs.save_in_folder_and_add_name(
+            folder_name = folder_name,
+            name = story,
+            )
+            data = []
+            for lc, story_factor in diaphragm_earthquakes_factor.items():
+                factor = story_factor.get(story)
+                i = all_stories.index(story)
+                bot_story = all_stories[i + 1]
+                c = str(factor)
+                data.append(([lc], [story, bot_story, c, '1']))
+            self.etabs.apply_cfactors_to_edb(data, d)
+            self.SapModel.File.Save()
+            self.SapModel.File.OpenFile(str(asli_file_path))

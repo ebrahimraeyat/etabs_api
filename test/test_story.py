@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 import pytest
 
+import numpy as np
+
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
@@ -116,3 +118,50 @@ def test_get_sorted_story_and_levels():
     assert [i[0] for i in l] == ['STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
     l = etabs.story.get_sorted_story_and_levels(reverse=False, include_base=True)
     assert [i[0] for i in l] == ['BASE', 'STORY1', 'STORY2', 'STORY3', 'STORY4', 'STORY5']
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_diaphragm_force():
+    diaphragm_forces = etabs.story.get_diaphragm_force(loadcases=('QX', 'QY'))
+    assert len(diaphragm_forces) == 2
+    assert diaphragm_forces['QX']['STORY5'] == (0, 0)
+    np.testing.assert_almost_equal(diaphragm_forces['QX']['STORY4'], [-36707.346, 0], decimal=0)
+
+@open_etabs_file('shayesteh.EDB')
+def test_get_diaphragm_earthquakes_factor():
+    ai = 0.35
+    diaphragm_forces = etabs.story.get_diaphragm_earthquakes_factor(
+        x_names=('QX',),
+        y_names=('QY',),
+        ai=ai
+        )
+    print(diaphragm_forces)
+    assert len(diaphragm_forces) == 2
+    np.testing.assert_almost_equal(diaphragm_forces['QX']['STORY5'], ai / 2, decimal=3)
+    np.testing.assert_almost_equal(diaphragm_forces['QY']['STORY5'], ai / 2, decimal=3)
+
+@open_etabs_file('shayesteh.EDB')
+def test_create_files_diaphragm_applied_forces():
+    d = {}
+    d['ex_combobox'] = 'QX'
+    d['exn_combobox'] = 'QXN'
+    d['exp_combobox'] = 'QXP'
+    d['ey_combobox'] = 'QY'
+    d['eyn_combobox'] = 'QYN'
+    d['eyp_combobox'] = 'QYP'
+    etabs.story.create_files_diaphragm_applied_forces(
+        stories=["STORY4"],
+        d = d,
+        )
+    _, new_filename = etabs.get_new_filename_in_folder_and_add_name('diaphragm_forces', "STORY4")
+    etabs.SapModel.File.OpenFile(str(new_filename))
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    new_data = ['STORY4', 'STORY3', '1']
+    ret = df.loc[df.Name.isin(("QX", "QXN", "QXP", "QY", "QYN", "QYP")), ['TopStory', 'BotStory', 'K']] == new_data
+    assert ret.all().all()
+    for lp in ('QX', 'QXN', 'QXP', 'QY', 'QYN', 'QYP'):
+        assert etabs.SapModel.LoadPatterns.GetLoadType(lp)[0] == 5
+
+
+if __name__ == "__main__":
+    test_create_files_diaphragm_applied_forces()

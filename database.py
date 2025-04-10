@@ -537,14 +537,32 @@ class DatabaseTables:
         new_df = df_not_include.append(df_include)
         return new_df
     
-    def get_story_mass_as_dict(self) -> dict:
-        self.etabs.set_current_unit('kgf', 'm')
+    def get_story_mass_as_dict(self,
+                               unit: tuple=('kgf', 'm'),
+                               ) -> dict:
+        self.etabs.set_current_unit(*unit)
         self.etabs.run_analysis()
         table_key = 'Centers Of Mass And Rigidity'
         df = self.read(table_key, to_dataframe=True, cols=['Story', 'MassX'])
         df['MassX'] = df['MassX'].astype(float)
         d = df.groupby('Story').sum().to_dict()
         return d.get('MassX', {})
+    
+    def get_cumulative_story_mass(self,
+                                  reversed: bool=True,
+                                  unit: tuple=('kgf', 'm'),
+                                  ) -> dict:
+        '''
+        return cumulative story mass
+        '''
+        cum_story_mass = dict()
+        story_masses = self.get_story_mass_as_dict(unit=unit)
+        stories = self.etabs.story.get_sorted_story_name(reverse=reversed, include_base=False)
+        cum_mass = 0
+        for story in stories:
+            cum_mass += story_masses.get(story)
+            cum_story_mass[story] = cum_mass
+        return cum_story_mass
 
     def get_story_mass(self):
         self.etabs.set_current_unit('kgf', 'm')
@@ -790,6 +808,7 @@ class DatabaseTables:
     def get_story_forces_of_loadcases(
                     self,
                     loadcases: list=None,
+                    unit: tuple=('kgf', 'm')
                     ):
         if not loadcases:
             loadcases = self.etabs.get_first_system_seismic()
@@ -798,7 +817,7 @@ class DatabaseTables:
         if invalid_cases:
             raise NameError(f"Invalid load cases: {invalid_cases} (Available: {all_loadcases})")
         self.etabs.run_analysis()
-        self.etabs.set_current_unit('kgf', 'm')
+        self.etabs.set_current_unit(*unit)
         self.etabs.load_cases.select_load_cases(loadcases)
         table_key = 'Story Forces'
         df = self.read(table_key, to_dataframe=True, cols=['Story', 'OutputCase', 'Location', 'VX', 'VY']).query("Location == 'Bottom'")

@@ -697,8 +697,10 @@ class EtabsModel:
         '''
         df = self.check_seismic_names(d=d)
         print("Applying cfactor to edb\n")
+        cols = self.auto_seismic_user_coefficient_columns_part1[-2:] + ['C', 'K']
         for earthquakes, new_factors in data:
-            df.loc[df.Name.isin(earthquakes), ['TopStory', 'BotStory', 'C', 'K']] = new_factors
+            df.loc[df.Name.isin(earthquakes), cols] = new_factors
+        print(df)
         num_fatal_errors, ret = self.database.write_seismic_user_coefficient_df(df)
         print(f"num_fatal_errors, ret = {num_fatal_errors}, {ret}")
         return num_fatal_errors

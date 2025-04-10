@@ -363,6 +363,13 @@ class LoadPatterns:
         drift_load_pattern_names = self.get_drift_load_pattern_names()
         xy_names = x_names.union(y_names).difference(drift_load_pattern_names)
         return xy_names
+    
+    def get_xy_seismic_load_patterns_separate(self, only_ecc=False):
+        x_names, y_names = self.get_load_patterns_in_XYdirection(only_ecc)
+        drift_load_pattern_names = self.get_drift_load_pattern_names()
+        x_names = x_names.difference(drift_load_pattern_names)
+        y_names = y_names.difference(drift_load_pattern_names)
+        return x_names, y_names
       
     def select_all_load_patterns(self):
         load_pattern_names = list(self.get_load_patterns())
