@@ -284,13 +284,14 @@ class Story:
                 raise NameError(f"The loadcase '{lp}' did not exist in model. please check that loadpattern and loadcases have similar name.")
         self.etabs.run_analysis()
         story_mass = self.etabs.database.get_story_mass_as_dict(unit=('N', 'm'))
+        print(f"{story_mass=}")
         story_forces = self.etabs.database.get_story_forces_of_loadcases(loadcases, unit=('N', 'm'))
         stories = self.get_sorted_story_name(reverse=True, include_base=False)
         diaphragm_earthquakes_factor = dict.fromkeys(loadcases)
         cum_mass = 0
         cum_masses = {}
         for story in stories:
-            mass = story_mass.get(story) * 9.81
+            mass = story_mass.get(story, 0) * 9.81
             cum_mass += mass
             cum_masses[story] = (cum_mass)
         for lp in x_names:
