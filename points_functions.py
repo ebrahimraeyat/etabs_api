@@ -35,6 +35,7 @@ def transfer_loads_between_two_models(
         level2: float,
         map_loadcases: dict,
         replace: bool=False,
+        multiply: float=1,
         ):
     similar_points = get_similar_points_in_two_models(model1, model2, level1, level2)
     not_applied_forces = []
@@ -47,12 +48,12 @@ def transfer_loads_between_two_models(
         ret = model1.SapModel.Results.JointReact(p1, 0)
         for i in range(ret[0]):
             lc1 = ret[3][i]
-            fx = -ret[6][i]
-            fy = -ret[7][i]
-            fz = -ret[8][i]
-            mx = -ret[9][i]
-            my = -ret[10][i]
-            mz = -ret[11][i]
+            fx = multiply * -ret[6][i]
+            fy = multiply * -ret[7][i]
+            fz = multiply * -ret[8][i]
+            mx = multiply * -ret[9][i]
+            my = multiply * -ret[10][i]
+            mz = multiply * -ret[11][i]
             lc2 = map_loadcases.get(lc1, None)
             if lc2 is not None:
                 point_load_value = [fx, fy, fz, mx, my, mz]
