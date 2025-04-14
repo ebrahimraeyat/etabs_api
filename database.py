@@ -47,6 +47,17 @@ class DatabaseTables:
         if table_key in all_table:
             return True
         return False
+    
+    def table_names_that_containe(self, partial_str):
+        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
+        return [item for item in all_table if partial_str in item]
+    
+    def table_name_that_containe(self, partial_str):
+        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
+        names = [item for item in all_table if partial_str in item]
+        if len(names) == 1:
+            return names[0]
+        return None
 
     def read(self,
                 table_key : str,

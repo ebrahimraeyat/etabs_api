@@ -17,6 +17,13 @@ sys.path.insert(0, str(etabs_api_path))
 
 from shayesteh import etabs, open_etabs_file
 
+
+@open_etabs_file('shayesteh.EDB')
+def test_table_names_that_containe():
+    s = "Concrete Joint Design Summary"
+    names = etabs.database.table_names_that_containe(s)
+    assert len(names) == 0
+
 @open_etabs_file('shayesteh.EDB')
 def test_get_story_mass():
     story_mass = etabs.database.get_story_mass()
