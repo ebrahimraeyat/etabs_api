@@ -31,6 +31,14 @@ class Area:
         for name in names:
             self.SapModel.AreaObj.SetPier(str(name), pier_name)
 
+    def get_piers(self,
+                  names: Union[list, None]=None,
+                  ):
+        if names is None:
+            names = self.get_names_of_areas_of_type('wall')
+        return [self.SapModel.AreaObj.GetPier(name)[0] for name in names]
+
+
     def get_names_of_areas_of_type(
             self,
             type_='floor',

@@ -234,6 +234,11 @@ def test_set_pier():
         p_name = etabs.SapModel.AreaObj.GetPier(str(name))[0]
         assert p_name == pier_name
 
+@open_etabs_file('two_earthquakes.EDB')
+def test_get_piers():
+    n = len(etabs.area.get_names_of_areas_of_type('wall'))
+    ret = etabs.area.get_piers()
+    assert len(ret) == n
 
 
 if __name__ == '__main__':
