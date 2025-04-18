@@ -32,10 +32,12 @@ class Area:
             self.SapModel.AreaObj.SetPier(str(name), pier_name)
 
     def get_piers(self,
-                  names: Union[list, None]=None,
+                  names: Union[str, list, None]=None,
                   ) -> dict:
         if names is None:
             names = self.get_names_of_areas_of_type('wall')
+        if isinstance(names, str):
+            names = [names]
         return {name: self.SapModel.AreaObj.GetPier(name)[0] for name in names}
     
     def get_label_and_story_from_names(self,

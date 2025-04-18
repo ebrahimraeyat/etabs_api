@@ -31,8 +31,20 @@ class Pier:
     
     def get_names(self):
         return self.SapModel.PierLabel.GetNameList()[1]
-
-
+    
+    def get_columns_names_with_pier_label(self,
+                                          piers: Union[str, list, None]=None,
+                                          ) -> dict:
+        if isinstance(piers, str):
+            piers = [piers]
+        table_key = 'Frame Assignments - Pier Labels'
+        cols = ['Story', 'UniqueName', 'PierLabel']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        if piers is not None:
+            df = df[df['PierLabel'].isin(piers)]
+        ret = {pier_label: group.groupby('Story')['UniqueName'].apply(list).to_dict()
+               for pier_label, group in df.groupby('PierLabel')}
+        return ret
 
 
 if __name__ == '__main__':
