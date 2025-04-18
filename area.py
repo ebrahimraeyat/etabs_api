@@ -42,7 +42,7 @@ class Area:
                                        names: Union[str, list, None]=None,
                                        ) -> dict:
         if names is None:
-            names = []
+            names = self.get_all_names()
         if isinstance(names, str):
             names = [names]
         return {name: self.SapModel.AreaObj.GetLabelFromName(name)[:-1] for name in names}
