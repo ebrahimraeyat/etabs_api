@@ -36,7 +36,7 @@ class Area:
                   ):
         if names is None:
             names = self.get_names_of_areas_of_type('wall')
-        return [self.SapModel.AreaObj.GetPier(name)[0] for name in names]
+        return {name: self.SapModel.AreaObj.GetPier(name)[0] for name in names}
 
 
     def get_names_of_areas_of_type(
