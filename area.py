@@ -37,7 +37,22 @@ class Area:
         if names is None:
             names = self.get_names_of_areas_of_type('wall')
         return {name: self.SapModel.AreaObj.GetPier(name)[0] for name in names}
-
+    
+    def get_label_and_story_from_names(self,
+                                       names: Union[str, list, None]=None,
+                                       ) -> dict:
+        if names is None:
+            names = []
+        if isinstance(names, str):
+            names = [names]
+        return {name: self.SapModel.AreaObj.GetLabelFromName(name)[:-1] for name in names}
+    
+    def get_all_names(self) ->  list:
+        try:
+            names = self.SapModel.AreaObj.GetNameList()[1]
+        except IndexError:
+            names = []
+        return names
 
     def get_names_of_areas_of_type(
             self,

@@ -240,6 +240,11 @@ def test_get_piers():
     ret = etabs.area.get_piers()
     assert len(ret) == n
 
+@open_etabs_file('two_earthquakes.EDB')
+def test_get_all_names():
+    ret = etabs.area.get_all_names()
+    assert len(ret) == 719
+
 
 if __name__ == '__main__':
     test_deck_plate_equivalent_height_according_to_volume()
