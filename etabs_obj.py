@@ -449,6 +449,8 @@ class EtabsModel:
         json_file = Path(self.SapModel.GetModelFilepath()) / json_name
         self.save_to_json(json_file, data)
 
+    def open_model(self, filename: Union[str, Path]):
+        self.SapModel.File.OpenFile(str(filename))
 
     def get_main_periods(self,
                          modal_case: str='',
