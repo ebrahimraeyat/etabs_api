@@ -33,7 +33,7 @@ class Area:
 
     def get_piers(self,
                   names: Union[list, None]=None,
-                  ):
+                  ) -> dict:
         if names is None:
             names = self.get_names_of_areas_of_type('wall')
         return {name: self.SapModel.AreaObj.GetPier(name)[0] for name in names}
