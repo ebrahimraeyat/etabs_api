@@ -31,6 +31,14 @@ class Area:
         for name in names:
             self.SapModel.AreaObj.SetPier(str(name), pier_name)
 
+    def delete(self,
+               names: Union[str, list],
+               ) -> None:
+        if isinstance(names, str):
+            names = [names]
+        for name in names:
+            self.SapModel.AreaObj.Delete(name)
+
     def get_piers(self,
                   names: Union[str, list, None]=None,
                   ) -> dict:

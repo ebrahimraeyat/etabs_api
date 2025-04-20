@@ -766,6 +766,7 @@ class DatabaseTables:
             ):
         if not y:
             y = x
+        print(f"Multiplying 'X' dir earthquakes with {x} and 'Y' dir earthquakes with {y}")
         self.SapModel.SetModelIsLocked(False)
         self.etabs.lock_and_unlock_model()
         self.etabs.load_patterns.select_all_load_patterns()

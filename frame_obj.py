@@ -255,7 +255,7 @@ class FrameObj:
         ret = {}
         columns = self.get_beams_columns(types=[1,2])[1]
         labels = self.get_unique_frames(columns)[1]
-        stories = self.etabs.story.get_level_names()[1:]
+        stories = self.etabs.story.get_sorted_story_name(reverse=False, include_base=False)
         for lable in labels:
             names = []
             for story in stories:
@@ -284,7 +284,7 @@ class FrameObj:
         if dataframe:
             import pandas as pd
             df = pd.DataFrame(ret)
-            stories = self.etabs.story.get_level_names()[1:]
+            stories = self.etabs.story.get_sorted_story_name(reverse=False, include_base=False)
             df.set_index(pd.Index(stories), inplace=True)
             ret = pd.DataFrame(df).iloc[::-1]
             df1 = pd.DataFrame(columns_type_names)
@@ -1458,6 +1458,15 @@ class FrameObj:
         else:
             for frame in frames:
                 self.SapModel.FrameObj.Delete(frame)
+
+    def set_end_release_for_columns_with_pier_label(self,
+                                                    piers: Union[str, list, None]= None,
+                                                    ):
+        pier_cols = self.etabs.pier.get_columns_names_with_pier_label(piers)
+        for pier, story_col in pier_cols.items():
+            for story, cols in story_col.items():
+                for col in cols:
+                    self.etabs.frame_obj.set_end_release_frame(col)
 
     def set_lateral_bracing(self,
                             names: list,

@@ -28,6 +28,7 @@ from prop_frame import PropFrame
 from diaphragm import Diaphragm
 from func import Func
 from pier import Pier
+from shearwall import ShearWall
 
 __all__ = ['EtabsModel']
 
@@ -151,6 +152,7 @@ class EtabsModel:
             self.diaphragm = Diaphragm(self)
             self.func = Func(self)
             self.pier = Pier(self)
+            self.shearwall = ShearWall(self)
             self.set_special_values_according_to_software_and_version()
 
     def set_special_values_according_to_software_and_version(self):
@@ -261,6 +263,8 @@ class EtabsModel:
         self.SapModel.SetModelIsLocked(True)
     
     def unlock_model(self):
+        name = self.get_filename()
+        print(f"Unlock Model: {name}")
         self.SapModel.SetModelIsLocked(False)
 
     def lock_and_unlock_model(self):
@@ -407,6 +411,7 @@ class EtabsModel:
             folder_name=folder_name,
             name=name,
             )
+        print(f" Save Model As {new_filename}")
         self.SapModel.File.Save(str(new_filename))
         return asli_file_path, new_filename
     
@@ -1460,6 +1465,55 @@ class EtabsModel:
         if not json_filename.endswith('.json'):
             json_filename += ".json"
         return table_result_path / json_filename
+    
+    def scale_response_spectrum_with_respect_to_settings(self,
+                                                         d: Union[dict, None]=None,
+                                                         analyze: bool=False,
+                                                         consider_min_static_base_shear: bool=False,
+                                                         reset_scale: bool=True,
+                                                         ):
+        if d is None:
+            d = self.get_settings_from_model()
+        ex_name = d.get("ex_combobox")
+        ey_name = d.get("ey_combobox")
+        x_scale_factor = float(d.get("x_scalefactor_combobox", 1.0))
+        y_scale_factor = float(d.get("y_scalefactor_combobox", 1.0))
+        if d.get("combination_response_spectrum_checkbox", False):
+            print("Start 100-30 Scale Response Spectrum\n")
+            sx, sxe, sy, sye = self.get_dynamic_loadcases(d)
+            x_specs = [sx, sxe]
+            y_specs = [sy, sye]
+            self.scale_response_spectrums(
+                ex_name,
+                ey_name,
+                x_specs,
+                y_specs,
+                x_scale_factor,
+                y_scale_factor,
+                analyze=analyze,
+                consider_min_static_base_shear=consider_min_static_base_shear,
+                reset_scale=reset_scale,
+                d=d,
+            )
+        elif d.get("angular_response_spectrum_checkbox", False):
+            print("Start angular Scale Response Spectrum\n")
+            specs = []
+            section_cuts = []
+            key = "angular_tableview"
+            dic = d.get(key, None)
+            if dic is not None:
+                for sec_cut, spec in dic.values():
+                    section_cuts.append(sec_cut)
+                    specs.append(spec)
+                self.angles_response_spectrums_analysis(
+                    ex_name,
+                    ey_name,
+                    specs,
+                    section_cuts,
+                    x_scale_factor,
+                    analyze=analyze,
+                    reset_scale=reset_scale,
+                )
 
         
         
