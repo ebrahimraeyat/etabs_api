@@ -287,6 +287,7 @@ class EtabsModel:
         ):
         if check_designed and self.design.model_designed(type_=type_):
             return
+        self.run_analysis()
         print(f"Starting Design {type_}")
         exec(f"self.SapModel.Design{type_}.StartDesign()")
 

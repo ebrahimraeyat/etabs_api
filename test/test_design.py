@@ -150,6 +150,12 @@ def test_model_designed():
     assert etabs.design.model_designed()
     assert not etabs.design.model_designed(type_='Steel')
 
+@open_etabs_file('madadi.EDB')
+def test_get_concrete_columns_pmm_table():
+    df = etabs.design.get_concrete_columns_pmm_table()
+    assert df is not None
+    assert isinstance(df, pd.DataFrame)
+
 def test_get_overwrites_of_frames():
     import csv
 
