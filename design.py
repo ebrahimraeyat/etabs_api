@@ -425,7 +425,7 @@ class Design:
         return deflections1, deflections2, texts
     
     def get_concrete_columns_pmm_table(self,
-                                       columns: Union[list, None]=None,
+                                       columns: Union[list, None]=['Story',	'Label', 'UniqueName', 'DesignSect', 'PMMRatio']
                                        ):
         self.etabs.start_design(type_ = 'Concrete')
         table_key = self.etabs.database.table_name_that_containe("Concrete Column Design Summary")
@@ -435,6 +435,7 @@ class Design:
             df = self.etabs.database.read(table_key, to_dataframe=True, cols=columns)
         else:
             df = self.etabs.database.read(table_key, to_dataframe=True)
+        df['PMMRatio'] = df['PMMRatio'].astype(float)
         return df
         
 def get_deflection_check_result(
