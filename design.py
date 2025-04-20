@@ -424,12 +424,17 @@ class Design:
         self.etabs.set_current_unit(*units)
         return deflections1, deflections2, texts
     
-    def get_concrete_columns_pmm_table(self):
+    def get_concrete_columns_pmm_table(self,
+                                       columns: Union[list, None]=None,
+                                       ):
         self.etabs.start_design(type_ = 'Concrete')
         table_key = self.etabs.database.table_name_that_containe("Concrete Column Design Summary")
         if table_key is None:
             return None
-        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if columns is not None:
+            df = self.etabs.database.read(table_key, to_dataframe=True, cols=columns)
+        else:
+            df = self.etabs.database.read(table_key, to_dataframe=True)
         return df
         
 def get_deflection_check_result(
