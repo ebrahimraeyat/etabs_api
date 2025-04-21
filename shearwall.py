@@ -27,7 +27,7 @@ class ShearWall:
                 self.SapModel.AreaObj.SetModifiers(label, curr_modifiers)
 
     def create_25percent_file(self,
-                              modifiers: list = 6 * [.01],
+                              modifiers: list = 8 * [.01],
                               dynamic: bool = False,
                               d: Union[dict, None] = None,
                               directory: str='shearwall',
