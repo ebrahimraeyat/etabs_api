@@ -1208,24 +1208,30 @@ class EtabsModel:
         file_name: Union[str, Path]= 'js',
         structure_type: str = 'Sway Intermediate',
         open_main_file: bool =  False,
+        create_file: bool = True,
         ):
-        # get main file path
-        main_file_path = Path(self.SapModel.GetModelFilename())
-        main_file_path = main_file_path.with_suffix(".EDB")
-        if structure_type == 'Sway Intermediate':
-            self.save_in_folder_and_add_name(folder_name="joint_shear", name=str(file_name))
-            phi = 0.75
-            self.design.set_concrete_framing_type(1, beams=False)
-        else:
-            phi = 0.85
-        self.design.set_phi_joint_shear(phi)
-        self.run_analysis()
+        if create_file:
+            # get main file path
+            main_file_path = Path(self.SapModel.GetModelFilename())
+            main_file_path = main_file_path.with_suffix(".EDB")
+            if structure_type == 'Sway Intermediate':
+                self.save_in_folder_and_add_name(folder_name="joint_shear", name=str(file_name))
+                phi = 0.75
+                self.design.set_concrete_framing_type(1, beams=False)
+            else:
+                phi = 0.85
+            self.design.set_phi_joint_shear(phi)
         self.start_design()
-        code = self.design.get_code()
-        table_key = f"Concrete Joint Design Summary - {code}"
+        table_key = self.database.table_name_that_containe("Concrete Joint Design Summary")
+        if table_key is None:
+            return None
         cols = ['Story', 'Label', 'UniqueName', 'JSMajRatio', 'JSMinRatio', 'BCMajRatio', 'BCMinRatio']
         df = self.database.read(table_key=table_key, to_dataframe=True, cols=cols)
-        if structure_type == 'Sway Intermediate' and open_main_file:
+        if all((
+            create_file,
+            structure_type == 'Sway Intermediate',
+            open_main_file,
+        )):
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
     
@@ -1516,8 +1522,43 @@ class EtabsModel:
                     reset_scale=reset_scale,
                 )
 
-        
-        
+    def get_x_and_y_system_ductility(self,
+                                     d: Union[dict, None],
+                                     ) -> list:
+        '''
+        H: High, M: Medium, L: Low
+        '''
+        if d is None:
+            d = self.get_settings_from_model()
+        x_system = d.get('x_system', [2, 1])
+        y_system = d.get('y_system', [2, 1])
+        ductilities = []
+        for system in (x_system, y_system):
+            if system in (
+                [0, 0],
+                [1, 0], [1, 4], [1, 7],
+                [2, 0], [2, 3],
+                [3, 0], [3, 4], [3, 5], [3, 6], [3, 7],
+                [4, 0],
+                ):
+                ductilities.append('H')
+            elif system in (
+                [0, 1],
+                [1, 1],
+                [2, 1], [2, 4],
+                [3, 2], [3, 3],
+            ):
+                ductilities.append('M')
+            elif system in (
+                [0, 2],
+                [1, 2], [1, 6],
+                [2, 2], [2, 5],
+            ):
+                ductilities.append('L')
+            else:
+                ductilities.append(None)
+        return ductilities
+
 
 
 

@@ -770,6 +770,12 @@ def test_save_in_folder_and_add_name():
     assert new.parent.exists()
     assert new.exists()
 
+@open_etabs_file('shayesteh.EDB')
+def test_get_x_and_y_system_ductility():
+    d = {'x_system': [2, 1], 'y_system': [3, 1]}
+    ret = etabs.get_x_and_y_system_ductility(d=d)
+    assert ret == ['M', None]
+
 
 if __name__ == '__main__':
     test_get_sap_main_version()
