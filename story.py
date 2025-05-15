@@ -86,11 +86,16 @@ class Story:
     def get_sorted_story_and_levels(self,
                               reverse: bool=True,
                               include_base: bool=True,
+                              unit: Union[str, None]=None,
                               ) -> list:
         '''
         return sorted story according to levels, if include_base it includes Base:
         [('Story1', level1), ('Story2', level2), ('Story3', level3), ... ]
+        unit: if unit is not None, it will convert the levels to the given unit
         '''
+        if unit is not None:
+            current_unit = self.etabs.get_current_unit()
+            self.etabs.set_current_unit('kgf', unit)
         storyname_and_levels = self.storyname_and_levels()
         storyname_and_levels = sorted(storyname_and_levels.items(), key=lambda item: item[1], reverse=reverse)
         if not include_base:
@@ -98,6 +103,8 @@ class Story:
                 storyname_and_levels = storyname_and_levels[:-1]
             else:
                 storyname_and_levels = storyname_and_levels[1:]
+        if unit is not None:
+            self.etabs.set_current_unit(*current_unit)
         return storyname_and_levels
     
     def get_sorted_story_name(self,
