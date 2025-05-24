@@ -77,13 +77,14 @@ class PropFrame:
         self,
         names: list,
         concrete: str,
-        concrete_suffix: str,
+        suffix: str,
         clean_names: bool=True,
         # rebar_mat: Union[None, str, float],
         # rebar_suffix: str,
         # cover: float,
         # design: bool = False,
-        frame_types: list=['column'], 
+        frame_types: list=['column'],
+        prefix: str = '',
         ):
         rets = set()
         convert_names = {}
@@ -102,7 +103,7 @@ class PropFrame:
                         if sec_name.endswith("_"):
                             sec_name = sec_name[:-1]
                         break
-            new_sec_name = sec_name + concrete_suffix # + rebar_suffix
+            new_sec_name = prefix + sec_name + suffix # + rebar_suffix
             if convert_names.get(original_sec_name, None) is None:
                 if ('column' in frame_types and self.etabs.frame_obj.is_column(str(name))):
                     args = self.SapModel.propframe.GetRebarColumn_1(
