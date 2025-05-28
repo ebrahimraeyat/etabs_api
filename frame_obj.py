@@ -1156,7 +1156,16 @@ class FrameObj:
         return names
 
     def all_section_names(self):
-        return self.SapModel.PropFrame.GetNameList()[1]
+        try:
+            ret = self.SapModel.PropFrame.GetNameList()[1]
+        except:
+            table_key = "Frame Section Property Definitions - Summary"
+            df_sec = self.etabs.database.read(table_key, to_dataframe=True)
+            if df_sec is None:
+                return []
+            ret = df_sec['Name'].unique().tolist()
+        return ret
+
 
     def other_sections(self, sections):
         '''
