@@ -388,8 +388,11 @@ def get_beam_point_restraints_with_respect_to_supports_and_remove_duplicates(
         start_support = PointRestraint('A', start_support[0], start_support[1], x_values, m_values, toleranc=tolerance)
     if isinstance(end_support, (tuple, list)):
         end_support = PointRestraint('B', end_support[0], end_support[1], x_values, m_values, toleranc=tolerance)
-    if isinstance(point_restraints[0], (tuple, list)):
-        point_restraints = [PointRestraint(None, p[0], p[1], x_values, m_values, toleranc=tolerance) for p in point_restraints]
+    if len(point_restraints) > 1:
+        if isinstance(point_restraints[0], (tuple, list)):
+            point_restraints = [PointRestraint(None, p[0], p[1], x_values, m_values, toleranc=tolerance) for p in point_restraints]
+    else:
+        point_restraints = []
 
     point_restraints = [start_support, end_support] + point_restraints
     results = []
