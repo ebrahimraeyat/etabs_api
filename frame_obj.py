@@ -30,6 +30,41 @@ class FrameObj:
         end_release.insert(0, name)
         er = self.SapModel.FrameObj.SetReleases(*end_release)
         return er
+    
+    def get_start_end_releases(self, frames):
+        '''
+        Get the start and end releases of frames.
+        etabs.SapModel.FrameObj.GetReleases returns:
+        [(False, False, False, False, True, True),
+        (False, False, False, False, True, True),
+        (0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+        0]
+        The first two tuples are the start and end releases, the third is the start fixity and the fourth is the end fixity.
+        if one of fixity in start in all frame not zero, it is partially fixed, if any start release of all frame is 
+        '''
+        start_releases = set()
+        end_releases = set()
+        start_fixity = set()
+        end_fixity = set()
+        ret = ["Pinned", "Pinned"]
+        for name in frames:
+            releases = self.etabs.SapModel.FrameObj.GetReleases(name)
+            start_releases.add(releases[0])
+            end_releases.add(releases[1])
+            start_fixity.add(releases[2])
+            end_fixity.add(releases[3])
+        for i, release in enumerate((start_releases, end_releases)):
+            release = list(release)
+            if (len(release) == 1):
+                if len(set(release[0])) == 1 or set(release[0]) == {False}:
+                    ret[i] = "Fixed"
+            elif len(release) > 1:
+                ret[i] = "Pinned"
+        for i, fixity in enumerate((start_fixity, end_fixity)):
+            if len(fixity) > 1 or (len(fixity) == 1 and (len(set(fixity)) > 1 or sum(fixity.pop()) > 0)):
+                ret[i] = "Partially Fixed"
+        return ret
 
     def is_column(self, name):
         return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 1

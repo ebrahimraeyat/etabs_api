@@ -9,6 +9,15 @@ sys.path.insert(0, str(etabs_api_path))
 
 from shayesteh import etabs, open_etabs_file, version
 
+@open_etabs_file('madadi.EDB')
+def test_get_start_end_releases():
+    ret = etabs.frame_obj.get_start_end_releases(['215', '157', '152', '150', '123'])
+    assert ret == ['Fixed', 'Fixed']
+    ret = etabs.frame_obj.get_start_end_releases(['15', '16', '19', '20'])
+    assert ret == ['Pinned', 'Pinned']
+    ret = etabs.frame_obj.get_start_end_releases(['15', '157', '152', '150', '123'])
+    assert ret == ['Pinned', 'Pinned']
+
 @open_etabs_file('shayesteh.EDB')
 def test_get_beams_columns():
     beams, columns = etabs.frame_obj.get_beams_columns()
@@ -449,7 +458,7 @@ def test_get_lateral_bracing():
     assert 3 in ret[0]
 
 if __name__ == '__main__':
-    test_get_lateral_bracing()
+    test_get_start_end_releases()
 
 
 
