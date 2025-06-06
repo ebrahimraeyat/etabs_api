@@ -154,6 +154,59 @@ class EtabsModel:
             self.pier = Pier(self)
             self.shearwall = ShearWall(self)
             self.set_special_values_according_to_software_and_version()
+            self.etabs_pywinauto = None
+    
+    @staticmethod
+    def connect_to_the_software_using_the_executable_path(exe_path):
+        exe_name = Path(exe_path).name
+        software = exe_name.split('.')[0]
+        helper = comtypes.client.CreateObject(f'{software}v1.Helper')
+        exec(f"helper = helper.QueryInterface(comtypes.gen.{software}v1.cHelper)")
+        software_instance = helper.CreateObject(exe_path)
+        return software_instance
+
+    def get_pywinauto_etabs(self):
+        if self.etabs_pywinauto is not None:
+            try:
+                self.etabs_pywinauto.is_enabled()
+                print(f"The {self.software} is still Open.")
+                return self.etabs_pywinauto
+            except comtypes.COMError:
+                print(f"The {self.software} has been closed by the user.")
+                self.etabs_pywinauto = None
+        try:
+            from pywinauto import Desktop
+        except ImportError:
+            import freecad_funcs
+            freecad_funcs.install_package('pywinauto')
+            from pywinauto import Desktop
+        # windows = Desktop(backend="uia").windows(title_re=".*ETABS.*")
+        # if not windows:
+        #     return None
+        print("Available ETABS windows:")
+        info = self.SapModel.GetProgramInfo()
+        title = f"{info[0]}.*{info[2]}.*{info[1]}"
+        try:
+            # from pywinauto import Desktop
+            windows = Desktop(backend="uia").windows(title_re=f".*{title}.*")
+            if len(windows) > 0:
+                print(f"{' '.join(info[:-1])}")
+                self.etabs_pywinauto = windows[0]
+                return windows[0]
+            # ver = self.version()
+            # for i, window in enumerate(windows):
+            #     title = window.window_text()
+            #     print(f"{i}: {title}")
+            #     if ver in title:
+            #         self.etabs_pywinauto = window
+            #         return self.etabs_pywinauto
+        except (comtypes.COMError, AttributeError):
+            print(f"No ETABS version found with title: {' '.join(info[:-1])}.")
+            if windows:
+                self.etabs_pywinauto = windows[0]
+            else:
+                self.etabs_pywinauto = None
+        return self.etabs_pywinauto
 
     def set_special_values_according_to_software_and_version(self):
         self.etabs_main_version = self.get_etabs_main_version()
@@ -204,7 +257,6 @@ class EtabsModel:
                     'OverEcc',
                 ]
                 self.auto_notional_loads_columns = ['LoadPattern', 'BasePattern', 'LoadRatio', 'LoadDir']
-            
 
     def get_etabs_main_version(self):
         ver = self.SapModel.GetVersion()

@@ -50,6 +50,17 @@ class ShearWall:
         if open_main_file:
             self.etabs.open_model(main_file)
         return main_file, filename
+    
+    def start_design(self):
+        pywin_etabs = self.etabs.get_pywinauto_etabs()
+        if pywin_etabs is None:
+            print("Can not find the ETABS with pywinauto.")
+            return
+        self.etabs.run_analysis()
+        pywin_etabs.set_focus()
+        print("Start Design of Shear Walls ...")
+        pywin_etabs.type_keys("+{F10}")
+
             
         
 
