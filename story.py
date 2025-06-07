@@ -95,7 +95,7 @@ class Story:
         '''
         if unit is not None:
             current_unit = self.etabs.get_current_unit()
-            self.etabs.set_current_unit('kgf', unit)
+            self.etabs.set_current_unit('N', unit)
         storyname_and_levels = self.storyname_and_levels()
         storyname_and_levels = sorted(storyname_and_levels.items(), key=lambda item: item[1], reverse=reverse)
         if not include_base:
