@@ -61,6 +61,26 @@ class ShearWall:
         print("Start Design of Shear Walls ...")
         pywin_etabs.type_keys("+{F10}")
 
+    def set_design_type(self, type_: str="Program Determined"):
+        """
+        Set the design type for shear walls.
+        :param type_: Type of design check, e.g., "Program Determined" means "Check", "Design".
+        """
+        if type_ not in ("Program Determined", "Design"):
+            raise ValueError("type_ must be 'Program Determined' or 'Design'.")
+        self.etabs.unlock_model()
+        table_key = ['Shear Wall Pier Design Overwrites', 'ACI', '318']
+        table_key = self.etabs.database.table_name_that_containe_texts(table_key)
+        if table_key is None:
+            return None
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if df is None:
+            return
+        df['DesignCheck'] = type_
+        self.etabs.database.write(table_key, df.astype(str))
+
+    
+
             
         
 

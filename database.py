@@ -53,10 +53,18 @@ class DatabaseTables:
         return [item for item in all_table if partial_str in item]
     
     def table_name_that_containe(self, partial_str):
-        all_table = self.SapModel.DatabaseTables.GetAvailableTables()[1]
-        names = [item for item in all_table if partial_str in item]
+        names = self.table_names_that_containe(partial_str)
         if len(names) == 1:
             return names[0]
+        print(f"The Table that contains {partial_str} did not exists.")
+        return None
+
+    def table_name_that_containe_texts(self, partial_strings: str):
+        names = self.table_names_that_containe(partial_strings[0])
+        for name in names:
+            if all(partial_str in name for partial_str in partial_strings):
+                return name
+        print(f"The Table that contains {' '.join(partial_strings)} did not exists.")
         return None
 
     def read(self,
@@ -66,6 +74,7 @@ class DatabaseTables:
                 ):
         ret = self.read_table(table_key)
         if not ret:
+            print(f"There is no table data with '{table_key}'")
             return None
         _, _, fields, _, data, _ = ret
         if fields[0] is None:

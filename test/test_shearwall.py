@@ -27,9 +27,19 @@ def test_create_25percent_file():
 def test_start_design():
     etabs.shearwall.start_design()
     assert True
+
+@open_etabs_file('two_earthquakes.EDB')
+def test_set_design_type():
+    etabs.shearwall.set_design_type(type_="Design")
+    table_key = 'Shear Wall Pier Design Overwrites - ACI 318-14'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert df['DesignCheck'].iloc[0] == 'Design'
+    etabs.shearwall.set_design_type()
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert df['DesignCheck'].iloc[0] == 'Program Determined'
     
 if __name__ == '__main__':
-    test_get_lateral_bracing()
+    test_set_design_type()
 
 
 
