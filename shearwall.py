@@ -1,5 +1,8 @@
 from pathlib import Path
 from typing import Iterable, Union
+import time
+
+import pandas
 
 __all__ = ['ShearWall']
 
@@ -51,7 +54,7 @@ class ShearWall:
             self.etabs.open_model(main_file)
         return main_file, filename
     
-    def start_design(self):
+    def start_design(self, max_wait: int=60):
         pywin_etabs = self.etabs.get_pywinauto_etabs()
         if pywin_etabs is None:
             print("Can not find the ETABS with pywinauto.")
@@ -60,6 +63,15 @@ class ShearWall:
         pywin_etabs.set_focus()
         print("Start Design of Shear Walls ...")
         pywin_etabs.type_keys("+{F10}")
+        # Wait for the design to complete
+        table_key = None
+        wait = 0
+        while table_key is None and wait < max_wait:
+            texts = ["Shear Wall Pier Design Summary", "ACI", "318"]
+            table_key = self.etabs.database.table_name_that_containe_texts(texts)
+            time.sleep(1)  # Wait for the design to complete
+            wait += 1
+        print(f"Design Shear Wall completed after {wait} seconds.")
 
     def set_design_type(self, type_: str="Program Determined"):
         """
@@ -79,7 +91,21 @@ class ShearWall:
         df['DesignCheck'] = type_
         self.etabs.database.write(table_key, df.astype(str))
 
-    
+    def get_wall_ratios(self) -> pandas.DataFrame:
+        self.start_design()
+        texts = ["Shear Wall Pier Design Summary", "ACI", "318"]
+        table_key = self.etabs.database.table_name_that_containe_texts(texts)
+        if table_key is None:
+            return None
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        if df is None or "DCRatio" not in df.columns:
+            print(f"Table '{table_key}' does not contain 'D/C Ratio' column.")
+            return None
+        cols = ["Story", "Pier", "DCRatio"]
+        df = df[cols]
+        df = df.groupby(["Story", "Pier"]).max().reset_index()
+        return df
+
 
             
         

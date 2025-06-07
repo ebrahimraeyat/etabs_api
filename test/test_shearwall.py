@@ -37,9 +37,16 @@ def test_set_design_type():
     etabs.shearwall.set_design_type()
     df = etabs.database.read(table_key, to_dataframe=True)
     assert df['DesignCheck'].iloc[0] == 'Program Determined'
+
+@open_etabs_file('two_earthquakes.EDB')
+def test_get_wall_ratios():
+    # etabs.shearwall.set_design_type(type_="Program Determined")
+    df = etabs.shearwall.get_wall_ratios()
+    assert "DCRatio" in df.columns
+    assert df.shape[0] == 5
     
 if __name__ == '__main__':
-    test_set_design_type()
+    test_get_wall_ratios()
 
 
 
