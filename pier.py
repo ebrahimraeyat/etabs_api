@@ -35,15 +35,29 @@ class Pier:
     def get_columns_names_with_pier_label(self,
                                           piers: Union[str, list, None]=None,
                                           ) -> dict:
+        ret = self.get_frame_area_names_with_pier_label(piers=piers, type_='Frame')
+        return ret
+    
+    def get_area_names_with_pier_label(self,
+                                          piers: Union[str, list, None]=None,
+                                          ) -> dict:
+        ret = self.get_frame_area_names_with_pier_label(piers=piers, type_='Area')
+        return ret
+    
+    def get_frame_area_names_with_pier_label(self,
+                                          piers: Union[str, list, None]=None,
+                                          type_: str='Area',
+                                          ) -> dict:
         if isinstance(piers, str):
             piers = [piers]
-        table_key = 'Frame Assignments - Pier Labels'
-        cols = ['Story', 'UniqueName', 'PierLabel']
+        table_key = f'{type_} Assignments - Pier Labels'
+        pier_label = 'PierLabel' if type_ == 'Frame' else 'PierName'
+        cols = ['Story', 'UniqueName', pier_label]
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         if piers is not None:
-            df = df[df['PierLabel'].isin(piers)]
+            df = df[df[pier_label].isin(piers)]
         ret = {pier_label: group.groupby('Story')['UniqueName'].apply(list).to_dict()
-               for pier_label, group in df.groupby('PierLabel')}
+               for pier_label, group in df.groupby(pier_label)}
         return ret
 
 

@@ -138,7 +138,7 @@ class EtabsModel:
             self.story = Story(None, self)
             self.frame_obj = FrameObj(self)
             self.analyze = Analyze(self.SapModel, None)
-            self.view = View(self.SapModel, None)
+            self.view = View(self)
             self.database = DatabaseTables(None, self)
             # self.sections = Sections(self.SapModel, None)
             self.results = Results(None, self)

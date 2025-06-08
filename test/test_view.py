@@ -24,3 +24,15 @@ def test_show_frames():
     for frame in frames:
         assert etabs.SapModel.FrameObj.GetSelected(frame)[0]
     assert not etabs.SapModel.FrameObj.GetSelected('130')[0]
+
+@open_etabs_file('two_earthquakes.EDB')
+def test_show_areas_and_frames_with_pier_and_story():
+    etabs.view.show_areas_and_frames_with_pier_and_story('P1', 'STORY1')
+    ret = etabs.select_obj.get_selected_objects()
+    assert set(ret.keys()) == {2, 5}
+    assert len(ret[2]) == 9
+    assert len(ret[5]) == 212
+
+if __name__ == '__main__':
+    test_show_areas_and_frames_with_pier_and_story()
+    # pytest.main([__file__, '-v', '--tb=short'])

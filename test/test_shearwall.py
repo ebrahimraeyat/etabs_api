@@ -25,8 +25,9 @@ def test_create_25percent_file():
 
 @open_etabs_file('two_earthquakes.EDB')
 def test_start_design():
-    etabs.shearwall.start_design()
-    assert True
+    df = etabs.shearwall.start_design()
+    assert "DCRatio" in df.columns
+    assert df.shape[0] == 14
 
 @open_etabs_file('two_earthquakes.EDB')
 def test_set_design_type():

@@ -54,7 +54,7 @@ class ShearWall:
             self.etabs.open_model(main_file)
         return main_file, filename
     
-    def start_design(self, max_wait: int=60):
+    def start_design(self, max_wait: int=120):
         pywin_etabs = self.etabs.get_pywinauto_etabs()
         if pywin_etabs is None:
             print("Can not find the ETABS with pywinauto.")
@@ -66,13 +66,20 @@ class ShearWall:
         # Wait for the design to complete
         table_key = None
         wait = 0
-        while table_key is None and wait < max_wait:
+        last_size = 0
+        while wait < max_wait:
+            time.sleep(5)  # Wait for the design to complete
+            wait += 5
             texts = ["Shear Wall Pier Design Summary", "ACI", "318"]
             table_key = self.etabs.database.table_name_that_containe_texts(texts)
-            time.sleep(1)  # Wait for the design to complete
-            wait += 1
+            if table_key is not None:
+                df = self.etabs.database.read(table_key, to_dataframe=True)
+                if df.shape[0] > 0 and df.shape[0] == last_size:
+                    break
+                last_size = df.shape[0]
         print(f"Design Shear Wall completed after {wait} seconds.")
-
+        return df
+    
     def set_design_type(self, type_: str="Program Determined"):
         """
         Set the design type for shear walls.
