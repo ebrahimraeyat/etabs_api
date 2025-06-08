@@ -54,7 +54,11 @@ class ShearWall:
             self.etabs.open_model(main_file)
         return main_file, filename
     
-    def start_design(self, max_wait: int=120):
+    def start_design(self,
+                     max_wait: int=120,
+                     interval: int=2,
+                     ) -> Union[pandas.DataFrame, None]:
+        self.etabs.select_obj.clear_selection()
         pywin_etabs = self.etabs.get_pywinauto_etabs()
         if pywin_etabs is None:
             print("Can not find the ETABS with pywinauto.")
@@ -68,8 +72,8 @@ class ShearWall:
         wait = 0
         last_size = 0
         while wait < max_wait:
-            time.sleep(5)  # Wait for the design to complete
-            wait += 5
+            time.sleep(interval)  # Wait for the design to complete
+            wait += interval
             texts = ["Shear Wall Pier Design Summary", "ACI", "318"]
             table_key = self.etabs.database.table_name_that_containe_texts(texts)
             if table_key is not None:
