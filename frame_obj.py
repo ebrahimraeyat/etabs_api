@@ -1225,24 +1225,25 @@ class FrameObj:
             sec_type : str = 'other',
             ) -> None:
         if frame_names is None:
+            selected_frames = self.etabs.select_obj.get_selected_obj_type(2) # 2: frame
             frame_names = []
-            types, all_names = self.SapModel.SelectObj.GetSelected()[1:3]
             func = None
             if sec_type == 'beam':
                 func  = self.is_beam
             elif sec_type == 'column':
                 func = self.is_column
-            for t, name in zip(types, all_names):
-                if t == 2:
-                    if func is None:
+            for name in selected_frames:
+                if func is None:
+                    frame_names.append(name)
+                else:
+                    if func(name):
                         frame_names.append(name)
-                    else:
-                        if func(name):
-                            frame_names.append(name)
         if stories is None:
             stories = self.SapModel.Story.GetNameList()[1]
         for name in frame_names:
             curr_names = self.get_above_frames(name, stories)
+            if len(curr_names) == 0:
+                curr_names = [name]
             self.assign_sections(sec_name, curr_names)
         self.SapModel.View.RefreshView()
         return None
