@@ -513,6 +513,34 @@ def test_get_segments_of_frame():
     for i, segment in enumerate(segments):
         assert segment.name == names[i]
     assert math.isclose(segments[0].end_restraint.location, 5)
+    
+    # real example
+    x_values = np.array([ 101.5 ,  595.16, 1088.81, 1582.47, 2076.13, 2569.78, 3063.44,
+       3557.09, 4050.75, 4544.41, 5038.06, 5531.72, 6025.38, 6519.03,
+       7012.69, 7506.34, 8000.  ])
+    m_values = np.array([-264746.66, -170825.47,  -89156.74,  -19740.47,   37423.33,
+         82334.67,  114993.55,  135399.97,  143553.92,  139455.41,
+        123104.43,   94500.99,   53645.09,     536.73,  -64824.1 ,
+       -142437.39, -232303.14])
+    restraints = [(4000, 'LL')]
+    segments = design_functions.get_segments_of_frame(
+        restraints, x_values, m_values, start_support='LL', end_support='LL')
+    print(segments)
+    assert len(segments) == 2
+    names = ('A-1', '1-B')
+    for i, segment in enumerate(segments):
+        assert segment.name == names[i]
+    assert math.isclose(segments[0].end_restraint.location, 4000)
+    # composite
+    restraints = [((x_values[0], x_values[-1]), 'LU')]
+    segments = design_functions.get_segments_of_frame(
+        restraints, x_values, m_values, start_support='LL', end_support='LL')
+    print(segments)
+    assert len(segments) == 2
+    names = ('A-1', '2-B')
+    for i, segment in enumerate(segments):
+        assert segment.name == names[i]
+    assert math.isclose(segments[0].end_restraint.location, 1752, abs_tol=1)
 
     # assert set([ps[1] for ps in point_restraints]) == {'LU', 'UL'}
 
@@ -549,9 +577,31 @@ def test_beam():
         combos, is_composite=True, tolerance=.001
     )
 
+def test_beam2():
+    x_values = np.array([ 101.5 ,  595.16, 1088.81, 1582.47, 2076.13, 2569.78, 3063.44,
+       3557.09, 4050.75, 4544.41, 5038.06, 5531.72, 6025.38, 6519.03,
+       7012.69, 7506.34, 8000.  ])
+    m_values = np.array([-264746.66, -170825.47,  -89156.74,  -19740.47,   37423.33,
+         82334.67,  114993.55,  135399.97,  143553.92,  139455.41,
+        123104.43,   94500.99,   53645.09,     536.73,  -64824.1 ,
+       -142437.39, -232303.14])
+    combo_name = '1.2G+1.5Q'
+    combos = {combo_name: (x_values, m_values)}
+    beam = design_functions.Beam(
+        '25', 7898.5, None, '', '', [(4000, 'LL')], 'LL', 'LL', 
+        combos, is_composite=True, tolerance=.001
+    )
+    assert beam.name == '25'
+    assert len(beam.segments) == 1
+    segments = beam.segments.get(combo_name)
+    assert len(segments) == 2
+    segments_name = ('A-1', '3-B')
+    for name, segment in zip(segments_name, segments):
+        assert segment.name == name
+
 
 if __name__ == '__main__':
-    test_beam()
+    test_beam2()
 
 
 
