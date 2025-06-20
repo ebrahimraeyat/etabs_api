@@ -74,6 +74,9 @@ class SelectObj:
     
     def clear_selection(self):
         self.SapModel.SelectObj.ClearSelection()
+    
+    def get_previous_selection(self):
+        self.SapModel.SelectObj.PreviousSelection()
 
 
     
