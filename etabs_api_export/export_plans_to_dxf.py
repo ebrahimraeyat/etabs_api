@@ -143,11 +143,10 @@ def export_to_dxf(
         for name in columns:
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
             rotation = etabs.SapModel.FrameObj.GetLocalAxes(name)[0]
-            section_name = etabs.frame_obj.get_section_name(name)
             props = frame_props.get(name)
             b = props.get('b', .5)
             d = props.get('d', .5)
-            polygon = convert_5point_to_8point(x1, y1, b, d, a_=rotation)
+            polygon = convert_5point_to_8point(x1, y1, b, d, a_=rotation - 90)
             for p1, p2 in zip(polygon, polygon[1:] + [polygon[0]]):
                 block.add_line((p1[0] + dx, p1[1]), (p2[0] + dx, p2[1]), dxfattribs = {'color': 3})
         xmin, ymin, xmax, ymax = etabs.story.get_story_boundbox(story, len_unit='m')
