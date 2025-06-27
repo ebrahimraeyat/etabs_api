@@ -100,6 +100,7 @@ def export_to_dxf(
         etabs,
         filename,
         Open_file: bool=False,
+        draw_offset_beam: bool = False,
 ):
     dxf_temp = etabs_api_path / "etabs_api_export" / "templates" / "dxf" / "TEMPLATE_PLANS_OF_STORIES.dxf"
     dwg = ezdxf.readfile(dxf_temp)
@@ -112,11 +113,21 @@ def export_to_dxf(
         if ret is None:
             continue
         beams, columns = ret
+        frame_props = etabs.frame_obj.get_section_type_and_geometry(beams)
         block_name = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
         block = dwg.blocks.new(name=block_name)
         for name in beams:
+            props = frame_props.get(name)
+            b = props.get('b', 0)
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
-            block.add_line((x1 + dx, y1), (x2 + dx, y2), dxfattribs = {'color': 2})
+            # Draw center line
+            block.add_line((x1 + dx, y1), (x2 + dx, y2), dxfattribs = {'color': 8})
+            if draw_offset_beam and b: # add offset lines
+                offset = b / 2
+                x1_offset, y1_offset, x2_offset, y2_offset = etabs.frame_obj.offset_frame_points(x1, y1, x2, y2, offset, neg=True)
+                block.add_line((x1_offset + dx, y1_offset), (x2_offset + dx, y2_offset), dxfattribs = {'color': 2})
+                x1_offset, y1_offset, x2_offset, y2_offset = etabs.frame_obj.offset_frame_points(x1, y1, x2, y2, offset, neg=False)
+                block.add_line((x1_offset + dx, y1_offset), (x2_offset + dx, y2_offset), dxfattribs = {'color': 2})
             section_name = etabs.frame_obj.get_section_name(name)
             xc = (x1 + x2) / 2
             yc = (y1 + y2) / 2
@@ -128,10 +139,15 @@ def export_to_dxf(
                 rotation = math.degrees(math.atan((y2 - y1) / (x2 - x1)))
             mtext.dxf.rotation = rotation
             mtext.dxf.char_height = .12
+        frame_props = etabs.frame_obj.get_section_type_and_geometry(columns)
         for name in columns:
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
             rotation = etabs.SapModel.FrameObj.GetLocalAxes(name)[0]
-            polygon = convert_5point_to_8point(x1, y1, .25, .25, a_=rotation)
+            section_name = etabs.frame_obj.get_section_name(name)
+            props = frame_props.get(name)
+            b = props.get('b', .5)
+            d = props.get('d', .5)
+            polygon = convert_5point_to_8point(x1, y1, b, d, a_=rotation)
             for p1, p2 in zip(polygon, polygon[1:] + [polygon[0]]):
                 block.add_line((p1[0] + dx, p1[1]), (p2[0] + dx, p2[1]), dxfattribs = {'color': 3})
         xmin, ymin, xmax, ymax = etabs.story.get_story_boundbox(story, len_unit='m')
