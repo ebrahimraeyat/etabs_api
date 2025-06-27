@@ -394,6 +394,17 @@ def test_get_length_of_frame():
     assert pytest.approx(length, abs=.01) == 5.997
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_offset_coordinate_of_beam_in_plan():
+    etabs.set_current_unit('kgf', 'cm')
+    dist = 20
+    x1, y1, z1, x2, y2, z2 = etabs.frame_obj.get_offset_coordinate_of_beam_in_plan(
+        '115',
+        dist,
+        )
+    assert y1 == y2 == 20
+    assert pytest.approx(z1, abs=.01) == z2
+
+@open_etabs_file('shayesteh.EDB')
 def test_set_end_length_offsets():
     etabs.frame_obj.set_end_length_offsets(0.5)
     table_key = 'Frame Assignments - End Length Offsets'

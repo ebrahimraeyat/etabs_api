@@ -790,16 +790,24 @@ class FrameObj:
                 return
         lines = []
         for name in names:
-            p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(name)
-            x1, y1, z1 = self.SapModel.PointObj.GetCoordCartesian(p1_name)[:3]
-            x2, y2 = self.SapModel.PointObj.GetCoordCartesian(p2_name)[:2]
-            x1_offset, y1_offset, x2_offset, y2_offset = self.offset_frame_points(x1, y1, x2, y2, distance, neg)
-            line = self.SapModel.FrameObj.AddByCoord(x1_offset, y1_offset, z1, x2_offset, y2_offset, z1)[0]
+            x1_offset, y1_offset, z1, x2_offset, y2_offset, z2 = self.get_offset_coordinate_of_beam_in_plan(name, distance, neg)
+            line = self.SapModel.FrameObj.AddByCoord(x1_offset, y1_offset, z1, x2_offset, y2_offset, z2)[0]
             lines.append(line)
         self.SapModel.SelectObj.ClearSelection()
         self.SapModel.View.RefreshView()
         return lines
-
+    
+    def get_offset_coordinate_of_beam_in_plan(self,
+                              frame_name: str,
+                              distance: float,
+                              neg: bool=False,
+                              ):
+        p1_name, p2_name, _ = self.SapModel.FrameObj.GetPoints(frame_name)
+        x1, y1, z1 = self.SapModel.PointObj.GetCoordCartesian(p1_name)[:3]
+        x2, y2, z2 = self.SapModel.PointObj.GetCoordCartesian(p2_name)[:3]
+        x1_offset, y1_offset, x2_offset, y2_offset = self.offset_frame_points(x1, y1, x2, y2, distance, neg)
+        return x1_offset, y1_offset, z1, x2_offset, y2_offset, z2
+    
     @staticmethod
     def offset_frame_points(x1, y1, x2, y2, distance, neg:bool):
         if x2 == x1:
