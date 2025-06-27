@@ -146,15 +146,15 @@ class FrameObj:
                     # 'tf_b': tf_b,
                 }
                 profiles[section_name] = profile
-            if self.is_beam(frame_name):
-                design_type = 'Beam'
-            elif self.is_column(frame_name):
-                design_type = 'Column'
-            elif self.is_brace(frame_name):
-                design_type= 'Brace'
-            x1, y1, z1 = (all_frames[6][i], all_frames[7][i], all_frames[8][i])
-            x2, y2, z2 = (all_frames[9][i], all_frames[10][i], all_frames[11][i])
-            length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+            # if self.is_beam(frame_name):
+            #     design_type = 'Beam'
+            # elif self.is_column(frame_name):
+            #     design_type = 'Column'
+            # elif self.is_brace(frame_name):
+            #     design_type= 'Brace'
+            # x1, y1, z1 = (all_frames[6][i], all_frames[7][i], all_frames[8][i])
+            # x2, y2, z2 = (all_frames[9][i], all_frames[10][i], all_frames[11][i])
+            # length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
             props = copy.deepcopy(profile)
             # props['length'] = length
             # props['design_type'] = design_type
