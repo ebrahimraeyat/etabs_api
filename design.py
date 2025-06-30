@@ -11,6 +11,8 @@ from typing import Union
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
+from python_functions import change_unit
+
 
 __all__ = ['Design']
 
@@ -424,8 +426,9 @@ class Design:
         self.etabs.set_current_unit(*units)
         return deflections1, deflections2, texts
     
+    @change_unit(None, 'm')
     def get_concrete_columns_pmm_table(self,
-                                       columns: Union[list, None]=['Story',	'Label', 'UniqueName', 'DesignSect', 'PMMRatio']
+                                       columns: Union[list, None]=['Story',	'Label', 'UniqueName', 'DesignSect', 'PMMRatio', 'PMMCombo', 'Station']
                                        ):
         self.etabs.start_design(type_ = 'Concrete')
         table_key = self.etabs.database.table_name_that_containe("Concrete Column Design Summary")
@@ -435,7 +438,8 @@ class Design:
             df = self.etabs.database.read(table_key, to_dataframe=True, cols=columns)
         else:
             df = self.etabs.database.read(table_key, to_dataframe=True)
-        df['PMMRatio'] = df['PMMRatio'].astype(float)
+        cols = ['PMMRatio', 'Station']
+        df[cols] = df[cols].astype(float).round(2)
         return df
         
 def get_deflection_check_result(
