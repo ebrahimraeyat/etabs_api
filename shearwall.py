@@ -57,6 +57,7 @@ class ShearWall:
     def start_design(self,
                      max_wait: int=120,
                      interval: int=2,
+                     cols: Union[None, Iterable]=None,
                      ) -> Union[pandas.DataFrame, None]:
         self.etabs.select_obj.clear_selection()
         pywin_etabs = self.etabs.get_pywinauto_etabs()
@@ -82,6 +83,8 @@ class ShearWall:
                     break
                 last_size = df.shape[0]
         print(f"Design Shear Wall completed after {wait} seconds.")
+        if cols:
+            df = df[cols]
         return df
     
     def set_design_type(self, type_: str="Program Determined"):
