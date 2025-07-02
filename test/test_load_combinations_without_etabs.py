@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import math
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
@@ -16,6 +17,40 @@ def test_get_mabhas6_load_combinations():
                         # print(f"\n{way=}, {separate_direction=}, {retaining_wall=}, {code=}, {dynamic=}")
                         d = get_mabhas6_load_combinations(way, separate_direction, retaining_wall, code, dynamic)
                         assert len(d) > 0
+
+def test_get_mabhas6_load_combinations_1():
+    ret = get_mabhas6_load_combinations(way='LRFD', separate_direction=False, retaining_wall=True, code='ACI', dynamic='100-30')
+    assert math.isclose(ret['11']['Dead'], 1.4, abs_tol=.0001)
+
+def test_generate_concrete_load_combinations_1():
+    equivalent_loads= {'Dead': ['DL', 'SD'], 'L': ['LL2', 'Lpar'], 'L_5': ['LL0.5'], 'RoofLive': ['LR'], 'Snow': ['S'], 'EX': ['EX'], 'EXP': ['EXP'], 'EXN': ['EXN'], 'EY': ['EY'], 'EYP': ['EYP'], 'EYN': ['EYN'], 'SX': ['SX'], 'SXE': ['SXE'], 'SY': ['SY'], 'SYE': ['SYE'], 'EV': ['EV'], 'HXP': ['HXP'], 'HXN': ['HXN'], 'HYP': ['HYP'], 'HYN': ['HYN']}
+    prefix= "DYNAMIC-"
+    rho_x= 1.2
+    rho_y= 1.2
+    type_= "Linear Add"
+    design_type= "LRFD"
+    separate_direction= False
+    ev_negative= True
+    A= 0.3
+    I= 1.2
+    sequence_numbering= False
+    retaining_wall= True
+    dynamic= "100-30"
+    data, notional_loads = generate_concrete_load_combinations(
+        equivalent_loads= equivalent_loads,
+        prefix= prefix,
+        rho_x= rho_x,
+        rho_y= rho_y,
+        type_= type_,
+        design_type= design_type,
+        separate_direction= separate_direction,
+        ev_negative= ev_negative,
+        A= A,
+        I= I,
+        sequence_numbering= sequence_numbering,
+        retaining_wall= retaining_wall,
+        dynamic= dynamic,
+        )
 
 def test_generate_concrete_load_combinations():
     equal_loads = {'Dead' : ['Dead'],
@@ -68,4 +103,4 @@ def test_generate_concrete_load_combinations():
                                         )
         
 if __name__ == "__main__":
-    test_generate_concrete_load_combinations()
+    test_get_mabhas6_load_combinations_1()

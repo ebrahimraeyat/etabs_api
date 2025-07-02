@@ -62,6 +62,18 @@ def change_unit(force=None, length=None):
         return wrapper
     return decorator
 
+def print_arguments(original_method):
+    def wrapper(*args, **kwargs):
+        # print arguments
+        for i in args:
+            print(f"{i}")
+        for key, value in kwargs.items():
+            print(f"{key}= {value}")
+        # Call the original method
+        result = original_method(*args, **kwargs)
+        return result
+    return wrapper
+
 def has_attribs(
         obj,
         attribs: list,

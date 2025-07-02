@@ -697,8 +697,9 @@ def get_mabhas6_load_combinations(
                 if code == 'ACI':
                     if dynamic:
                         gravity = {
-                        '11'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '12'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '11'   : {'Dead':1.4 , 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
@@ -747,8 +748,9 @@ def get_mabhas6_load_combinations(
                         gravity.update(seismic)
                         return gravity
                     return {
-                        '11'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
-                        '12'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '11'   : {'Dead':1.4 , 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '21'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
+                        '22'   : {'Dead':1.2 , 'L':1.6, 'L_5':1.6, 'Snow':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '31'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '32'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'Snow':1.6, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
                         '41'   : {'Dead':1.2, 'L':1, 'L_5':0.5, 'RoofLive':0.5, 'HXP': 1.6, 'HXN': 1.6, 'HYP': 1.6, 'HYN': 1.6},
@@ -1272,6 +1274,8 @@ def get_mabhas6_load_combinations(
                     '1023' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EX': 0.21, 'EX1': 0.21, 'EV':-0.7},
                     '1024' : {'Dead':0.6, 'EY' :-0.7, 'EY1' :-0.7, 'EX':-0.21, 'EX1':-0.21, 'EV':-0.7},
                 }
+            
+@python_functions.print_arguments
 def generate_concrete_load_combinations(
     equivalent_loads : dict,
     prefix : str = 'COMBO',
