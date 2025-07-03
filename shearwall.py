@@ -47,7 +47,7 @@ class ShearWall:
             self.etabs.scale_response_spectrum_with_respect_to_settings(
                 d,
                 analyze=False,
-                consider_min_static_base_shear=True,
+                consider_min_static_base_shear=False,
                 reset_scale=True,
                 )
         if open_main_file:
