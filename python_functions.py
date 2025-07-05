@@ -228,3 +228,21 @@ def rebar_centers(
             longitudinals.append((x + center[0], y + center[1]))
     return corners, longitudinals
 
+def get_column_labels(df, etabs):
+    '''
+    Get labels for each column in the DataFrame.
+    This function iterates through each column in the DataFrame, retrieves the names of the columns,
+    and then uses the ETABS API to get the label for each name.
+    It returns a list of labels corresponding to each column in the DataFrame.
+    :param df: DataFrame containing column names.
+    :param etabs: ETABS API object.
+    '''
+    def labels_for_column(col):
+        labels = set()
+        for name in col.dropna():
+            if name is not None:
+                label = etabs.SapModel.FrameObj.GetLabelFromName(name)[0]
+                if label is not None:
+                    labels.add(label)
+        return ','.join(sorted(labels))
+    return [labels_for_column(df[c]) for c in df.columns]

@@ -3,7 +3,9 @@ from typing import Iterable, Union
 import math
 import copy
 
-from python_functions import change_unit
+import pandas as pd
+
+from python_functions import change_unit, get_column_labels
 
 try:
     import freecad_funcs
@@ -17,7 +19,8 @@ class FrameObj:
                 etabs=None,
                 ):
         self.etabs = etabs
-        self.SapModel = self.etabs.SapModel
+        if etabs is not None:
+            self.SapModel = self.etabs.SapModel
 
     def set_end_release_frame(self, name):
         end_release = self.SapModel.FrameObj.GetReleases(name)
@@ -299,9 +302,147 @@ class FrameObj:
             ret[lable] = names
         return ret
 
+    def group_stacked_columns_by_points(self,
+        points_df: Union[pd.DataFrame, None]=None,
+        columns_df: Union[pd.DataFrame, None]=None,
+    ) -> list:
+        """
+        Group columns that are vertically stacked by common point names (not by coordinates).
+        Returns a list of lists, each sublist is sorted from bottom to top by Z.
+        If multiple columns connect at a point, only the longest is used in the chain.
+        """
+        if points_df is None:
+            points_df = self.etabs.database.get_points_connectivity()
+        if columns_df is None:
+            columns_df = self.etabs.database.read(
+                'Column Object Connectivity',
+                to_dataframe=True,
+                cols=['UniqueName', 'UniquePtI', 'UniquePtJ'],
+            )
+        # Build point Z lookup
+        point_z = points_df.set_index('UniqueName')['Z'].to_dict()
+        # Build column info: id -> (pt_low, pt_up, z_low, z_up, length)
+        col_info = {}
+        for _, row in columns_df.iterrows():
+            col_id = row['UniqueName']
+            pt_i, pt_j = row['UniquePtI'], row['UniquePtJ']
+            z_i, z_j = point_z[pt_i], point_z[pt_j]
+            if z_i <= z_j:
+                pt_low, pt_up, z_low, z_up = pt_i, pt_j, z_i, z_j
+            else:
+                pt_low, pt_up, z_low, z_up = pt_j, pt_i, z_j, z_i
+            length = abs(z_up - z_low)
+            col_info[col_id] = dict(
+                pt_low=pt_low, pt_up=pt_up, z_low=z_low, z_up=z_up, length=length
+            )
+        # Build mapping: pt_low -> [col_id], pt_up -> [col_id]
+        pt_low_map = {}
+        pt_up_map = {}
+        for col_id, info in col_info.items():
+            pt_low_map.setdefault(info['pt_low'], []).append(col_id)
+            pt_up_map.setdefault(info['pt_up'], []).append(col_id)
+        # Find base columns (those whose pt_low is not pt_up of any other column)
+        base_cols = []
+        for col_id, info in col_info.items():
+            if info['pt_low'] not in pt_up_map:
+                base_cols.append(col_id)
+        # Build chains
+        used_cols = set()
+        groups = []
+        for base_col in base_cols:
+            chain = []
+            curr_col = base_col
+            while curr_col is not None:
+                chain.append(curr_col)
+                used_cols.add(curr_col)
+                pt_up = col_info[curr_col]['pt_up']
+                next_cols = pt_low_map.get(pt_up, [])
+                # If multiple, pick the longest
+                next_col = None
+                if next_cols:
+                    if len(next_cols) > 1:
+                        # Pick the longest
+                        next_col = max(next_cols, key=lambda cid: col_info[cid]['length'])
+                    else:
+                        next_col = next_cols[0]
+                    if next_col in used_cols:
+                        break
+                else:
+                    next_col = None
+                curr_col = next_col
+            groups.append(chain)
+        # Add any unchained columns (not in any group)
+        for col_id in col_info:
+            if col_id not in used_cols:
+                groups.append([col_id])
+        # Sort each group bottom to top by z_low
+        for group in groups:
+            group.sort(key=lambda cid: col_info[cid]['z_low'])
+        return groups
+
+    @change_unit(None, 'mm')
+    def stacked_columns_dataframe_by_points(self,
+        points_df: Union[pd.DataFrame, None]=None,
+        columns_df: Union[pd.DataFrame, None]=None,
+        tolerance: float=1e-2,
+    ) -> pd.DataFrame:
+        """
+        Returns a DataFrame of stacked columns using point connectivity:
+        - Rows: unique Z levels (ascending), excluding the lowest Z.
+        - Columns: each stack/group.
+        - Cell: column UniqueName if present at that Z in that stack, else None.
+        """
+        if points_df is None:
+            points_df = self.etabs.database.get_points_connectivity()
+        if columns_df is None:
+            columns_df = self.etabs.database.read(
+                'Column Object Connectivity',
+                to_dataframe=True,
+                cols=['UniqueName', 'UniquePtI', 'UniquePtJ'],
+            )
+        groups = self.group_stacked_columns_by_points(points_df=points_df, columns_df=columns_df)
+        # Build point Z lookup
+        point_z = points_df.set_index('UniqueName')['Z'].to_dict()
+        # Build a dict: col_id -> (z_low, z_up)
+        col_z_bounds = {}
+        for _, row in columns_df.iterrows():
+            col_id = row['UniqueName']
+            pt_i, pt_j = row['UniquePtI'], row['UniquePtJ']
+            z_i, z_j = point_z[pt_i], point_z[pt_j]
+            z_low, z_up = sorted([z_i, z_j])
+            col_z_bounds[col_id] = (z_low, z_up)
+        # Collect all unique Z levels
+        z_levels = set()
+        for z_low, z_up in col_z_bounds.values():
+            z_levels.add(z_low)
+            z_levels.add(z_up)
+        z_levels = sorted(z_levels, reverse=True)
+        # Exclude the lowest Z
+        if len(z_levels) > 1:
+            z_levels = z_levels[:-1]
+        # Build DataFrame
+        data = []
+        for z in z_levels:
+            row = []
+            for group in groups:
+                col_at_z = None
+                for col_id in group:
+                    z_low, z_up = col_z_bounds[col_id]
+                    if z_low < z <= z_up or math.isclose(z, z_up, abs_tol=tolerance):
+                        col_at_z = col_id
+                        break
+                row.append(col_at_z)
+            data.append(row)
+        df = pd.DataFrame(data, index=z_levels)
+        story_elevation = self.etabs.story.get_sorted_story_and_levels()
+        story_elevation = {elev: story for story, elev in story_elevation}
+        df.index = [story_elevation.get(elev, elev) for elev in df.index]
+        df.columns = get_column_labels(df, self.etabs)
+        return df
+
     def get_columns_type_sections(self,
                                   dataframe: bool=False,
-                                  ) -> Union[dict, 'pandas.DataFrame']:
+                                  ) -> Union[dict, pd.DataFrame]:
         '''
         return the column type sections in a dict like 
         { c1: ['C5012A', 'C5012AC', 'C5012C'], c2: [...], ...}
@@ -317,7 +458,6 @@ class FrameObj:
                     sections.append(self.get_section_name(name))
             ret[key] = sections
         if dataframe:
-            import pandas as pd
             df = pd.DataFrame(ret)
             stories = self.etabs.story.get_sorted_story_name(reverse=False, include_base=False)
             df.set_index(pd.Index(stories), inplace=True)
@@ -551,7 +691,6 @@ class FrameObj:
             beams_names, _ = self.get_beams_columns(types=[1,2,3])
         table_key = "Frame Assignments - Property Modifiers"
         cols = ['Story', 'Label', 'UniqueName', 'AMod', 'WMod']
-        import pandas as pd
         df = pd.DataFrame(beams_names, columns=['UniqueName'])
         df['AMod_Beam'] = 1
         df['WMod_Beam'] = 1

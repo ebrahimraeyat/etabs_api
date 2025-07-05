@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import numpy as np
+import pandas as pd
 
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
@@ -467,6 +468,66 @@ def test_get_lateral_bracing():
     assert set(ret[1]) == set([3])
     assert [1,2] in ret[0]
     assert 3 in ret[0]
+
+@open_etabs_file('steel.EDB')
+def test_group_stacked_columns_by_points_working():
+    etabs.frame_obj.group_stacked_columns_by_points()
+    assert True  # If no exception is raised, the test passes
+
+@open_etabs_file('steel.EDB')
+def test_stacked_columns_dataframe_by_points_working():
+    etabs.frame_obj.stacked_columns_dataframe_by_points()
+    assert True  # If no exception is raised, the test passes
+
+
+def test_group_stacked_columns_by_points():
+    # Points: Z values are floats
+    points_df = pd.DataFrame([
+        {'UniqueName': 1, 'X': 0, 'Y': 0, 'Z': 0.0},
+        {'UniqueName': 2, 'X': 0, 'Y': 0, 'Z': 3.0},
+        {'UniqueName': 3, 'X': 0, 'Y': 0, 'Z': 6.0},
+        {'UniqueName': 4, 'X': 0, 'Y': 0, 'Z': 9.0},
+        {'UniqueName': 5, 'X': 1, 'Y': 0, 'Z': 0.0},
+        {'UniqueName': 6, 'X': 1, 'Y': 0, 'Z': 3.0},
+    ])
+    # Columns: one stack of 3, one stack of 2
+    columns_df = pd.DataFrame([
+        {'UniqueName': 101, 'UniquePtI': 1, 'UniquePtJ': 2},
+        {'UniqueName': 102, 'UniquePtI': 2, 'UniquePtJ': 3},
+        {'UniqueName': 103, 'UniquePtI': 3, 'UniquePtJ': 4},
+        {'UniqueName': 201, 'UniquePtI': 5, 'UniquePtJ': 6},
+    ])
+    from frame_obj import FrameObj
+    frame_obj = FrameObj(etabs=None)
+    groups = frame_obj.group_stacked_columns_by_points(points_df=points_df, columns_df=columns_df)
+    # Should be two groups, one with 3 columns, one with 1
+    assert isinstance(groups, list)
+    assert any(len(g) == 3 for g in groups)
+    assert any(len(g) == 1 for g in groups)
+
+@open_etabs_file('shayesteh.EDB')
+def test_stacked_columns_dataframe_by_points():
+    points_df = pd.DataFrame([
+        {'UniqueName': 1, 'X': 0, 'Y': 0, 'Z': 0.0},
+        {'UniqueName': 2, 'X': 0, 'Y': 0, 'Z': 3.0},
+        {'UniqueName': 3, 'X': 0, 'Y': 0, 'Z': 6.0},
+        {'UniqueName': 4, 'X': 0, 'Y': 0, 'Z': 9.0},
+        {'UniqueName': 5, 'X': 1, 'Y': 0, 'Z': 0.0},
+        {'UniqueName': 6, 'X': 1, 'Y': 0, 'Z': 3.0},
+    ])
+    columns_df = pd.DataFrame([
+        {'UniqueName': 101, 'UniquePtI': 1, 'UniquePtJ': 2},
+        {'UniqueName': 102, 'UniquePtI': 2, 'UniquePtJ': 3},
+        {'UniqueName': 103, 'UniquePtI': 3, 'UniquePtJ': 4},
+        {'UniqueName': 201, 'UniquePtI': 5, 'UniquePtJ': 6},
+    ])
+    df = etabs.frame_obj.stacked_columns_dataframe_by_points(points_df=points_df, columns_df=columns_df)
+    # Should have 3 rows (excluding lowest Z=0.0), and 2 columns (2 stacks)
+    assert isinstance(df, pd.DataFrame)
+    assert df.shape[0] == 3
+    assert df.shape[1] == 2
+    print(df)
+
 
 if __name__ == '__main__':
     test_get_start_end_releases()
