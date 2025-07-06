@@ -16,8 +16,9 @@ class CompareTwoColumnsEnum(enum.IntEnum):
     section_dimension = 5
     rebar_number = 6
     rebar_slop = 7
-    OK = 8
-    not_checked = 9
+    material = 8
+    OK = 9
+    not_checked = 10
 
 
 class PropFrame:
@@ -273,6 +274,8 @@ class PropFrame:
         x_above, y_above, x_below, y_below = dimentions
         if (x_below - x_above) > 10 or (y_below - y_above) > 10:
             return CompareTwoColumnsEnum.rebar_slop
+        if self.is_fc_section_above_is_greater_than_below(below_sec, above_sec)[0]:
+            return CompareTwoColumnsEnum.material
         # There is no error
         return CompareTwoColumnsEnum.OK
     
@@ -282,3 +285,30 @@ class PropFrame:
         section = self.SapModel.FrameObj.GetSection(frame_name)[0]
         material = self.SapModel.PropFrame.GetMaterial(section)[0] if section else None
         return material
+    
+    def get_fc(self,
+               material: Union[str, None]=None,
+               frame_name: Union[str, None]=None,
+               sec_name: Union[str, None]=None,
+                     ):
+        if material is None:
+            if sec_name is None:
+                sec_name = self.SapModel.FrameObj.GetSection(frame_name)[0]
+            _, material, *_ = self.SapModel.PropFrame.GetRectangle(sec_name)
+        fc = self.SapModel.PropMaterial.GetOConcrete(material)[0]
+        return fc
+    
+    def is_fc_section_above_is_greater_than_below(
+        self,
+        below_col: Union[str, None]=None,
+        above_col: Union[str, None]=None,
+        below_sec: Union[str, None]=None,
+        above_sec: Union[str, None]=None,
+        ):
+        if below_sec is None:
+            below_sec = self.SapModel.FrameObj.GetSection(below_col)[0]
+        if above_sec is None:
+            above_sec = self.SapModel.FrameObj.GetSection(above_col)[0]
+        fc_below = self.get_fc(below_sec)
+        fc_above = self.get_fc(above_sec)
+        return fc_above > fc_below, (fc_above, fc_below)
