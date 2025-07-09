@@ -1,9 +1,21 @@
 
 from typing import Union
 import python_functions
+import enum
 
+import pandas as pd
+
+@enum.unique
+class COMBOTYPE(enum.IntEnum):
+    Linear_Add = 0
+    Envelope = 1
+    Absolute_Add = 2
+    Srss = 3
+    Range_Add = 4
 
 class LoadCombination:
+    combotyp = COMBOTYPE
+    
     def __init__(
                 self,
                 etabs=None,
@@ -92,19 +104,30 @@ class LoadCombination:
             if lc in seismic_load_cases:
                 return True
         return False
+    
+    def get_table_of_load_combinations(self,
+                                       cols: Union[list, None]=['Name', 'LoadName', 'Type', 'SF'],
+                                       ) -> pd.DataFrame:
+        table_key = "Load Combination Definitions"
+        if self.etabs.database.table_name_that_containe(table_key):
+            df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        else:
+            load_combinations = self.get_load_combinations_of_type()
+            ret = []
+            for combo in load_combinations:
+                type_ = self.get_type_of_combo(combo)
+                type_ = self.combotyp(type_).name.replace('_', ' ').title()
+                _, cases, scale_factores = self.SapModel.RespCombo.GetCaseList(combo)[1:4]
+                for case, sf in zip(cases, scale_factores):
+                    ret.append([combo, case, type_, sf])
+            df = pd.DataFrame(ret, columns=cols)
+        return df
+
 
     def get_type_of_combo(self,
         name : str,
         ):
-        map_dict = {
-        0 : 'Linear',
-        1 : 'Envelope',
-        2 : 'Absolute',
-        3 : 'SRSS',
-        4 : 'Range',
-        }
-        type_ = self.etabs.SapModel.RespCombo.GetTypeCombo(name)[0]
-        return map_dict[type_]
+        return self.etabs.SapModel.RespCombo.GetTypeOAPI(name)[0]
         
     def get_expand_linear_load_combinations(self,
         expanded_loads : dict,
@@ -115,7 +138,7 @@ class LoadCombination:
         EX, EXN, EXP, EY, EYN, EYP = self.etabs.load_patterns.get_seismic_load_patterns()
         for combo in combo_names:
             type_ = self.get_type_of_combo(combo)
-            if type_ == 'Linear':
+            if type_ == self.combotyp.Linear_Add:
                 number_items, cases, scale_factores = self.etabs.SapModel.RespCombo.GetCaseList(combo)[1:4]
                 max_sf = 0
                 # for models that has
@@ -253,7 +276,6 @@ class LoadCombination:
             code = self.etabs.design.get_code(type_)
         code_string = self.etabs.design.get_code_string(type_, code)
         # set design combo
-        import pandas as pd
         if self.etabs.etabs_main_version < 20:
             cols = ['Combo Type', 'Combo Name']
             cols1 = ['Design Type']

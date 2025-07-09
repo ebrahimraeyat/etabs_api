@@ -164,7 +164,8 @@ class CreateF2kFile(Safe):
         self.etabs = etabs
         self.etabs.set_current_unit('N', 'mm')
         if model_datum is None:
-            model_datum = self.etabs.story.get_base_name_and_level()[1]
+            # model_datum = self.etabs.story.get_base_name_and_level()[1]
+            model_datum = 0
         self.model_datum = model_datum
         if load_cases is None:
             load_cases = self.etabs.load_cases.get_load_cases()
@@ -395,14 +396,15 @@ class CreateF2kFile(Safe):
     
     def add_load_combinations(
                 self,
-                types: Iterable = ('Envelope', 'Linear Add'),
+                types: Iterable = [],
                 load_combinations: Union[list, bool] = None,
                 ignore_dynamics : bool = False,
         ):
+        if not types:
+            types = self.etabs.load_combinations.combotyp._member_names_
+            types = [t.replace('_', ' ') for t in types]
         self.etabs.load_cases.select_all_load_cases()
-        table_key = "Load Combination Definitions"
-        cols = ['Name', 'LoadName', 'Type', 'SF']
-        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        df = self.etabs.load_combinations.get_table_of_load_combinations()
         df.fillna(method='ffill', inplace=True)
         # remove dynamic load combinations
         if ignore_dynamics:
