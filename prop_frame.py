@@ -1,6 +1,11 @@
 from typing import Union
 import enum
 import math
+import copy
+
+import pandas as pd
+
+from python_functions import change_unit
 
 
 __all__ = ['PropFrame']
@@ -73,6 +78,62 @@ class PropFrame:
         if ret == 0:
             return True
         return False
+    
+    @change_unit(None, 'mm')
+    def create_steel_tube_with_command(self,
+                          name: str,
+                          mat: str,
+                          total_depth: float,
+                          total_width: float,
+                          tf: float,
+                          tw: float,
+                          ):
+        self.etabs.unlock_model()
+        ret = self.SapModel.PropFrame.SetTube(
+            name,
+            mat,
+            total_depth,
+            total_width,
+            tf,
+            tw,
+            )
+        assert ret == 0, f'Section {name} did not created.'
+
+    @change_unit(None, 'mm')
+    def create_steel_tube(self,
+                          name: str,
+                          mat: str,
+                          total_depth: float,
+                          total_width: float,
+                          tf: float,
+                          tw: float,
+                          radius: float=0,
+                          ):
+        self.etabs.unlock_model()
+        table_key = "Frame Section Property Definitions - Steel Tube"
+        cols = ['Name', 'Material', 't3', 't2', 'tf', 'tw', 'CornerRad']
+        columns = cols
+        new_data =  [name, mat, str(total_depth), str(total_width), str(tf), str(tw), str(radius)]
+        if self.etabs.database.table_name_that_containe(table_key):
+            df = self.etabs.database.read(table_key, to_dataframe=True)
+            row = copy.deepcopy(df.iloc[0])
+            row[cols] = new_data
+            cols = ['FromFile', 'AMod', 'A2Mod', 'A3Mod', 'JMod', 'I2Mod', 'I3Mod', 'MMod', 'WMod']
+            columns += cols
+            row[cols] = ['No'] + ['1'] * (len(cols) - 1)
+            for col in  ('FileName', 'SectInFile'):
+                if col in df.columns:
+                    row[col] = ''
+                    columns.append(col)
+            df2 = pd.DataFrame([row])
+            df = pd.concat([df, df2], ignore_index=True)
+        else:
+            df = pd.DataFrame([new_data], columns=cols)
+        print(f"{df=}")
+        df = df[columns]
+        self.etabs.database.write(table_key, df)
+
+        
     
     def change_beams_columns_section_fc(
         self,

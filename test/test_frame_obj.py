@@ -450,8 +450,7 @@ def test_get_section_type_and_geometry():
     ret = etabs.frame_obj.get_section_type_and_geometry(names)
     assert set(ret.keys()) == set(names)
     for name in names:
-        assert ret[name]['design_type'] == 'Beam'
-        assert ret[name]['section_type'] == ['I', 'W']
+        assert ret[name]['sec_type'] == "WB"
     assert len(ret) == len(names)
 
 @open_etabs_file('steel.EDB')

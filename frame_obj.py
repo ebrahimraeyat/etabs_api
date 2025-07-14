@@ -111,7 +111,8 @@ class FrameObj:
             2 : ['Channel', 'U'],
             3 : ['T', 'T'],
             4 : ['Angle', 'L'],
-            6 : ['Box', 'HS'],
+            6 : ['Box', 'RHS'],
+            7 : ['Pipe', 'CHS'],
             8 : ['Rectangular', 'R'],
             9 : ['Circle', 'C'],
         }
@@ -128,6 +129,8 @@ class FrameObj:
                     section_type = section_types_map.get(section_type_num, None)
                 else:
                     section_type = None
+                if section_type is None:
+                    continue
                 width = frame_props[4][section_index]
                 height = frame_props[3][section_index]
                 tw = frame_props[6][section_index] # TW
@@ -135,10 +138,11 @@ class FrameObj:
                 width_b = frame_props[7][section_index] # widthB
                 tf_b = frame_props[8][section_index] # TFB
                 sec_type = section_type[1]
-                if self.is_beam(frame_name):
-                    sec_type += 'B'
-                if self.is_column(frame_name):
-                    sec_type += 'C'
+                if "HS" not in sec_type:
+                    if self.is_beam(frame_name):
+                        sec_type += 'B'
+                    elif self.is_column(frame_name):
+                        sec_type += 'C'
                 profile={
                     'sec_type': sec_type,
                     'b': width,

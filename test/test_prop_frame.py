@@ -30,6 +30,19 @@ def test_create_concrete_column():
     names = etabs.prop_frame.get_concrete_rectangular_of_type(type_='Column')
     assert col_name not in names.unique()
 
+@open_etabs_file('PowelsRd-Rev26.EDB')
+def test_create_steel_tube():
+    name = 'Box'
+    material = "ST37(Plate)"
+    depth = 300
+    width = 200
+    t = 2.3
+    etabs.prop_frame.create_steel_tube(name, material, depth, width, t, t)
+    ret = etabs.SapModel.PropFrame.GetTube(name)
+    assert ret[1] == material
+    assert ret[2] == depth
+
+
 @open_etabs_file('shayesteh.EDB')
 def test_get_concrete_rectangular_of_type():
     ret = etabs.prop_frame.get_concrete_rectangular_of_type(type_='Column')
@@ -143,4 +156,4 @@ def test_get_material():
 
 
 if __name__ == '__main__':
-    test_change_columns_section_fc_fy_cover_design()
+    test_create_steel_tube()

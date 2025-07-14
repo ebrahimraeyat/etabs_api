@@ -155,6 +155,7 @@ ENV/
 *.$et
 *.ico
 *.ebk
+*.tlog
 
 # SAP2000
 *.$2k
