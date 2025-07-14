@@ -927,6 +927,9 @@ class DatabaseTables:
         table_key = 'Concrete Frame Design Load Combination Data'
         df = self.read(table_key, to_dataframe=True)
         return list(df['ComboName'])
+    
+    def get_steel_frame_design_load_combinations(self):
+        return self.get_design_load_combinations(type_='steel', combo_types=['Strength'])
 
     def get_design_load_combinations(self,
             type_ : str = 'concrete', # 'steel', 'shearwall', 'slab'

@@ -149,6 +149,8 @@ class FrameObj:
                     'd': height,
                     't_w': tw,
                     't_f': tf,
+                    't': tf,
+                    'r_o': 0,  # Assuming no corner radius for RHS
                     # 'width_b': width_b,
                     # 'tf_b': tf_b,
                 }
