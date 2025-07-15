@@ -529,7 +529,7 @@ def test_stacked_columns_dataframe_by_points():
 
 
 if __name__ == '__main__':
-    test_get_start_end_releases()
+    test_stacked_columns_dataframe_by_points()
 
 
 

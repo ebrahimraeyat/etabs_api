@@ -241,7 +241,7 @@ def get_column_labels(df, etabs):
         labels = set()
         for name in col.dropna():
             if name is not None:
-                label = etabs.SapModel.FrameObj.GetLabelFromName(name)[0]
+                label = etabs.SapModel.FrameObj.GetLabelFromName(str(name))[0]
                 if label is not None:
                     labels.add(label)
         return ','.join(sorted(labels))

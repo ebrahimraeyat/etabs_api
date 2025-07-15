@@ -441,10 +441,27 @@ class FrameObj:
             data.append(row)
         df = pd.DataFrame(data, index=z_levels)
         story_elevation = self.etabs.story.get_sorted_story_and_levels()
-        story_elevation = {elev: story for story, elev in story_elevation}
-        df.index = [story_elevation.get(elev, elev) for elev in df.index]
+        indexes = self.replace_story_with_elevation(df.index, story_elevation)
+        df.index = indexes
         df.columns = get_column_labels(df, self.etabs)
         return df
+
+    @staticmethod
+    def replace_story_with_elevation(elevations, story_elevation):
+        '''
+        Replace story names in elevations with their corresponding elevation values.
+        '''
+        stories = []
+        for elev in elevations:
+            found = False
+            for story, story_elev in story_elevation:
+                if math.isclose(float(elev), story_elev, abs_tol=1):
+                    stories.append(story)
+                    found = True
+                    break
+            if not found:
+                stories.append(str(elev))
+        return stories
 
     def get_columns_type_sections(self,
                                   dataframe: bool=False,
