@@ -118,7 +118,10 @@ def export_to_dxf(
         block = dwg.blocks.new(name=block_name)
         for name in beams:
             props = frame_props.get(name)
-            b = props.get('b', 0)
+            if props:
+                b = props.get('b', 0)
+            else:
+                b = 0
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
             # Draw center line
             block.add_line((x1 + dx, y1), (x2 + dx, y2), dxfattribs = {'color': 8})

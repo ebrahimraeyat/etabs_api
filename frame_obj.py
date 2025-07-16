@@ -260,6 +260,11 @@ class FrameObj:
         # Beams
         table_key = "Beam Object Connectivity"
         df = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
+        # Null Lines
+        table_key = "Null Line Object Connectivity"
+        if self.etabs.database.table_name_that_containe(table_key):
+            df_null = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
+            df = df.append(df_null)
         beam_groups = df.groupby('Story')
         for story, group in beam_groups:
             d[story] = [group['UniqueName']]
