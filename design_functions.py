@@ -169,7 +169,7 @@ class PointRestraint:
             return 'Top'
         elif self.moment_sign in ('-0+', '+0-'):
             return 'Either'
-        elif self.moment_sign in ('0'):
+        elif self.moment_sign in ('0', '00'):
             return 'Both'
         
     def get_critical_flang_restraint(self):

@@ -108,13 +108,14 @@ class FrameObj:
         all_frames = self.SapModel.FrameObj.GetAllFrames()
         section_types_map = {
             1 : ['I', 'W'],
-            2 : ['Channel', 'U'],
+            2 : ['Channel', 'PFC'],
             3 : ['T', 'T'],
             4 : ['Angle', 'L'],
             6 : ['Box', 'RHS'],
             7 : ['Pipe', 'CHS'],
             8 : ['Rectangular', 'R'],
             9 : ['Circle', 'C'],
+            40: ['steel_rod', 'C']
         }
         section_type_and_geometry = dict()
         profiles = {}
@@ -138,7 +139,7 @@ class FrameObj:
                 width_b = frame_props[7][section_index] # widthB
                 tf_b = frame_props[8][section_index] # TFB
                 sec_type = section_type[1]
-                if "HS" not in sec_type:
+                if "HS" not in sec_type and 'PFC' not in sec_type:
                     if self.is_beam(frame_name):
                         sec_type += 'B'
                     elif self.is_column(frame_name):
@@ -151,6 +152,7 @@ class FrameObj:
                     't_f': tf,
                     't': tf,
                     'r_o': 0,  # Assuming no corner radius for RHS
+                    'r_1': 0,  # Assuming no corner radius for PFC
                     # 'width_b': width_b,
                     # 'tf_b': tf_b,
                 }
