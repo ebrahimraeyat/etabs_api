@@ -10,6 +10,17 @@ from freecad_funcs import open_file
 from test.shayesteh import get_temp_filepath
 
 
+def test_model_settings_report():
+    # Path to your manually provided JSON
+    json_file = etabs_api_path / 'test' / 'files' / 'json' / 'des27_model_settings.json'
+    filename = get_temp_filepath(suffix='docx', filename='test_model_settings')
+    doc = report.create_doc()
+    report.add_model_settings_report(doc, json_file)
+    doc.save(filename)
+    assert filename.exists()
+    open_file(filename)
+
+
 def test_add_json_table_to_doc():
     json_file = etabs_api_path / 'test' / 'files' / 'json' / 'IrregularityOfMassModel.json'
     filename = get_temp_filepath(suffix='docx', filename='test')

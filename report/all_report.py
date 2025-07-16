@@ -119,12 +119,241 @@ def create_doc(
         doc = add_table_of_content(doc)
     return doc
 
+def add_bold_paragraph(doc, text, empty_line=True):
+    if empty_line:
+        doc.add_paragraph()
+    p = doc.add_paragraph()
+    run = p.add_run(text)
+    run.bold = True
+    return p
+
+def add_simple_table(doc, rows):
+    table = doc.add_table(rows=len(rows), cols=2)
+    table.style = 'Table Grid'
+    for i, (label, value) in enumerate(rows):
+        cell_label = table.cell(i, 0)
+        cell_value = table.cell(i, 1)
+        cell_label.text = label
+        cell_value.text = value
+        cell_label.paragraphs[0].runs[0].bold = True
+    return table
+
+def add_table(doc, cols, rows):
+    table = doc.add_table(rows=len(rows) + 1, cols=len(cols) + 1)  # +1 for caption column
+    table.style = 'Table Grid'
+    # Add caption row
+    cols = [''] + list(cols)  # Add empty caption column
+    for j, col in enumerate(cols):
+        cell = table.cell(0, j)  # +1 to skip caption column
+        cell.text = col
+        run = cell.paragraphs[0].runs[0]
+        run.bold = True
+        run.italic = True
+        shading_elm = parse_xml(r'<w:shd {} w:fill="{}"/>'.format(nsdecls('w'), "#244061"))
+        cell._tc.get_or_add_tcPr().append(shading_elm)
+    for i, data in enumerate(rows):
+        for j, value in enumerate(data):
+            cell = table.cell(i + 1, j)
+            cell.text = str(value)
+    return table
+
+def add_checkbox_table(doc, items):
+    table = doc.add_table(rows=len(items), cols=1)
+    table.style = 'Table Grid'
+    for i, (label, checked) in enumerate(items):
+        cell = table.cell(i, 0)
+        checkbox = "✓" if checked else "☐"
+        cell.text = f"{checkbox} {label}"
+    return table
+
+def add_model_settings_report(doc, json_file):
+    with open(json_file, encoding="utf-8") as f:
+        data = json.load(f)
+
+    # 1. Project Info
+    doc.add_page_break()
+    add_bold_paragraph(doc, "مشخصات پروژه", empty_line=False)
+    info_rows = [
+        ("استان", data.get("ostan", "")),
+        ("شهر", data.get("city", "")),
+        ("سطح خطر", data.get("risk_level", "")),
+        ("نوع خاک", data.get("soil_type", "")),
+        ("ضریب اهمیت", data.get("importance_factor", "")),
+    ]
+    add_simple_table(doc, [row for row in info_rows if row[1]])
+
+    # 2. First System
+    doc.add_page_break()
+    if data.get("activate_second_system"):
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم پایین", empty_line=False)
+    else:
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای", empty_line=False)
+    first_system_rows = [
+        ("طبقه پایین", data.get("bot_x_combo", "")),
+        ("طبقه بالا", data.get("top_x_combo", "")),
+        ("طبقه جهت محاسبه زمان تناوب تجربی", data.get("top_story_for_height", "")),
+        ("تعداد طبقات", str(data.get("no_of_story_x", ""))),
+        ("ارتفاع (متر) ", str(data.get("height_x", ""))),
+    ]
+    if data.get("infill", False):
+        first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "بله"))
+    else:
+        first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "خیر"))
+    add_simple_table(doc, [row for row in first_system_rows if row[1]])
+
+    # --- Add EX, EXP, EXN, ... table for first system ---
+    ex_table_rows = [
+        ("زلزله بدون خروج از مرکزیت", data.get("ex_combobox", ""), data.get("ey_combobox", "")),
+        ("زلزله با خروج از مرکزیت مثبت", data.get("exp_combobox", ""), data.get("eyp_combobox", "")),
+        ("زلزله با خروج از مرکزیت منفی", data.get("exn_combobox", ""), data.get("eyn_combobox", "")),
+        ("زلزله دریفت بدون خروج از مرکزیت", data.get("ex_drift_combobox", ""), data.get("ey_drift_combobox", "")),
+        ("زلزله دریفت با خروج از مرکزیت مثبت", data.get("exp_drift_combobox", ""), data.get("eyp_drift_combobox", "")),
+        ("زلزله دریفت با خروج از مرکزیت منفی", data.get("exn_drift_combobox", ""), data.get("eyn_drift_combobox", "")),
+    ]
+    # Only add rows with at least one value
+    ex_table_rows = [row for row in ex_table_rows if row[1] or row[2]]
+    if ex_table_rows:
+        add_bold_paragraph(doc, "بارهای زلزله استاتیکی")
+        add_table(doc, ["X", "Y"], ex_table_rows)
+
+    # 3. Second System (if exists)
+    if data.get("activate_second_system"):
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم بالا")
+        second_system_rows = [
+            ("طبقه پایین", data.get("bot_x1_combo", "")),
+            ("طبقه بالا", data.get("top_x1_combo", "")),
+            ("طبقه جهت محاسبه زمان تناوب تجربی", data.get("top_story_for_height1", "")),
+            ("تعداد طبقات", str(data.get("no_of_story_x1", ""))),
+            ("ارتفاع (متر) ", str(data.get("height_x1", ""))),
+        ]
+        if data.get("infill_1", False):
+            first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "بله"))
+        else:
+            first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "خیر"))
+        if data.get("special_case", False):
+            second_system_rows.append(("سختی قسمت پایین بیشتر از ۱۰ برابر متوسط سختی طبقات بالاست", "بله"))
+        else:
+            second_system_rows.append(("سختی قسمت پایین بیشتر از ۱۰ برابر متوسط سختی طبقات بالاست", "خیر"))
+        add_simple_table(doc, [row for row in second_system_rows if row[1]])
+
+        # --- Add EX, EXP, EXN, ... table for second system ---
+        ex2_table_rows = [
+            ("زلزله بدون خروج از مرکزیت", data.get("ex1_combobox", ""), data.get("ey1_combobox", "")),
+            ("زلزله با خروج از مرکزیت مثبت", data.get("exp1_combobox", ""), data.get("eyp1_combobox", "")),
+            ("زلزله با خروج از مرکزیت منفی", data.get("exn1_combobox", ""), data.get("eyn1_combobox", "")),
+            ("زلزله دریفت بدون خروج از مرکزیت", data.get("ex1_drift_combobox", ""), data.get("ey1_drift_combobox", "")),
+            ("زلزله دریفت با خروج از مرکزیت مثبت", data.get("exp1_drift_combobox", ""), data.get("eyp1_drift_combobox", "")),
+            ("زلزله دریفت با خروج از مرکزیت منفی", data.get("exn1_drift_combobox", ""), data.get("eyn1_drift_combobox", "")),
+        ]
+        ex2_table_rows = [row for row in ex2_table_rows if row[1] or row[2]]
+        if ex2_table_rows:
+            add_bold_paragraph(doc, "بارهای زلزله استاتیکی سیستم بالا")
+            add_table(doc, ["X", "Y"], ex2_table_rows)
+
+    # 4. Loads
+    doc.add_page_break()
+    add_bold_paragraph(doc, "بارهای وارد بر سازه", empty_line=False)
+    loads_rows = [
+        ("مرده", data.get("dead_combobox", "")),
+        ("مرده کفسازی و تیغه‌بندی", data.get("sdead_combobox", "")),
+        ("پارتیشن مرده", data.get("partition_dead_combobox", "")),
+        ("زنده غیرقابل کاهش", data.get("live_combobox", "")),
+        ("زنده قابل کاهش", data.get("lred_combobox", "")),
+        ("زنده پارکینگ", data.get("live_parking_combobox", "")),
+        ("پارتیشن زنده", data.get("partition_live_combobox", "")),
+        ("زنده با ضریب نیم", data.get("live5_combobox", "")),
+        ("زنده بام", data.get("lroof_combobox", "")),
+        ("برف", data.get("snow_combobox", "")),
+        ("تنظیم جرم", data.get("mass_combobox", "")),
+        ("زلزله قائم", data.get("ev_combobox", "")),
+        ("مودال", data.get("modal_combobox", "")),
+    ]
+    add_simple_table(doc, [row for row in loads_rows if row[1]])
+
+    # 4.1 Retainin walls
+    if data.get("retaining_wall_groupbox"):
+        add_bold_paragraph(doc, "بارهای دیوار حائل")
+        loads_rows = [
+            ("دیوار حائل در جهت مثبت ایکس", data.get("hxp_combobox", "")),
+            ("دیوار حائل در جهت منفی ایکس", data.get("hxn_combobox", "")),
+            ("دیوار حائل در جهت مثبت وای", data.get("hyp_combobox", "")),
+            ("دیوار حائل در جهت منفی وای", data.get("hyn_combobox", "")),
+        ]
+        add_simple_table(doc, [row for row in loads_rows if row[1]])
+
+    # 5. Dynamic Loads
+    if data.get("dynamic_analysis_groupbox"):
+        doc.add_page_break()
+        add_bold_paragraph(doc, "لودکیس های دینامیکی", empty_line=False)
+        scale_factor_text = f"ضریب همپایه سازی جهت ایکس: {data.get('x_scalefactor_combobox', '')}, ضریب همپایه سازی جهت وای: {data.get('y_scalefactor_combobox', '')}"
+        doc.add_paragraph(scale_factor_text)
+        # Only one table: 100-30 or angular
+        if data.get("combination_response_spectrum_checkbox"):
+            dynamic_rows = [
+                ("لودکیس طیفی بدون خروج از مرکزیت", data.get("sx_combobox", ""), data.get("sy_combobox", "")),
+                ("لودکیس طیفی با خروج از مرکزیت ", data.get("sxe_combobox", ""), data.get("sye_combobox", "")),
+                ("لودکیس طیفی دریفت بدون خروج از مرکزیت", data.get("sx_drift_combobox", ""), data.get("sy_drift_combobox", "")),
+                ("لودکیس طیفی دریفت با خروج از مرکزیت ", data.get("sxe_drift_combobox", ""), data.get("sye_drift_combobox", "")),
+            ]
+            cols = ("X", "Y")
+            add_table(doc, cols, dynamic_rows)
+        elif data.get("angular_response_spectrum_checkbox"):
+            doc.add_paragraph("Angular Dynamic Loads Table")
+            # You can add angular table here if needed
+
+    # 6. Irregularity
+    doc.add_page_break()
+    add_bold_paragraph(doc, "نامنظمی‌های سازه", empty_line=False)
+    # 6.1 Horizontal Irregularity
+    add_bold_paragraph(doc, "نامنظمی‌ در پلان", empty_line=False)
+    horizontal_irregularity_items = [
+        ("نامنظمی هندسی", data.get("reentrance_corner_checkbox", False)),
+        ("نامنظمی در دیافراگم", data.get("diaphragm_discontinuity_checkbox", False)),
+        ("نامنظمی خارج از صفحه", data.get("out_of_plane_offset_checkbox", False)),
+        ("نامنظمی سیستم های غیرموازی", data.get("nonparallel_system_checkbox", False)),
+    ]
+    if data.get("torsional_irregularity_groupbox", False):
+        if data.get("torsion_irregular_checkbox", False):
+            horizontal_irregularity_items.insert(1, ("نامنظمی پیچشی زیاد", True))
+        else:
+            horizontal_irregularity_items.insert(1, ("نامنظمی پیچشی شدید", True))
+    else:
+        # If torsional irregularity groupbox is not checked, we assume no torsional irregularity
+        horizontal_irregularity_items.insert(0, ("نامنظمی پیچشی", False))
+    add_checkbox_table(doc, horizontal_irregularity_items)
+    # 6.2 Vertical Irregularity
+    add_bold_paragraph(doc, "نامنظمی‌ در ارتفاع")
+    vertical_irregularity_items = [
+        ("نامنظمی هندسی", data.get("geometric_checkbox", False)),
+        ("نامنظمی جرمی", data.get("weight_mass_checkbox", False)),
+        ("نامنظمی قطع سیستم باربر جانبی", data.get("in_plane_discontinuity_checkbox", False)),
+    ]
+    if data.get("stiffness_soft_story_groupbox", False):
+        if data.get("stiffness_irregular_checkbox", False):
+            vertical_irregularity_items.append(("نامنظمی طبقه نرم", True))
+        else:
+            vertical_irregularity_items.append(("نامنظمی طبقه خیلی نرم", True))
+    else:
+        # If torsional irregularity groupbox is not checked, we assume no torsional irregularity
+        vertical_irregularity_items.append(("نامنظمی سختی جانبی", False))
+    if data.get("lateral_strength_weak_story_groupbox", False):
+        if data.get("strength_irregular_checkbox", False):
+            vertical_irregularity_items.append(("نامنظمی طبقه ضعیف", True))
+        else:
+            vertical_irregularity_items.append(("نامنظمی طبقه خیلی ضعیف", True))
+    else:
+        # If torsional irregularity groupbox is not checked, we assume no torsional irregularity
+        vertical_irregularity_items.append(("نامنظمی مقاومت جانبی", False))
+    add_checkbox_table(doc, vertical_irregularity_items)
+
+
+# --- integrate into your create_report function ---
 def create_report(
-                etabs=None,
-                filename: str = None,
-                doc: 'docx.Document' = None,
-                results_path: Union[Path, None]=None,
-                ):
+    etabs=None,
+    filename: str = None,
+    doc: 'docx.Document' = None,
+    results_path: Union[Path, None]=None,
+):
     if results_path is None:
         if etabs is None:
             return
@@ -139,18 +368,20 @@ def create_report(
         doc = create_doc()
     for file in results_path.glob('*.json'):
         doc.add_paragraph()
-        caption = ''.join(file.name.split('_'))
-        caption = caption.replace('.json', "")
-        caption = caption.replace('Model', "")
-        caption = caption.replace("Table", "")
-        result = ""
-        for i, char in enumerate(caption):
-            if char.isupper() and i > 0:
-                result += " " + char
-            else:
-                result += char
-        doc = add_json_table_to_doc(json_file=file, doc=doc, caption=result)
-        # Insert a page break
+        if "model_settings" in file.name:
+            add_model_settings_report(doc, file)
+        else:
+            caption = ''.join(file.name.split('_'))
+            caption = caption.replace('.json', "")
+            caption = caption.replace('Model', "")
+            caption = caption.replace("Table", "")
+            result = ""
+            for i, char in enumerate(caption):
+                if char.isupper() and i > 0:
+                    result += " " + char
+                else:
+                    result += char
+            doc = add_json_table_to_doc(json_file=file, doc=doc, caption=result)
         doc.add_page_break()
     if filename is None:
         filename = results_path / 'all_reports.docx'
