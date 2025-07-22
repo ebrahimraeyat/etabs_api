@@ -264,7 +264,10 @@ class FrameObj:
         table_key = "Null Line Object Connectivity"
         if self.etabs.database.table_name_that_containe(table_key):
             df_null = self.etabs.database.read(table_key=table_key, to_dataframe=True, cols=['UniqueName', 'Story'])
-            df = df.append(df_null)
+            if hasattr(df, 'concat'):
+                df = df.concat(df_null, ignore_index=True)
+            elif hasattr(df, 'append'):
+                df = df.append(df_null)
         beam_groups = df.groupby('Story')
         for story, group in beam_groups:
             d[story] = [group['UniqueName']]
