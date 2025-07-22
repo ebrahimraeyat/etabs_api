@@ -10,12 +10,25 @@ except ImportError:
     package = 'python-docx'
     freecad_funcs.install_package(package)
 
+try:
+    import math2docx
+except ImportError:
+    import freecad_funcs
+    package = 'math2docx'
+    freecad_funcs.install_package(package)
+
 import docx
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+
+import math2docx
+
+from report import latex_str as latex
+from report import strings
 
 etabs_api_path = Path(__file__).absolute().parent.parent
 
@@ -176,81 +189,14 @@ def add_model_settings_report(doc, json_file):
     info_rows = [
         ("استان", data.get("ostan", "")),
         ("شهر", data.get("city", "")),
-        ("سطح خطر", data.get("risk_level", "")),
+        ("سطح خطر نسبی", data.get("risk_level", "")),
         ("نوع خاک", data.get("soil_type", "")),
         ("ضریب اهمیت", data.get("importance_factor", "")),
     ]
     add_simple_table(doc, [row for row in info_rows if row[1]])
 
-    # 2. First System
-    doc.add_page_break()
-    if data.get("activate_second_system"):
-        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم پایین", empty_line=False)
-    else:
-        add_bold_paragraph(doc, "پارامترهای لرزه‌ای", empty_line=False)
-    first_system_rows = [
-        ("طبقه پایین", data.get("bot_x_combo", "")),
-        ("طبقه بالا", data.get("top_x_combo", "")),
-        ("طبقه جهت محاسبه زمان تناوب تجربی", data.get("top_story_for_height", "")),
-        ("تعداد طبقات", str(data.get("no_of_story_x", ""))),
-        ("ارتفاع (متر) ", str(data.get("height_x", ""))),
-    ]
-    if data.get("infill", False):
-        first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "بله"))
-    else:
-        first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "خیر"))
-    add_simple_table(doc, [row for row in first_system_rows if row[1]])
 
-    # --- Add EX, EXP, EXN, ... table for first system ---
-    ex_table_rows = [
-        ("زلزله بدون خروج از مرکزیت", data.get("ex_combobox", ""), data.get("ey_combobox", "")),
-        ("زلزله با خروج از مرکزیت مثبت", data.get("exp_combobox", ""), data.get("eyp_combobox", "")),
-        ("زلزله با خروج از مرکزیت منفی", data.get("exn_combobox", ""), data.get("eyn_combobox", "")),
-        ("زلزله دریفت بدون خروج از مرکزیت", data.get("ex_drift_combobox", ""), data.get("ey_drift_combobox", "")),
-        ("زلزله دریفت با خروج از مرکزیت مثبت", data.get("exp_drift_combobox", ""), data.get("eyp_drift_combobox", "")),
-        ("زلزله دریفت با خروج از مرکزیت منفی", data.get("exn_drift_combobox", ""), data.get("eyn_drift_combobox", "")),
-    ]
-    # Only add rows with at least one value
-    ex_table_rows = [row for row in ex_table_rows if row[1] or row[2]]
-    if ex_table_rows:
-        add_bold_paragraph(doc, "بارهای زلزله استاتیکی")
-        add_table(doc, ["X", "Y"], ex_table_rows)
-
-    # 3. Second System (if exists)
-    if data.get("activate_second_system"):
-        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم بالا")
-        second_system_rows = [
-            ("طبقه پایین", data.get("bot_x1_combo", "")),
-            ("طبقه بالا", data.get("top_x1_combo", "")),
-            ("طبقه جهت محاسبه زمان تناوب تجربی", data.get("top_story_for_height1", "")),
-            ("تعداد طبقات", str(data.get("no_of_story_x1", ""))),
-            ("ارتفاع (متر) ", str(data.get("height_x1", ""))),
-        ]
-        if data.get("infill_1", False):
-            first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "بله"))
-        else:
-            first_system_rows.append(("میانقاب‌ها مانعی برای حرکت قاب ایجاد میکنند؟", "خیر"))
-        if data.get("special_case", False):
-            second_system_rows.append(("سختی قسمت پایین بیشتر از ۱۰ برابر متوسط سختی طبقات بالاست", "بله"))
-        else:
-            second_system_rows.append(("سختی قسمت پایین بیشتر از ۱۰ برابر متوسط سختی طبقات بالاست", "خیر"))
-        add_simple_table(doc, [row for row in second_system_rows if row[1]])
-
-        # --- Add EX, EXP, EXN, ... table for second system ---
-        ex2_table_rows = [
-            ("زلزله بدون خروج از مرکزیت", data.get("ex1_combobox", ""), data.get("ey1_combobox", "")),
-            ("زلزله با خروج از مرکزیت مثبت", data.get("exp1_combobox", ""), data.get("eyp1_combobox", "")),
-            ("زلزله با خروج از مرکزیت منفی", data.get("exn1_combobox", ""), data.get("eyn1_combobox", "")),
-            ("زلزله دریفت بدون خروج از مرکزیت", data.get("ex1_drift_combobox", ""), data.get("ey1_drift_combobox", "")),
-            ("زلزله دریفت با خروج از مرکزیت مثبت", data.get("exp1_drift_combobox", ""), data.get("eyp1_drift_combobox", "")),
-            ("زلزله دریفت با خروج از مرکزیت منفی", data.get("exn1_drift_combobox", ""), data.get("eyn1_drift_combobox", "")),
-        ]
-        ex2_table_rows = [row for row in ex2_table_rows if row[1] or row[2]]
-        if ex2_table_rows:
-            add_bold_paragraph(doc, "بارهای زلزله استاتیکی سیستم بالا")
-            add_table(doc, ["X", "Y"], ex2_table_rows)
-
-    # 4. Loads
+    # 2.1 Loads
     doc.add_page_break()
     add_bold_paragraph(doc, "بارهای وارد بر سازه", empty_line=False)
     loads_rows = [
@@ -270,7 +216,7 @@ def add_model_settings_report(doc, json_file):
     ]
     add_simple_table(doc, [row for row in loads_rows if row[1]])
 
-    # 4.1 Retainin walls
+    # 2.2 Retainin walls
     if data.get("retaining_wall_groupbox"):
         add_bold_paragraph(doc, "بارهای دیوار حائل")
         loads_rows = [
@@ -281,7 +227,7 @@ def add_model_settings_report(doc, json_file):
         ]
         add_simple_table(doc, [row for row in loads_rows if row[1]])
 
-    # 5. Dynamic Loads
+    # 3. Dynamic Loads
     if data.get("dynamic_analysis_groupbox"):
         doc.add_page_break()
         add_bold_paragraph(doc, "لودکیس های دینامیکی", empty_line=False)
@@ -301,10 +247,10 @@ def add_model_settings_report(doc, json_file):
             doc.add_paragraph("Angular Dynamic Loads Table")
             # You can add angular table here if needed
 
-    # 6. Irregularity
+    # 4. Irregularity
     doc.add_page_break()
     add_bold_paragraph(doc, "نامنظمی‌های سازه", empty_line=False)
-    # 6.1 Horizontal Irregularity
+    # 4.1 Horizontal Irregularity
     add_bold_paragraph(doc, "نامنظمی‌ در پلان", empty_line=False)
     horizontal_irregularity_items = [
         ("نامنظمی هندسی", data.get("reentrance_corner_checkbox", False)),
@@ -321,7 +267,7 @@ def add_model_settings_report(doc, json_file):
         # If torsional irregularity groupbox is not checked, we assume no torsional irregularity
         horizontal_irregularity_items.insert(0, ("نامنظمی پیچشی", False))
     add_checkbox_table(doc, horizontal_irregularity_items)
-    # 6.2 Vertical Irregularity
+    # 4.2 Vertical Irregularity
     add_bold_paragraph(doc, "نامنظمی‌ در ارتفاع")
     vertical_irregularity_items = [
         ("نامنظمی هندسی", data.get("geometric_checkbox", False)),
@@ -345,6 +291,122 @@ def add_model_settings_report(doc, json_file):
         # If torsional irregularity groupbox is not checked, we assume no torsional irregularity
         vertical_irregularity_items.append(("نامنظمی مقاومت جانبی", False))
     add_checkbox_table(doc, vertical_irregularity_items)
+
+    # 5. First System
+    doc.add_page_break()
+    if data.get("activate_second_system"):
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم پایین", empty_line=False)
+    else:
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای", empty_line=False)
+    first_system_rows = [
+        (strings.BOT_STORY_APPLY_EARTHQUAKE, data.get("bot_x_combo", "")),
+        (strings.TOP_STORY_APPLY_EARTHQUAKE, data.get("top_x_combo", "")),
+        (strings.TOP_STORY_FOR_T, data.get("top_story_for_height", "")),
+        (strings.NO_STORIES, str(data.get("no_of_story_x", ""))),
+        (strings.HEIGHT_METER, str(data.get("height_x", ""))),
+    ]
+    if data.get("infill", False):
+        first_system_rows.append((strings.INFILL_PANNEL, "بله"))
+    else:
+        first_system_rows.append((strings.INFILL_PANNEL, "خیر"))
+    add_simple_table(doc, [row for row in first_system_rows if row[1]])
+
+    # --- Add EX, EXP, EXN, ... table for first system ---
+    ex_table_rows = [
+        (strings.EX, data.get("ex_combobox", ""), data.get("ey_combobox", "")),
+        (strings.EXP, data.get("exp_combobox", ""), data.get("eyp_combobox", "")),
+        (strings.EXN, data.get("exn_combobox", ""), data.get("eyn_combobox", "")),
+        (strings.EY, data.get("ex_drift_combobox", ""), data.get("ey_drift_combobox", "")),
+        (strings.EYP, data.get("exp_drift_combobox", ""), data.get("eyp_drift_combobox", "")),
+        (strings.EYN, data.get("exn_drift_combobox", ""), data.get("eyn_drift_combobox", "")),
+    ]
+    # Only add rows with at least one value
+    ex_table_rows = [row for row in ex_table_rows if row[1] or row[2]]
+    if ex_table_rows:
+        add_bold_paragraph(doc, "بارهای زلزله استاتیکی")
+        add_table(doc, ["X", "Y"], ex_table_rows)
+
+    # 6. Second System (if exists)
+    if data.get("activate_second_system"):
+        add_bold_paragraph(doc, "پارامترهای لرزه‌ای سیستم بالا")
+        second_system_rows = [
+            (strings.BOT_STORY_APPLY_EARTHQUAKE, data.get("bot_x1_combo", "")),
+            (strings.TOP_STORY_APPLY_EARTHQUAKE, data.get("top_x1_combo", "")),
+            (strings.TOP_STORY_FOR_T, data.get("top_story_for_height1", "")),
+            (strings.NO_STORIES, str(data.get("no_of_story_x1", ""))),
+            (strings.HEIGHT_METER, str(data.get("height_x1", ""))),
+        ]
+        if data.get("infill_1", False):
+            first_system_rows.append((strings.INFILL_PANNEL, "بله"))
+        else:
+            first_system_rows.append((strings.INFILL_PANNEL, "خیر"))
+        if data.get("special_case", False):
+            second_system_rows.append((strings.STIFFNESS_10_TIMES, "بله"))
+        else:
+            second_system_rows.append((strings.STIFFNESS_10_TIMES, "خیر"))
+        add_simple_table(doc, [row for row in second_system_rows if row[1]])
+
+        # --- Add EX, EXP, EXN, ... table for second system ---
+        ex2_table_rows = [
+            (strings.EX, data.get("ex1_combobox", ""), data.get("ey1_combobox", "")),
+            (strings.EXP, data.get("exp1_combobox", ""), data.get("eyp1_combobox", "")),
+            (strings.EXN, data.get("exn1_combobox", ""), data.get("eyn1_combobox", "")),
+            (strings.EY, data.get("ex1_drift_combobox", ""), data.get("ey1_drift_combobox", "")),
+            (strings.EYP, data.get("exp1_drift_combobox", ""), data.get("eyp1_drift_combobox", "")),
+            (strings.EYN, data.get("exn1_drift_combobox", ""), data.get("eyn1_drift_combobox", "")),
+            (strings.EX, data.get("ex1_combobox", ""), data.get("ey1_combobox", "")),
+        ]
+        ex2_table_rows = [row for row in ex2_table_rows if row[1] or row[2]]
+        if ex2_table_rows:
+            add_bold_paragraph(doc, "بارهای زلزله استاتیکی سیستم بالا")
+            add_table(doc, ["X", "Y"], ex2_table_rows)
+
+    add_earthquake_factor_formulation_section(doc)
+
+def add_earthquake_factor_explanations_section(doc, building):
+    """
+    Adds a section with all HTML calculation explanations from the building object.
+    Each explanation is rendered as formatted text in Persian.
+    """
+    # List all HTML explanation attributes you want to include
+    latexes = building.get_latex()
+    doc.add_heading('محاسبه ضریب زلزله', level=1)
+    math2docx.add_math(doc.add_paragraph(), r'C = \frac{ABI}{R}')
+    math2docx.add_math(doc.add_paragraph(), fr'A = {building.acceleration}, I = {building.importance_factor}')
+    # if building
+    # for par, latex_text in latexes:
+    #     if latex_text:
+    #         p = doc.add_paragraph()
+    #         math2docx.add_math(p, latex_text)
+    return doc
+
+def add_earthquake_factor_formulation_section(doc=None):
+    """
+    Adds a section with all formula calculation explanations from the building object.
+    """
+    if doc is None:
+        doc = create_doc()
+    doc.add_page_break()
+    doc.add_heading('محاسبه ضریب زلزله', level=1)
+    add_formulation_section(doc, latex.earthquake_formula)
+    add_formulation_section(doc, latex.earthquake_b_formula)
+    add_formulation_section(doc, latex.earthquake_b1)
+    doc.add_paragraph("ضریب اصلاح طیف به شرح زیر تعیین میشود: ")
+    doc.add_paragraph("الف- برای پهنه های با خطر نسبی خیلی زیاد و زیاد")
+    add_formulation_section(doc, latex.earthquake_n1)
+    doc.add_paragraph("ب- برای پهنه های با خطر نسبی متوسط و کم")
+    add_formulation_section(doc, latex.earthquake_n2)
+    return doc
+
+def add_formulation_section(doc, formulation: str = None):
+    """
+    Adds a section with the given formulation.
+    """
+    if formulation:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        math2docx.add_math(p, formulation)
+    return doc
 
 
 # --- integrate into your create_report function ---
