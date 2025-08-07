@@ -163,14 +163,17 @@ class PointRestraint:
     def get_critical_flang(self):
         if self.moment_sign is None:
             raise ValueError
-        if self.moment_sign in  ('-', '-0', '0-', '--'):
+        if self.moment_sign in  ('-', '-0', '0-', '--', '-0-', '00-'): # TODO
             return 'Botton'
-        elif self.moment_sign in ('+', '+0', '0+', '++'):
+        elif self.moment_sign in ('+', '+0', '0+', '++', '+0+', '00+'): # TODO
             return 'Top'
-        elif self.moment_sign in ('-0+', '+0-'):
+        elif self.moment_sign in ('-0+', '+0-', '000'): # TODO
             return 'Either'
-        elif self.moment_sign in ('0', '00'):
+        elif self.moment_sign in ('0', '00', '-+', '+-'): # TODO
             return 'Both'
+        else:
+            print(f"{self.moment_sign=}")
+            raise ValueError
         
     def get_critical_flang_restraint(self):
         if self.critical_flang is None:
