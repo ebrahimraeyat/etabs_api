@@ -273,6 +273,8 @@ class Segment:
         m_values = self.start_restraint.m_func(x_values)
         m_values = [abs(m_value) for m_value in m_values]
         m_max = max(m_values)
+        if m_max == 0:
+            return 1.7
         m_2, m_3, m_4 = m_values[1:-1]
         return 1.7 * m_max / math.sqrt(m_2 ** 2 + m_3 ** 2 + m_4 ** 2)
     
