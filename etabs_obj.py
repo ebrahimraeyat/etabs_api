@@ -359,7 +359,6 @@ class EtabsModel:
         self.SapModel.SetPresentUnits(number)
     
     def get_current_unit(self,
-                         n=9 # default is N_mm
                          ):
         unit_num = self.SapModel.GetPresentUnits()
         found = False

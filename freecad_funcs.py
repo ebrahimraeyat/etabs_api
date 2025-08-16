@@ -400,6 +400,17 @@ def install_package(package_name:str):
     import subprocess
     subprocess.check_call(['python', "-m", "pip", "install", package_name])
 
+def install_packages(package_names:Union[str, list]):
+    if QMessageBox.question(
+        None,
+        'Install Package', f'Package {','.join(package_names)} must be installed, Do you want to install?',
+        ) == QMessageBox.No:
+            return
+    if isinstance(package_names, str):
+        package_names = [package_names]
+    import subprocess
+    subprocess.check_call(['python', "-m", "pip", "install", ' '.join(package_names)])
+
 def add_to_clipboard(text):
     df=pd.DataFrame([text])
     df.to_clipboard(index=False,header=False)
