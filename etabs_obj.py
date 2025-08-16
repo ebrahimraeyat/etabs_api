@@ -358,19 +358,19 @@ class EtabsModel:
             raise KeyError
         self.SapModel.SetPresentUnits(number)
     
-    def get_current_unit(self):
+    def get_current_unit(self,
+                         n=9 # default is N_mm
+                         ):
         unit_num = self.SapModel.GetPresentUnits()
+        found = False
         for unit_str, n in self.enum_units.items():
             if n == unit_num:
                 force, length = unit_str.split("_")[0:2]
-        # for key, value in EtabsModel.force_units.items():
-        #     if force_enum == value:
-        #         force = key
-        #         break
-        # for key, value in EtabsModel.length_units.items():
-        #     if len_enum == value:
-        #         length = key
-        #         break
+                found = True
+                break
+        if not found:
+            force, length = 'N', 'mm'
+            self.set_current_unit(force, length)
         return force, length
 
     def get_file_name_without_suffix(self):
