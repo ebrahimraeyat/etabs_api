@@ -396,7 +396,7 @@ class FrameObj:
             group.sort(key=lambda cid: col_info[cid]['z_low'])
         return groups
 
-    @change_unit(None, 'mm')
+    @change_unit('N', 'mm')
     def stacked_columns_dataframe_by_points(self,
         points_df: Union[pd.DataFrame, None]=None,
         columns_df: Union[pd.DataFrame, None]=None,
@@ -768,7 +768,7 @@ class FrameObj:
         beams_sections = {name : self.SapModel.FrameObj.GetSection(name)[0] for name in beams_names}
         return beams_sections
     
-    @change_unit('N', 'cm')
+    @change_unit('kgf', 'cm')
     def assign_frame_modifiers(self,
             frame_names: list,
             area: Union[None, float]=None,

@@ -79,7 +79,7 @@ class PropFrame:
             return True
         return False
     
-    @change_unit(None, 'mm')
+    @change_unit('N', 'mm')
     def create_steel_tube_with_command(self,
                           name: str,
                           mat: str,
@@ -99,7 +99,7 @@ class PropFrame:
             )
         assert ret == 0, f'Section {name} did not created.'
 
-    @change_unit(None, 'mm')
+    @change_unit('N', 'mm')
     def create_steel_tube(self,
                           name: str,
                           mat: str,

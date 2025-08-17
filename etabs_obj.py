@@ -360,8 +360,8 @@ class EtabsModel:
     
     def get_current_unit(self,
                          ):
-        unit_num = self.SapModel.GetPresentUnits()
         found = False
+        unit_num = self.SapModel.GetPresentUnits()
         for unit_str, n in self.enum_units.items():
             if n == unit_num:
                 force, length = unit_str.split("_")[0:2]
@@ -369,7 +369,7 @@ class EtabsModel:
                 break
         if not found:
             force, length = 'N', 'mm'
-            self.set_current_unit(force, length)
+            self.SapModel.SetPresentUnits(9)
         return force, length
 
     def get_file_name_without_suffix(self):

@@ -426,7 +426,7 @@ class Design:
         self.etabs.set_current_unit(*units)
         return deflections1, deflections2, texts
     
-    @change_unit(None, 'm')
+    @change_unit('kgf', 'm')
     def get_concrete_columns_pmm_table(self,
                                        columns: Union[list, None]=['Story',	'Label', 'UniqueName', 'DesignSect', 'PMMRatio', 'PMMCombo', 'Station']
                                        ):

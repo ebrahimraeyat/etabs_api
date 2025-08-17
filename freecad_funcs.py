@@ -403,7 +403,7 @@ def install_package(package_name:str):
 def install_packages(package_names:Union[str, list]):
     if QMessageBox.question(
         None,
-        'Install Package', f'Package {','.join(package_names)} must be installed, Do you want to install?',
+        'Install Package', f"Package {','.join(package_names)} must be installed, Do you want to install?",
         ) == QMessageBox.No:
             return
     if isinstance(package_names, str):
