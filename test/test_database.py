@@ -118,10 +118,18 @@ def test_write_daynamic_aj_user_coefficient():
 @open_etabs_file('two_earthquakes.EDB')
 def test_write_seismic_user_coefficient_df():
     import pandas as pd
-    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
-    df = pd.read_pickle(filename)
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic.csv'
+    df = pd.read_csv(filename)
+    df = df.astype(str)
     etabs.database.write_seismic_user_coefficient_df(df)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    assert len(df) == 14
+
+@open_etabs_file('yadeganeh.EDB')
+def test_write_seismic_user_coefficient_df_yadeganeh():
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    etabs.check_seismic_names(apply=True)
     df = etabs.database.read(table_key, to_dataframe=True)
     assert len(df) == 14
 
@@ -425,4 +433,4 @@ def test_get_axial_pressure_columns():
 
 
 if __name__ == '__main__':
-    test_get_section_cuts_sap()
+    test_write_seismic_user_coefficient_df_yadeganeh()

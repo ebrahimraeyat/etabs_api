@@ -756,7 +756,7 @@ class EtabsModel:
         '''
         df = self.check_seismic_names(d=d)
         print("Applying cfactor to edb\n")
-        cols = self.auto_seismic_user_coefficient_columns_part1[-2:] + ['C', 'K']
+        cols = ['TopStory', 'BotStory', 'C', 'K']
         for earthquakes, new_factors in data:
             df.loc[df.Name.isin(earthquakes), cols] = new_factors
         print(df)
@@ -1507,6 +1507,8 @@ class EtabsModel:
             self.load_patterns.add_load_patterns(not_es_drifts, self.seismic_drift_text)
         df2 = pd.DataFrame(new_rows)
         df = pd.concat([df, df2])
+        print(f"{df=}")
+        print(f"{df.columns=}")
         if apply:
             self.database.write_seismic_user_coefficient_df(df)
         return df

@@ -156,6 +156,7 @@ ENV/
 *.ico
 *.ebk
 *.tlog
+*.msh
 
 # SAP2000
 *.$2k
@@ -172,6 +173,9 @@ ENV/
 
 # FreeCAD
 *.FCStd1
+
+# uv
+uv.lock
 
 # securiry
 test/etabs_api/test.*
