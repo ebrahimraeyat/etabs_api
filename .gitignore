@@ -180,3 +180,6 @@ uv.lock
 # securiry
 test/etabs_api/test.*
 test/files/backups/
+
+# civiltools
+test/files/*_table_results

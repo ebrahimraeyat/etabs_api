@@ -110,7 +110,8 @@ class DatabaseTables:
             data : Union[list, pd.core.frame.DataFrame],
             fields : Union[list, tuple, bool] = None,
             ) -> tuple:
-        if type(data) == pd.core.frame.DataFrame:
+        if isinstance(data, pd.core.frame.DataFrame):
+            data = data.astype(str)
             if fields is None:
                 fields, data = self.get_fields_and_data_from_dataframe(data)
             else:

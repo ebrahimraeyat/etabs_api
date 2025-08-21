@@ -68,6 +68,26 @@ def test_change_beams_columns_section_fc():
     assert ret
     assert len(section_that_corner_bars_is_different) == 3
 
+@open_etabs_file('two_earthquakes.EDB')
+def test_change_beams_columns_section_fc_different_longitudinal_and_corner_size():
+    # Prepare test data
+    names = {'86', '87'}
+    concrete = 'CONC'
+    suffix = '_CONC'
+    # Run the function
+    ret, convert_names, section_that_corner_bars_is_different = etabs.prop_frame.change_beams_columns_section_fc(
+        names, concrete=concrete, suffix=suffix, apply_with_tables_if_needed=True,
+    )
+    assert ret
+    # Check that the corner bar size difference is detected
+    assert any(section_that_corner_bars_is_different)
+    for frame_name in names:
+        section_name = etabs.frame_obj.get_section_name(frame_name)
+        args = etabs.SapModel.propframe.GetRebarColumn_1(
+                        section_name
+                        )
+        assert args[14] == '20d'
+    
 @open_etabs_file('rashidzadeh.EDB')
 def test_get_number_of_rebars_and_areas_of_column_section():
     name = "C5516AC"
@@ -151,9 +171,63 @@ def test_get_material():
     assert mat == "STEEL"
     mat = etabs.prop_frame.get_material('411')
     assert mat == "C30"
-    
 
+@open_etabs_file('shayesteh.EDB')
+def test_create_concrete_column_sections():
+    names = ['C40X40', 'C50X50']
+    concretes = ['CONC', 'CONC']
+    heights = [400, 500]
+    widths = [400, 500]
+    rebar_mats = ['RMAT', 'RMAT']
+    tie_mats = ['RMAT-1', 'RMAT-1']
+    covers = [40, 50]
+    number_3dir_main_bars = [4, 6]
+    number_2dir_main_bars = [4, 6]
+    longitudinal_bar_sizes = ['20d', '20d']
+    corner_bar_sizes = ['25d', '25d']
+    tie_rebar_sizes = ['10d', '10d']
+    tie_spaces = [100, 120]
+    number_2dir_tie_bars = [2, 2]
+    number_3dir_tie_bars = [2, 2]
+    designs = ['Yes', 'No']
+
+    etabs.prop_frame.create_concrete_column_sections(
+        names=names,
+        concretes=concretes,
+        heights=heights,
+        widths=widths,
+        rebar_mats=rebar_mats,
+        tie_mats=tie_mats,
+        covers=covers,
+        number_3dir_main_bars=number_3dir_main_bars,
+        number_2dir_main_bars=number_2dir_main_bars,
+        longitudinal_bar_sizes=longitudinal_bar_sizes,
+        corner_bar_sizes=corner_bar_sizes,
+        tie_rebar_sizes=tie_rebar_sizes,
+        tie_spaces=tie_spaces,
+        number_2dir_tie_bars=number_2dir_tie_bars,
+        number_3dir_tie_bars=number_3dir_tie_bars,
+        designs=designs,
+    )
+
+    df = etabs.database.read("Frame Section Property Definitions - Concrete Column Reinforcing", to_dataframe=True)
+    for i, name in enumerate(names):
+        mask = df['Name'].astype(str) == str(name)
+        assert mask.any()
+        row = df[mask].iloc[0]
+        assert row['RebarMatL'] == rebar_mats[i]
+        assert row['RebarMatC'] == tie_mats[i]
+        assert float(row['Cover']) == covers[i]
+        assert int(row['NumBars3Dir']) == number_3dir_main_bars[i]
+        assert int(row['NumBars2Dir']) == number_2dir_main_bars[i]
+        assert row['BarSizeLong'] == longitudinal_bar_sizes[i]
+        assert row['BarSizeCorn'] == corner_bar_sizes[i]
+        assert row['BarSizeConf'] == tie_rebar_sizes[i]
+        assert float(row['SpacingConf']) == tie_spaces[i]
+        assert int(row['NumCBars3']) == number_3dir_tie_bars[i]
+        assert int(row['NumCBars2']) == number_2dir_tie_bars[i]
+        assert row['IsDesigned'] == designs[i]
 
 
 if __name__ == '__main__':
-    test_create_steel_tube()
+    test_change_beams_columns_section_fc_different_longitudinal_and_corner_size()

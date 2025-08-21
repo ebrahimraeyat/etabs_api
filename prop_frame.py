@@ -5,7 +5,7 @@ import copy
 
 import pandas as pd
 
-from python_functions import change_unit
+from python_functions import change_unit, broadcast
 
 
 __all__ = ['PropFrame']
@@ -79,6 +79,86 @@ class PropFrame:
             return True
         return False
     
+    def create_concrete_column_sections(
+        self,
+        names: list,
+        concretes: list,
+        heights: list,
+        widths: list,
+        rebar_mats: list,
+        tie_mats: list,
+        covers: list,
+        number_3dir_main_bars: list,
+        number_2dir_main_bars: list,
+        longitudinal_bar_sizes: list,
+        corner_bar_sizes: list,
+        tie_rebar_sizes: list,
+        tie_spaces: list,
+        number_2dir_tie_bars: list=2,
+        number_3dir_tie_bars: list=2,
+        designs: list='None',
+        ):
+        # TODO for etabs 19 did not work
+        n = len(names)
+        number_2dir_main_bars = broadcast(number_2dir_main_bars, n)
+        number_3dir_main_bars = broadcast(number_3dir_main_bars, n)
+        designs = broadcast(designs, n)
+        table_key = "Frame Section Property Definitions - Concrete Column Reinforcing"
+        df = self.etabs.database.read(table_key, to_dataframe=True)
+        additional_rows = []
+        section_names = df.Name.unique()
+        for i, name in enumerate(names):
+            concrete = concretes[i]
+            height = heights[i]
+            width = widths[i]
+            rebar_mat = rebar_mats[i]
+            tie_mat = tie_mats[i]
+            cover = covers[i]
+            number_3dir_main_bar = number_3dir_main_bars[i]
+            number_2dir_main_bar = number_2dir_main_bars[i]
+            longitudinal_rebar_size = longitudinal_bar_sizes[i]
+            corner_rebar_size = corner_bar_sizes[i]
+            tie_rebar_size = tie_rebar_sizes[i]
+            tie_space = tie_spaces[i]
+            number_3dir_tie_bar = number_3dir_tie_bars[i]
+            number_2dir_tie_bar = number_2dir_tie_bars[i]
+            design = designs[i]
+            mask = df['Name'].astype(str) == str(name)
+            if name in section_names:
+                row = df[mask].iloc[0]
+                row['RebarMatL'] = rebar_mat
+                row['RebarMatC'] = tie_mat
+                row['ReinfConfig'] = 'Rectangular'
+                if 'IsSpiral' in df.columns:
+                    row['IsSpiral'] = 'None'
+                if 'NumBarsCirc' in df.columns:
+                    row['NumBarsCirc'] = 'None'
+                row['IsDesigned'] = design
+                row['Cover'] = cover
+                row['NumBars3Dir'] = number_3dir_main_bar
+                row['NumBars2Dir'] = number_2dir_main_bar
+                row['BarSizeLong'] = longitudinal_rebar_size
+                row['BarSizeCorn'] = corner_rebar_size
+                row['BarSizeConf'] = tie_rebar_size
+                row['SpacingConf'] = tie_space
+                row['NumCBars3'] = number_3dir_tie_bar
+                row['NumCBars2'] = number_2dir_tie_bar
+            else:
+                self.SapModel.PropFrame.SetRectangle(name, concrete, height, width)
+                row = [name, rebar_mat, tie_mat, 'Rectangular']
+                if 'IsSpiral' in df.columns:
+                    row.append('None')
+                row += [design, cover, number_3dir_main_bar, number_2dir_main_bar]
+                if 'NumBarsCirc' in df.columns:
+                    row.append('None')
+                row += [longitudinal_rebar_size, corner_rebar_size, tie_rebar_size,
+                tie_space, number_3dir_tie_bar, number_2dir_tie_bar]
+                additional_rows.append(row)
+        if additional_rows:
+            df2 = pd.DataFrame.from_records(additional_rows, columns=df.columns)
+            df = pd.concat([df, df2], ignore_index=True)
+        self.etabs.database.write(table_key, df)
+
     @change_unit('N', 'mm')
     def create_steel_tube_with_command(self,
                           name: str,
@@ -147,12 +227,13 @@ class PropFrame:
         # design: bool = False,
         frame_types: list=['column'],
         prefix: str = '',
+        apply_with_tables_if_needed: bool=False,
         ):
         rets = set()
         convert_names = {}
         concretes = self.etabs.material.get_material_of_type(2)
         names = [str(name) for name in names]
-        section_that_corner_bars_is_different = []
+        section_that_corner_bars_is_different = {}
         for name in names:
             sec_name = self.SapModel.FrameObj.GetSection(name)[0]
             _, mat, height, width, *args = self.SapModel.PropFrame.GetRectangle(sec_name)
@@ -176,7 +257,7 @@ class PropFrame:
                         new_sec_name, *args[:-4]
                         )
                     if args[8] != args[14]: # corner bar is different than other bars
-                        section_that_corner_bars_is_different.append(new_sec_name)
+                        section_that_corner_bars_is_different[new_sec_name] = args[14]
                     rets.add(ret)
                 elif ('beam' in frame_types and self.etabs.frame_obj.is_beam(str(name))): 
                     args = self.SapModel.propframe.GetRebarBeam(
@@ -191,9 +272,14 @@ class PropFrame:
                     continue
                 convert_names[original_sec_name] = new_sec_name
             self.SapModel.FrameObj.SetSection(name, new_sec_name)
+        if apply_with_tables_if_needed and len(section_that_corner_bars_is_different) > 0:
+            table_key = "Frame Section Property Definitions - Concrete Column Reinforcing"
+            df = self.etabs.database.read(table_key, to_dataframe=True)
+            df["BarSizeCorn"] = df["Name"].map(section_that_corner_bars_is_different).fillna(df["BarSizeCorn"])
+            self.etabs.database.write(table_key, df)
         if rets == {0}:
-            return True, convert_names, section_that_corner_bars_is_different
-        return False, convert_names, section_that_corner_bars_is_different
+            return True, convert_names, section_that_corner_bars_is_different.keys()
+        return False, convert_names, section_that_corner_bars_is_different.keys()
 
     def get_concrete_rectangular_of_type(self,
         type_ : str = 'Column',

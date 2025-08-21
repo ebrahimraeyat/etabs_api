@@ -3,6 +3,7 @@ import os
 import sys
 import math
 
+import pandas as pd
 import numpy as np
 
 def flatten_list(nested_list):
@@ -248,3 +249,9 @@ def get_column_labels(df, etabs):
                     labels.add(label)
         return ','.join(sorted(labels))
     return [labels_for_column(df[c]) for c in df.columns]
+
+def broadcast(x, n):
+    # if scalar, repeat; if list-like, ensure length matches n
+    if not isinstance(x, (list, tuple, pd.Series)):
+        x = [x] * n
+    return x
