@@ -6,7 +6,9 @@ import FreeCAD
 if FreeCAD.GuiUp:
     import FreeCADGui as Gui
 
+import importlib
 import etabs_obj
+importlib.reload(etabs_obj)
 
 
 def open_browse(

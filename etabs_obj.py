@@ -1,5 +1,5 @@
 import comtypes.client
-comtypes.client.gen_dir = None
+# comtypes.client.gen_dir = None
 from pathlib import Path
 from typing import Tuple, Union
 import shutil
@@ -124,7 +124,7 @@ class EtabsModel:
             if model_path:
                 self.etabs.SapModel.File.OpenFile(str(model_path))
 
-        if self.success:
+        if self.success and self.etabs is not None:
             self.SapModel = self.etabs.SapModel
             if backup:
                 self.backup_model()
@@ -409,6 +409,8 @@ class EtabsModel:
         '''
         return: WindowsPath('H:/1402/montazer/rashidzadeh/etabs/test.EDB')
         '''
+        if not hasattr(self, 'SapModel') or self.SapModel is None:
+            return None
         filename = self.SapModel.GetModelFilename()
         if filename is None:
             return None
