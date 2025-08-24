@@ -3,7 +3,7 @@ from typing import Union
 from pathlib import Path
 
 try:
-    from PySide2.QtWidgets import QMessageBox, QFileDialog
+    from PySide.QtGui import QMessageBox, QFileDialog
 
     import FreeCAD
     import FreeCADGui
@@ -94,8 +94,8 @@ def add_dock_widget(
         if not vm.isVisible():
             vm.show()
     else:
-        from PySide2 import QtCore, QtWidgets
-        vm = QtWidgets.QDockWidget()
+        from PySide import QtCore, QtGui
+        vm = QtGui.QDockWidget()
 
         # create the dialog
         # dialog = FreeCADGui.PySideUic.loadUi(ui)

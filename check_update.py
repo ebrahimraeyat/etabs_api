@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from PySide2 import QtWidgets
-from PySide2 import QtCore
+from PySide import QtGui
+from PySide import QtCore
 
 import FreeCAD
 import FreeCADGui
@@ -60,11 +60,11 @@ def show_message(avail):
         if len(avail) == 2:
             message += ' and %s' % software % avail[1].name
         message += ', Do you want to update?</html>'
-        if QtWidgets.QMessageBox.question(
+        if QtGui.QMessageBox.question(
             None,
             'Updata Available',
             message,
-            ) == QtWidgets.QMessageBox.Yes:
+            ) == QtGui.QMessageBox.Yes:
             update(avail)
     else:
         FreeCAD.Console.PrintLog("No update available\n")
@@ -79,7 +79,7 @@ def update(repos_path: list):
         link = "<a href='{link}'>here</a>"
         text = '<span style=" font-size:9pt; font-weight:600; color:#0000ff;">%s</span>'
         message = '<html>Git not installed on your system, Please download and install it from %s' % text  % link
-        QtWidgets.QMessageBox.warning(None, 'Install Git', message)
+        QtGui.QMessageBox.warning(None, 'Install Git', message)
         return
     final_args = ['git.exe', 'pull']
     old_dir = os.getcwd()
@@ -105,20 +105,20 @@ def update(repos_path: list):
     if not failed:
         msg = '''Update have been done Successfully,
         Restart FreeCAD to take changes effect.'''
-        QtWidgets.QMessageBox.information(None, "Successful", msg)
+        QtGui.QMessageBox.information(None, "Successful", msg)
         restart_freecad()
     else:
         msg = 'Update failed.'
-        QtWidgets.QMessageBox.warning(None, "Failed", msg)
+        QtGui.QMessageBox.warning(None, "Failed", msg)
 
 def restart_freecad():
     import os
     if os.environ.get('TEST_CIVILTOOLS', 'No') in ('Yes', 'yes'):
         return
-    args = QtWidgets.QApplication.arguments()[1:]
+    args = QtGui.QApplication.arguments()[1:]
     # FreeCADGui.getMainWindow().deleteLater()
     if FreeCADGui.getMainWindow().close():
         QtCore.QProcess.startDetached(
-            QtWidgets.QApplication.applicationFilePath(), args
+            QtGui.QApplication.applicationFilePath(), args
         )
             

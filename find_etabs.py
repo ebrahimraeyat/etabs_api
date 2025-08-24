@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide2.QtWidgets import QMessageBox
+from PySide.QtGui import QMessageBox
 
 import FreeCAD
 if FreeCAD.GuiUp:
@@ -14,7 +14,7 @@ importlib.reload(etabs_obj)
 def open_browse(
         ext: str = '.EDB',
         ):
-    from PySide2.QtWidgets import QFileDialog
+    from PySide.QtGui import QFileDialog
     filters = f"{ext[1:]} (*{ext})"
     filename, _ = QFileDialog.getOpenFileName(None, 'select file',
                                             None, filters)
@@ -98,20 +98,20 @@ def find_etabs(
 
 def get_mdiarea():
     """ Return FreeCAD MdiArea. """
-    import PySide2
+    import PySide
     mw = Gui.getMainWindow()
     if not mw:
         return None
     childs = mw.children()
     for c in childs:
-        if isinstance(c, PySide2.QtWidgets.QMdiArea):
+        if isinstance(c, PySide.QtGui.QMdiArea):
             return c
     return None
 
 def get3dview():
-    from PySide2 import QtWidgets
+    from PySide import QtGui
     mw = Gui.getMainWindow()
-    childs=mw.findChildren(QtWidgets.QMainWindow)
+    childs=mw.findChildren(QtGui.QMainWindow)
     for i in childs:
         if i.metaObject().className() == "Gui::View3DInventor":
             return i
