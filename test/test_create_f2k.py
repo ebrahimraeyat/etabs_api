@@ -81,6 +81,28 @@ def test_add_point_loads():
     safe.write()
     # assert  'LoadCase=DEAD' in content
 
+@open_etabs_file("shayesteh.EDB")
+def test_add_point_loads_modify_f2k():
+    f2k = Path(__file__).parent / 'files' / 'shayesteh.F2K'
+    temp_f2k = Path(tempfile.gettempdir()) / f2k.name
+    shutil.copy(f2k, temp_f2k)
+    safe = create_f2k.ModifyF2kFile(
+        input_f2k=temp_f2k,
+        etabs=etabs,
+        load_cases=[],
+        case_types=[],
+        model_datum=0,
+        )
+    original_point_content = safe.get_points_contents()
+    safe.add_point_loads()
+    safe.write()
+    assert temp_f2k.exists()
+    point_contents = safe.get_points_contents()
+    point_coordinates = safe.get_points_coordinates(content=point_contents)
+    points=[115, 117 ,119 ,121 ,123 ,125 ,127 ,129 ,131 ,133 ,135]
+    for p, coords in point_coordinates.items():
+        assert int(p) in points
+        assert safe.is_point_exist(coords, original_point_content)
 
 @open_etabs_file("shayesteh.EDB")
 def test_create_f2k():

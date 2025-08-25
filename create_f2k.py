@@ -346,6 +346,90 @@ class CreateF2kFile(safe.Safe16):
         if content:
             return df.to_string(header=False, index=False)
         return df
+    
+class ModifyF2kFile(CreateF2kFile):
+    def __init__(self,
+            input_f2k,
+            etabs = None,
+            load_cases : list = None,
+            case_types : list = None,
+            model_datum : float = None,
+            ):
+        append = True
+        super().__init__(input_f2k, etabs, load_cases, case_types, model_datum, append)
+    def set_unit_of_model_according_to_f2k(self):
+        force, length = self.force_length_unit()
+        self.etabs.set_current_unit(force, length)
+
+    def add_point_loads(self):
+        #  set units of model according to f2k file
+        self.set_unit_of_model_according_to_f2k()
+        self.etabs.load_cases.select_all_load_cases()
+        self.etabs.run_analysis()
+        table_key = "Joint Design Reactions"
+        cols = ['Label', 'UniqueName', 'OutputCase', 'CaseType', 'FX', 'FY', 'FZ', 'MX', 'MY', 'MZ']
+        df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
+        drift_names = self.etabs.load_patterns.get_drift_load_pattern_names()
+        dynamic_drift_loadcases = self.etabs.get_dynamic_drift_loadcases()
+        drift_names.extend(dynamic_drift_loadcases)
+        filt = df.OutputCase.isin(drift_names)
+        df = df.loc[~filt]
+        filt = df.CaseType.isin(('LinStatic', 'LinRespSpec'))
+        df = df.loc[filt]
+        df.UniqueName.fillna(df.Label, inplace=True)
+        df.drop(columns=['Label', 'CaseType'], inplace=True)
+        for col in ('FX', 'FY', 'MX', 'MY', 'MZ'):
+            df[col] = -df[col].astype(float)
+        try:
+            df2 = self.etabs.database.get_basepoints_coord_and_dims(df)
+            df2 = df2.set_index('UniqueName')
+            df['xdim'] = df['UniqueName'].map(df2['t2'])
+            df['ydim'] = df['UniqueName'].map(df2['t3'])
+            # Replace None values with 0 in specific columns
+            columns_to_replace = ['xdim', 'ydim']
+            df[columns_to_replace] = df[columns_to_replace].fillna(0)
+        except (AttributeError, TypeError):
+            df['xdim'] = 0
+            df['ydim'] = 0
+        df = df.astype({'UniqueName': str})
+        # check if point exist in model, if not add it
+        exist_points = {}
+        not_exist_points_content = ''
+        curr_point_content = self.get_points_contents()
+        for p in df.UniqueName.unique():
+            coord = list(self.etabs.points.get_point_coordinate(str(p)))
+            coord[2] = self.model_datum
+            self.model_datum
+            print(coord)
+            exist_id = self.is_point_exist(coord, curr_point_content)
+            if exist_id:
+                exist_points[p] = exist_id
+            else:
+                last_number = self.get_last_point_number(curr_point_content + not_exist_points_content)
+                exist_points[p] = str(last_number)
+                not_exist_points_content += f'\nPoint={last_number}   GlobalX={coord[0]}   GlobalY={coord[1]}   GlobalZ={coord[2]}   SpecialPt=Yes'
+        if not_exist_points_content:
+            table_key = "OBJECT GEOMETRY - POINT COORDINATES"
+            self.add_content_to_table(table_key, not_exist_points_content, append=True)
+
+        df['UniqueName'] = df['UniqueName'].map(exist_points).fillna(df['UniqueName'])
+        d = {
+            'UniqueName': 'Point=',
+            'OutputCase': 'LoadPat=',
+            'FX'  : 'Fx=',
+            'FY'  : 'Fy=',
+            'FZ'  : 'Fgrav=',
+            'MX'  : 'Mx=',
+            'MY'  : 'My=',
+            'MZ'  : 'Mz=',
+            'xdim' : 'XDim=',
+            'ydim' : 'YDim=',
+            }
+        content = self.add_assign_to_fields_of_dataframe(df, d)
+        table_key = "LOAD ASSIGNMENTS - POINT LOADS"
+        self.add_content_to_table(table_key, content, append=False)
+        return content
+        
 
 def get_design_type(case_name, etabs):
     '''

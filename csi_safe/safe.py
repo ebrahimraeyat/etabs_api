@@ -42,12 +42,15 @@ class Safe16():
                     context += line
         self.tables_contents = tables_contents
         return tables_contents
+    
+    def get_points_contents(self):
+        return self.tables_contents.get("OBJECT GEOMETRY - POINT COORDINATES", '')
 
     def get_points_coordinates(self,
             content : str = None,
             ) -> dict:
         if content is None:
-            content = self.tables_contents["OBJECT GEOMETRY - POINT COORDINATES"]
+            content = self.get_points_contents()
         lines = content.split('\n')
         points_coordinates = dict()
         for line in lines:
