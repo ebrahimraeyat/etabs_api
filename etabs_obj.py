@@ -257,6 +257,21 @@ class EtabsModel:
                     'OverEcc',
                 ]
                 self.auto_notional_loads_columns = ['LoadPattern', 'BasePattern', 'LoadRatio', 'LoadDir']
+            self.auto_seismic_user_coefficient_columns = {
+                'IsAuto': 'Is Auto Load',
+                'XDir': 'X Dir?',
+                'XDirPlusE': 'X Dir Plus Ecc?',
+                'XDirMinusE': 'X Dir Minus Ecc?',
+                'YDir': 'Y Dir?',
+                'YDirPlusE': 'Y Dir Plus Ecc?',
+                'YDirMinusE': 'Y Dir Minus Ecc?',
+                'EccRatio': 'Ecc Ratio',
+                'TopStory': 'Top Story',
+                'BotStory': 'Bottom Story',
+                'OverStory': 'Ecc Overwrite Story',
+                'OverDiaph': 'Ecc Overwrite Diaphragm',
+                'OverEcc': 'Ecc Overwrite Length',
+            }
 
     def get_etabs_main_version(self):
         ver = self.SapModel.GetVersion()

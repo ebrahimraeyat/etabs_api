@@ -165,18 +165,8 @@ class DatabaseTables:
             df,
             loads_type : dict = {},
             ):
-        print(f"{df.columns=}")
         if self.etabs.etabs_main_version < 20:
-            new_columns = copy.deepcopy(self.etabs.auto_seismic_user_coefficient_columns_part1)
-            if len(df.columns) == len(new_columns) + 2:
-                new_columns.extend(['C', 'K'])
-            else:
-                new_columns.extend(self.etabs.auto_seismic_user_coefficient_columns_part2 + ['C', 'K'])
-            print(df)
-            print(new_columns)
-            print(df.columns)
-            assert len(df.columns) == len(new_columns)
-            df.columns = new_columns
+            df = df.rename(columns=self.etabs.auto_seismic_user_coefficient_columns)
         # create new load patterns
         x, y = self.etabs.load_patterns.get_load_patterns_in_XYdirection()
         current_names = x.union(y)
