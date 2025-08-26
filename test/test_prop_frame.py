@@ -64,7 +64,7 @@ def test_convert_columns_design_types():
 @open_etabs_file('rashidzadeh.EDB')
 def test_change_beams_columns_section_fc():
     names = {135, 396, 160, 159, 397, 153, 150, 129}
-    ret, _, section_that_corner_bars_is_different = etabs.prop_frame.change_beams_columns_section_fc(names, concrete='C35', concrete_suffix='_C35')
+    ret, _, section_that_corner_bars_is_different = etabs.prop_frame.change_beams_columns_section_fc(names, concrete='C35', suffix='_C35')
     assert ret
     assert len(section_that_corner_bars_is_different) == 3
 
@@ -174,6 +174,7 @@ def test_get_material():
 
 @open_etabs_file('shayesteh.EDB')
 def test_create_concrete_column_sections():
+    etabs.set_current_unit('N', 'mm')
     names = ['C40X40', 'C50X50']
     concretes = ['CONC', 'CONC']
     heights = [400, 500]
@@ -230,4 +231,4 @@ def test_create_concrete_column_sections():
 
 
 if __name__ == '__main__':
-    test_change_beams_columns_section_fc_different_longitudinal_and_corner_size()
+    test_create_concrete_column_sections()

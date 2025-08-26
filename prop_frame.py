@@ -10,6 +10,23 @@ from python_functions import change_unit, broadcast
 
 __all__ = ['PropFrame']
 
+map_columns_of_concrete_rectangular_column = {
+            'RebarMatL': 'Longitudinal Bar Material',
+            'RebarMatC': 'Tie Bar Material',
+            'ReinfConfig': 'Reinforcement Configuration',
+            'IsDesigned': 'Is Designed?',
+            'Cover': 'Clear Cover to Ties',
+            'NumBars3Dir': 'Number Bars 3-Dir',
+            'BarSizeLong': 'Longitudinal Bar Size',
+            'BarSizeCorn': 'Corner Bar Size',
+            'BarSizeConf': 'Tie Bar Size',
+            'NumBars2Dir': 'Number Bars 2-Dir',
+            'IsSpiral': "Is Spiral Ties?",
+            'NumBarsCirc': "Number Longitudinal Bars",
+            'SpacingConf': 'Tie Bar Spacing',
+            'NumCBars3': 'Number Ties 3-Dir',
+            'NumCBars2': 'Number Ties 2-Dir',
+        }
 
 @enum.unique
 class CompareTwoColumnsEnum(enum.IntEnum):
@@ -146,10 +163,10 @@ class PropFrame:
             else:
                 self.SapModel.PropFrame.SetRectangle(name, concrete, height, width)
                 row = [name, rebar_mat, tie_mat, 'Rectangular']
-                if 'IsSpiral' in df.columns:
+                if 'IsSpiral' in df.columns or map_columns_of_concrete_rectangular_column.get('IsSpiral') in df.columns:
                     row.append('None')
                 row += [design, cover, number_3dir_main_bar, number_2dir_main_bar]
-                if 'NumBarsCirc' in df.columns:
+                if 'NumBarsCirc' in df.columns or map_columns_of_concrete_rectangular_column.get('NumBarsCirc') in df.columns:
                     row.append('None')
                 row += [longitudinal_rebar_size, corner_rebar_size, tie_rebar_size,
                 tie_space, number_3dir_tie_bar, number_2dir_tie_bar]
@@ -157,6 +174,8 @@ class PropFrame:
         if additional_rows:
             df2 = pd.DataFrame.from_records(additional_rows, columns=df.columns)
             df = pd.concat([df, df2], ignore_index=True)
+        if self.etabs.etabs_main_version < 20:
+            df = df.rename(columns=map_columns_of_concrete_rectangular_column)
         self.etabs.database.write(table_key, df)
 
     @change_unit('N', 'mm')
@@ -276,6 +295,8 @@ class PropFrame:
             table_key = "Frame Section Property Definitions - Concrete Column Reinforcing"
             df = self.etabs.database.read(table_key, to_dataframe=True)
             df["BarSizeCorn"] = df["Name"].map(section_that_corner_bars_is_different).fillna(df["BarSizeCorn"])
+            if self.etabs.etabs_main_version < 20:
+                df = df.rename(columns=map_columns_of_concrete_rectangular_column)
             self.etabs.database.write(table_key, df)
         if rets == {0}:
             return True, convert_names, section_that_corner_bars_is_different.keys()
