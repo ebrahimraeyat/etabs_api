@@ -108,6 +108,11 @@ def test_apply_cfactor_to_edb():
     assert ret == 0
 
 @open_etabs_file('shayesteh.EDB')
+def test_get_file_name_without_suffix():
+    name = etabs.get_file_name_without_suffix()
+    assert name == f'test{version}'
+
+@open_etabs_file('shayesteh.EDB')
 def test_apply_cfactors_to_edb():
     data = [
         (['QX', 'QXN'], ["STORY5", "STORY1", '0.128', '1.37']),

@@ -389,7 +389,7 @@ class EtabsModel:
 
     def get_file_name_without_suffix(self):
         f = Path(self.SapModel.GetModelFilename())
-        name = f.name.replace(f.suffix, '')
+        name = f.stem
         return name
     
     def get_filename_with_suffix(self,
