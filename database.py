@@ -111,6 +111,7 @@ class DatabaseTables:
             fields : Union[list, tuple, bool] = None,
             ) -> tuple:
         if isinstance(data, pd.core.frame.DataFrame):
+            data = data.fillna(value='')
             data = data.astype(str)
             if fields is None:
                 fields, data = self.get_fields_and_data_from_dataframe(data)

@@ -133,6 +133,15 @@ def test_write_seismic_user_coefficient_df_yadeganeh():
     df = etabs.database.read(table_key, to_dataframe=True)
     assert len(df) == 14
 
+@open_etabs_file('steel.EDB')
+def test_write_seismic_user_coefficient_df_with_ecc():
+    table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
+    df = etabs.database.read(table_key, to_dataframe=True)
+    etabs.database.write_seismic_user_coefficient_df(df)
+    x, xn, xp, y, yn, yp = etabs.load_patterns.get_seismic_load_patterns()
+    assert 'EXP' in xp
+    assert 'EXN' in xn
+
 @open_etabs_file('two_earthquakes.EDB')
 def test_write_seismic_user_coefficient_df01():
     import pandas as pd
