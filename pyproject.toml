@@ -26,6 +26,7 @@ dependencies = [
     "pandas",
     "psutil",
     "numpy",
+    "math2docx>=2.0.3",
 ]
 
 [project.urls]

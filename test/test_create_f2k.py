@@ -120,6 +120,7 @@ def test_add_grids():
         )
     safe.add_grids()
     safe.write()
+    assert Path('~\\test.f2k').expanduser().exists()
 
 @open_etabs_file("shayesteh.EDB")
 def test_add_load_combinations():

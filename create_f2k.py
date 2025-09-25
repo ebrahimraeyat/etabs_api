@@ -66,10 +66,11 @@ class CreateF2kFile(safe.Safe16):
         df.replace({'LineType' : replacements}, inplace=True)
         df.insert(loc=0, column='CoordSys', value='CoordSys=GLOBAL')
         df['ID'] = '"' +  df['ID'] + '"'
+        df['BubbleSize'] = 'BubbleSize=1200'
         d = {
             'LineType': 'AxisDir=',
             'ID': 'GridID=',
-            'Ordinate' : 'Ordinate='
+            'Ordinate' : 'Ordinate=',
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "GRID LINES"
