@@ -55,7 +55,7 @@ class CreateF2kFile(safe.Safe16):
 
     def add_grids(self):
         table_key = 'Grid Definitions - Grid Lines'
-        cols = ['LineType', 'ID', 'Ordinate']
+        cols = ['LineType', 'ID', 'Ordinate', 'BubbleLoc']
         df = self.etabs.database.read(table_key, to_dataframe=True, cols=cols)
         filt = df.LineType.isin(('X (Cartesian)', 'Y (Cartesian)'))
         df = df.loc[filt]
@@ -71,6 +71,7 @@ class CreateF2kFile(safe.Safe16):
             'LineType': 'AxisDir=',
             'ID': 'GridID=',
             'Ordinate' : 'Ordinate=',
+            'BubbleLoc': 'BubbleLoc='
             }
         content = self.add_assign_to_fields_of_dataframe(df, d)
         table_key = "GRID LINES"

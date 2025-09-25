@@ -114,13 +114,18 @@ def test_create_f2k():
 
 @open_etabs_file("shayesteh.EDB")
 def test_add_grids():
+    filepath = Path('~\\test.f2k').expanduser()
     safe = create_f2k.CreateF2kFile(
-        Path('~\\test.f2k').expanduser(),
+        filepath,
         etabs,
         )
     safe.add_grids()
     safe.write()
     assert Path('~\\test.f2k').expanduser().exists()
+    with open(filepath, 'r') as f:
+        content = f.read()
+        assert ' BubbleLoc=Start ' in content
+        assert ' BubbleSize=1200' in content
 
 @open_etabs_file("shayesteh.EDB")
 def test_add_load_combinations():
