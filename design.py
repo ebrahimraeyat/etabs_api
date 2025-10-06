@@ -336,6 +336,10 @@ class Design:
         beams, columns = self.etabs.frame_obj.get_beams_columns()
         self.etabs.frame_obj.assign_frame_modifiers(
             frame_names=beams + columns,
+            area=1,
+            as2=1,
+            as3=1,
+            torsion=1,
             i22=1,
             i33=1,
         )
