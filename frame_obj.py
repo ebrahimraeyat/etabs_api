@@ -500,7 +500,7 @@ class FrameObj:
             columns_type_names = pd.DataFrame(df1).iloc[::-1]
         return ret, columns_type_names
 
-    def get_columns_pmm_and_beams_rebars(self, frame_names):
+    def get_columns_pmm_and_beams_rebars(self, frame_names: Union[Iterable, None]=None):
         if not self.SapModel.GetModelIsLocked():
             self.etabs.analyze.set_load_cases_to_analyze()
             self.etabs.run_analysis()
@@ -511,8 +511,9 @@ class FrameObj:
             self.SapModel.DesignConcrete.StartDesign()
         self.etabs.set_current_unit('kgf', 'cm')
         beams, columns = self.get_beams_columns()
-        beams = set(frame_names).intersection(beams)
-        columns = set(frame_names).intersection(columns)
+        if frame_names is not None:
+            beams = set(frame_names).intersection(beams)
+            columns = set(frame_names).intersection(columns)
         columns_pmm = dict()
         for col in columns:
             pmm = max(self.SapModel.DesignConcrete.GetSummaryResultsColumn(col)[6])
@@ -525,6 +526,8 @@ class FrameObj:
             d['TopArea'] = beam_rebars[4]
             d['BotArea'] = beam_rebars[6]
             d['VRebar'] = beam_rebars[8]
+            d['TorsionLong'] = beam_rebars[10]
+            d['TorsionLat'] = beam_rebars[12]
             beams_rebars[name] = d
         return columns_pmm, beams_rebars
 
