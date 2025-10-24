@@ -170,16 +170,16 @@ def export_to_dxf_beam_rebars(
         bot_rebars: str='3~16',
         torsion_rebar: str='1~20',
         frame_names: Union[Iterable, None]=None,
+        moment_redistribution_positive_coefficient: float=1.1,
+        moment_redistribution_negative_coefficient: float=0.9,
+
 ):
     dxf_temp = etabs_api_path / "etabs_api_export" / "templates" / "dxf" / "TEMPLATE_PLANS_OF_STORIES.dxf"
     dwg = ezdxf.readfile(dxf_temp)
     msp = dwg.modelspace()
     etabs.set_current_unit('kgf', 'm')
     beam_columns = etabs.frame_obj.get_beams_columns_on_stories()
-    block_name = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
-    block = dwg.blocks.new(name=block_name)
     x_coeff = 0.1
-    abs_dy = .2
     block_dx = 0
     etabs.start_design(check_designed=True)
     top_rebars_areas = 0
@@ -207,6 +207,8 @@ def export_to_dxf_beam_rebars(
         #     beams = set(beams).intersection(frame_names)
         if len(beams) == 0:
             continue
+        block_name = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
+        block = dwg.blocks.new(name=block_name)
         for name in beams:
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
             length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -217,6 +219,8 @@ def export_to_dxf_beam_rebars(
                     ret = etabs.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
                 except IndexError:
                     continue
+                print(f"processing beam {name=}")
+                abs_dy = .02 * length
                 n = ret[0]
                 if n % 2:
                     i =  j = int(n / 2) + 1
@@ -231,7 +235,7 @@ def export_to_dxf_beam_rebars(
                     torsion_rebars_area = 0
                 else:
                     torsion_rebars_area = torsion_rebars_areas
-                additional_start_ta = start_ta * 0.9 - top_rebars_areas + start_lt - torsion_rebars_area
+                additional_start_ta = start_ta * moment_redistribution_negative_coefficient - top_rebars_areas + start_lt - torsion_rebars_area
                 additional_start_ba = start_ba - bot_rebars_areas + start_lt - torsion_rebars_area
                 # end rebars
                 end_ta = ret[4][-1]
@@ -241,18 +245,22 @@ def export_to_dxf_beam_rebars(
                     torsion_rebars_area = 0
                 else:
                     torsion_rebars_area = torsion_rebars_areas
-                additional_end_ta = end_ta * 0.9 - top_rebars_areas + end_lt - torsion_rebars_area
+                additional_end_ta = end_ta * moment_redistribution_negative_coefficient - top_rebars_areas + end_lt - torsion_rebars_area
                 additional_end_ba = end_ba - bot_rebars_areas + end_lt - torsion_rebars_area
                 # midle rebars
-                mid_ta = (ret[4][i] + ret[4][j]) / 2
-                mid_ba = (ret[6][i] + ret[6][j]) / 2
-                mid_lt = (ret[10][i] + ret[10][j]) / 2 / 2
-                if mid_lt == 0:
-                    torsion_rebars_area = 0
+                if n < 3:
+                    additional_mid_ta = 0
+                    additional_mid_ba = 0
                 else:
-                    torsion_rebars_area = torsion_rebars_areas
-                additional_mid_ta = mid_ta - top_rebars_areas + mid_lt - torsion_rebars_area
-                additional_mid_ba = mid_ba * 1.1 - bot_rebars_areas + mid_lt - torsion_rebars_area
+                    mid_ta = (ret[4][i] + ret[4][j]) / 2
+                    mid_ba = (ret[6][i] + ret[6][j]) / 2
+                    mid_lt = (ret[10][i] + ret[10][j]) / 2 / 2
+                    if mid_lt == 0:
+                        torsion_rebars_area = 0
+                    else:
+                        torsion_rebars_area = torsion_rebars_areas
+                    additional_mid_ta = mid_ta - top_rebars_areas + mid_lt - torsion_rebars_area
+                    additional_mid_ba = mid_ba * moment_redistribution_positive_coefficient - bot_rebars_areas + mid_lt - torsion_rebars_area
                 xc = (x1 + x2) / 2
                 yc = (y1 + y2) / 2
                 alpha_start = math.atan(abs_dy / (x_coeff * length))
@@ -272,18 +280,18 @@ def export_to_dxf_beam_rebars(
                                         ):
                     for area, loc, sign in zip(areas, ('T', 'B'), (1, -1)):
                         area *= 10000
-                        if area > 0.5 or area < -.5:
+                        if area > 0.2 or area < -.5:
                             color = 3
                             if area < 0:
-                                color = 5
+                                color = 8
                             r = abs(abs_dy / math.sin(alpha))
                             teta_alph = rotation + sign * alpha
                             dx = r * math.cos(teta_alph)
                             dy = r * math.sin(teta_alph)
                             mtext = block.add_mtext(f"{loc}={area:.2f}", dxfattribs = {'color': color, 'style': 'ROMANT'})
-                            mtext.set_location(insert=(x + dx + block_dx, y + dy), attachment_point=2)
+                            mtext.set_location(insert=(x + dx + block_dx, y + dy), attachment_point=5)
                             mtext.dxf.rotation = math.degrees(rotation)
-                            mtext.dxf.char_height = .12
+                            mtext.dxf.char_height = .013 * length
         # frame_props = etabs.frame_obj.get_section_type_and_geometry(columns)
         # for name in columns:
         #     x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
