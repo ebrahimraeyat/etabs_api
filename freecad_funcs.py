@@ -5,11 +5,16 @@ from pathlib import Path
 try:
     from PySide.QtGui import QMessageBox, QFileDialog
 
+
     import FreeCAD
     import FreeCADGui
     import Part
 except ModuleNotFoundError:
     pass
+
+from PySide import QtCore
+from PySide2 import QtWidgets
+
 import pandas as pd
 
 def rectangle_face(
@@ -478,3 +483,13 @@ def get_relative_dists(wall):
     dist2 = round((v2.Length / base.Length).Value, 3)
     assert max(dist1, dist2) <= 1
     return dist1, dist2
+
+def restart_freecad(check_test: bool=True):
+    if check_test and os.environ.get('TEST_CIVILTOOLS', 'No') in ('Yes', 'yes'):
+        return
+    args = QtWidgets.QApplication.arguments()[1:]
+    # FreeCADGui.getMainWindow().deleteLater()
+    if FreeCADGui.getMainWindow().close():
+        QtCore.QProcess.startDetached(
+            QtWidgets.QApplication.applicationFilePath(), args
+        )

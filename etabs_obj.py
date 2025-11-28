@@ -1,4 +1,8 @@
 import comtypes.client
+# import find_and_register_softwares as far
+# gen_dir = far.get_gen_dir()
+# if gen_dir.exists():
+#     comtypes.client.gen_dir = str(gen_dir)
 # comtypes.client.gen_dir = None
 from pathlib import Path
 from typing import Tuple, Union
@@ -67,16 +71,24 @@ class EtabsModel:
         self.software = software
         self.etabs = None
         self.success = False
+        self.error_message_connection = ''
         helper = comtypes.client.CreateObject(f'{software}v1.Helper')
+        if software in ("ETABS", "SAFE"):
+            software_obj_name = 'ETABS'
+        elif software == "SAP2000":
+            software_obj_name = 'Sap'
         exec(f"helper = helper.QueryInterface(comtypes.gen.{software}v1.cHelper)")
         if attach_to_instance:
             try:
-                if software in ("ETABS", "SAFE"):
-                    self.etabs = helper.GetObject(f"CSI.{software}.API.ETABSObject")
-                elif software == "SAP2000":
-                    self.etabs = helper.GetObject(f"CSI.{software}.API.SapObject")
+                self.etabs = helper.GetObject(f"CSI.{software}.API.{software_obj_name}Object")
                 self.success = True
             except (OSError, comtypes.COMError):
+                print(f"Try to find opening {software} software")
+                print("Read ROT entries:")
+                rots  = list_rot_entries()
+                rots = [rot for rot in rots if software_obj_name in rot]
+                if len(rots) > 0:
+                    print("No running instance of the program found or failed to attach.")
                 print("No running instance of the program found or failed to attach.")
                 self.success = False
             finally:
@@ -94,10 +106,7 @@ class EtabsModel:
                             pid = proc.pid
                             break
                     if pid is not None:
-                        if software in ("ETABS", "SAFE"):
-                            self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.ETABSObject", pid)
-                        elif software == 'SAP2000':
-                            self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.SapObject", pid)
+                        self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.{software_obj_name}Object", pid)
                         self.success = True
                 # sys.exit(-1)
         else:
@@ -112,10 +121,7 @@ class EtabsModel:
                     sys.exit(-1)
             else:
                 try:
-                    if software in ("ETABS", "SAFE"):
-                        self.etabs = helper.CreateObjectProgID(f"CSI.{software}.API.ETABSObject")
-                    elif software == "SAP2000":
-                        self.etabs = helper.CreateObjectProgID(f"CSI.{software}.API.SapObject")
+                    self.etabs = helper.CreateObjectProgID(f"CSI.{software}.API.{software_obj_name}Object")
                 except (OSError, comtypes.COMError):
                     print("Cannot start a new instance of the program.")
                     sys.exit(-1)
@@ -1632,6 +1638,32 @@ class EtabsModel:
         return ductilities
 
 
+
+
+def list_rot_entries():
+    # Requires pywin32: pip install pywin32
+    try:
+        import pythoncom
+    except ImportError:
+        packages = ['pypiwin32', 'pywin32']
+        from freecad_funcs import install_packages
+        install_packages(package_names=packages)
+    import pythoncom
+    rot = pythoncom.GetRunningObjectTable()
+    enum = rot.EnumRunning()
+    monikers = []
+    while True:
+        next_item = enum.Next(1)
+        if not next_item:
+            break
+        moniker = next_item[0]
+        bindctx = pythoncom.CreateBindCtx(0)
+        try:
+            name = moniker.GetDisplayName(bindctx, None)
+        except Exception:
+            name = "<could not get display name>"
+        monikers.append(name)
+    return monikers
 
 
 class Build:
