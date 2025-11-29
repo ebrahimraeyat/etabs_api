@@ -9,11 +9,11 @@ try:
     import FreeCAD
     import FreeCADGui
     import Part
+    from PySide import QtCore
+    from PySide2 import QtWidgets
 except ModuleNotFoundError:
     pass
 
-from PySide import QtCore
-from PySide2 import QtWidgets
 
 import pandas as pd
 
