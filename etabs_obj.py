@@ -67,6 +67,7 @@ class EtabsModel:
                 software : str = 'ETABS', # 'SAFE', 'SAP2000'
                 model_path: Union[str, Path] = '',
                 software_exe_path: str = '',
+                pid_moniker: list=[],
                 ):
         self.software = software
         self.etabs = None
@@ -79,36 +80,18 @@ class EtabsModel:
             software_obj_name = 'Sap'
         exec(f"helper = helper.QueryInterface(comtypes.gen.{software}v1.cHelper)")
         if attach_to_instance:
-            try:
-                self.etabs = helper.GetObject(f"CSI.{software}.API.{software_obj_name}Object")
+            if pid_moniker and hasattr(helper, 'GetObjectProcess'):
+                class_name, pid = pid_moniker
+                self.etabs = helper.GetObjectProcess(class_name, pid)
                 self.success = True
-            except (OSError, comtypes.COMError):
-                print(f"Try to find opening {software} software")
-                print("Read ROT entries:")
-                rots  = list_rot_entries()
-                rots = [rot for rot in rots if software_obj_name in rot]
-                if len(rots) > 0:
+            elif not self.success:
+                try:
+                    self.etabs = helper.GetObject(f"CSI.{software}.API.{software_obj_name}Object")
+                    self.success = True
+                except (OSError, comtypes.COMError):
                     print("No running instance of the program found or failed to attach.")
-                print("No running instance of the program found or failed to attach.")
-                self.success = False
-            finally:
-                if not self.success and  hasattr(helper, 'GetObjectProcess'):
-                    try:
-                        import psutil
-                    except ImportError:
-                        import subprocess
-                        package = 'psutil'
-                        subprocess.check_call(['python', "-m", "pip", "install", package])
-                        import psutil
-                    pid = None
-                    for proc in psutil.process_iter():
-                        if software.lower() in proc.name().lower():
-                            pid = proc.pid
-                            break
-                    if pid is not None:
-                        self.etabs = helper.GetObjectProcess(f"CSI.{software}.API.{software_obj_name}Object", pid)
-                        self.success = True
-                # sys.exit(-1)
+                    self.success = False
+            
         else:
             # sys.exit(-1)
             # helper = comtypes.client.CreateObject(f'{software}v1.Helper')

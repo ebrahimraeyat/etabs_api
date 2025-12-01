@@ -39,15 +39,22 @@ def find_etabs(
     run : if True it runs the model
     backup: if True it backup from the main file
     '''
-    software_name = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/civilTools").GetInt("software_name", 0)
+    param = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/civilTools")
+    software_name = param.GetInt("software_name", 0)
     software = {
         0: "ETABS",
         1: "SAP2000",
         2: "SAFE",
         }.get(software_name, 'ETABS')
+    pid_moniker = param.GetString("pid_moniker", 'None')
+    if pid_moniker != 'None':
+        class_name, pid = parse_etabs_rot_entry(pid_moniker)
+        etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
+    else:
 
-    # try to connect to opening etabs software
-    etabs = etabs_obj.EtabsModel(backup=backup, software=software)
+
+        # try to connect to opening etabs software
+        etabs = etabs_obj.EtabsModel(backup=backup, software=software)
 
     # if not etabs.success:
     #     pass
@@ -95,6 +102,20 @@ def find_etabs(
     if isinstance(filename, str) and Path(filename).exists():
         filename = Path(filename)
     return etabs, filename
+
+def parse_etabs_rot_entry(entry: str):
+    """
+    Parse ROT entry formatted as:
+        "!ETABSv1.Model:12345"
+    Returns:
+        (class_name, pid)
+    """
+    if not entry.startswith("!"):
+        raise ValueError("Unexpected ROT entry format")
+
+    entry = entry[1:]
+    class_name, pid_str = entry.split(":")
+    return class_name, int(pid_str)
 
 def get_mdiarea():
     """ Return FreeCAD MdiArea. """

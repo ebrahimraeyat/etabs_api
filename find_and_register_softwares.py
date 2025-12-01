@@ -6,6 +6,7 @@ import tempfile
 from dataclasses import dataclass
 
 import comtypes.client
+import pythoncom
 
 import freecad_funcs
 
@@ -277,6 +278,16 @@ def get_softwares_process(
 
 def connect_to_software(software: SoftwareInfo):
     """Connect to the selected software and save the path."""
+    # try to connect to etabs with process id
+    pid_monikers = list_rot_entries()
+    pid_moniker = 'None'
+    for entry in pid_monikers:
+        if str(software.pid) in entry:
+            pid_moniker = entry
+            break
+    if pid_moniker != 'None':
+        return pid_moniker
+
     # Clear comtypes gen folder before connecting
     try:
         software.register()
@@ -365,4 +376,22 @@ def register_software(software: SoftwareInfo,
             f"Failed to register {software.software_name}. Please Run the {software.register_exe} with Administrator.",
         )
         software.open_explorer_to_register_exe()
+
+def list_rot_entries():
+    rot = pythoncom.GetRunningObjectTable()
+    enum = rot.EnumRunning()
+    pid_monikers = []
+    while True:
+        next_item = enum.Next(1)
+        if not next_item:
+            break
+        moniker = next_item[0]
+        bindctx = pythoncom.CreateBindCtx(0)
+        try:
+            name = moniker.GetDisplayName(bindctx, None)
+        except Exception:
+            name = "<could not get display name>"
+        if name.startswith("!CSI") and  ":" in name:
+            pid_monikers.append(name)
+    return pid_monikers
 
