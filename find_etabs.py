@@ -1,4 +1,5 @@
 from pathlib import Path
+import enum
 
 from PySide.QtGui import QMessageBox
 
@@ -10,6 +11,18 @@ import importlib
 import etabs_obj
 importlib.reload(etabs_obj)
 
+
+@enum.unique
+class SoftwareName(enum.IntEnum):
+    ETABS = 0
+    SAP2000 = 1
+    SAFE = 2
+
+@enum.unique
+class SoftwareExtension(enum.Enum):
+    ETABS = '.EDB'
+    SAP2000 = '.SDB'
+    SAFE = '.FDB'
 
 def open_browse(
         ext: str = '.EDB',
@@ -40,19 +53,16 @@ def find_etabs(
     backup: if True it backup from the main file
     '''
     param = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/civilTools")
-    software_name = param.GetInt("software_name", 0)
-    software = {
-        0: "ETABS",
-        1: "SAP2000",
-        2: "SAFE",
-        }.get(software_name, 'ETABS')
     pid_moniker = param.GetString("pid_moniker", 'None')
     if pid_moniker != 'None':
         class_name, pid = parse_etabs_rot_entry(pid_moniker)
+        print(f"try to connect to {class_name=} with process ID = {pid}")
+        software = class_name.split(".")[1]
         etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
     else:
-
-
+        software_number = param.GetInt("software_name", 0)
+        software = SoftwareName(software_number).name
+        print(f"Try to connect to opening {software} software")
         # try to connect to opening etabs software
         etabs = etabs_obj.EtabsModel(backup=backup, software=software)
 
@@ -73,7 +83,8 @@ def find_etabs(
         etabs.success and
         hasattr(etabs, 'SapModel')
         ):
-        filename = open_browse()
+        ext = SoftwareExtension[software].value
+        filename = open_browse(ext)
     if filename is None and etabs.success and show_warning:
         QMessageBox.warning(None, software, f'Please Open {software} Model and Run this command again.')
     elif (
