@@ -54,12 +54,19 @@ def find_etabs(
     '''
     param = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/civilTools")
     pid_moniker = param.GetString("pid_moniker", 'None')
+    success = False
     if pid_moniker != 'None':
         class_name, pid = parse_etabs_rot_entry(pid_moniker)
         print(f"try to connect to {class_name=} with process ID = {pid}")
         software = class_name.split(".")[1]
-        etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
-    else:
+        try:
+            etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
+            success = True
+        except Exception as e:
+            print(f"Failed to connect to {class_name} with process ID = {pid}\n{e}")
+            success = False
+        print(f"Find {software} Software with PID Moniker: {pid_moniker}, Success: {success}")
+    if not success:
         software_number = param.GetInt("software_name", 0)
         software = SoftwareName(software_number).name
         print(f"Try to connect to opening {software} software")
