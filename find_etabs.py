@@ -61,9 +61,37 @@ def find_etabs(
         software = class_name.split(".")[1]
         try:
             etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
-            success = True
-        except Exception as e:
+            if hasattr(etabs, 'SapModel'):
+                success = True
+            else:
+                raise ProcessLookupError
+        except ProcessLookupError as e:
             print(f"Failed to connect to {class_name} with process ID = {pid}\n{e}")
+            exe_path = param.GetString("last_exe_path_software", 'None')
+            print(f"{exe_path=}")
+            if exe_path != 'None':
+                softwares = get_process_of_exe_path(exe_path)
+                # if len(softwares) == 1:
+                pid = softwares[0]
+                try:
+                    etabs = etabs_obj.EtabsModel(backup=backup, software=software, pid_moniker=[class_name, pid])
+                    if hasattr(etabs, 'SapModel'):
+                        pid_moniker = f"!{class_name}:{pid}"
+                        param.SetString("pid_moniker", pid_moniker)
+                        success = True
+                    else:
+                        raise ProcessLookupError
+                except ProcessLookupError as e:
+                    print(f"Failed to connect to {class_name} with process ID = {pid}\n{e}")
+                # else:
+                #     model_names = []
+                #     for pid in softwares:
+                #         etabs = etabs_obj.EtabsModel(backup=False, software=software, pid_moniker=[class_name, pid])
+                #         name = etabs.get_filepath()
+                #         model_names.append(str(name))
+                    
+
+                        
             success = False
         print(f"Find {software} Software with PID Moniker: {pid_moniker}, Success: {success}")
     if not success:
@@ -120,6 +148,26 @@ def find_etabs(
     if isinstance(filename, str) and Path(filename).exists():
         filename = Path(filename)
     return etabs, filename
+
+def get_process_of_exe_path(exe_path: Path) -> list:
+    try:
+        import psutil
+    except ImportError:
+        import freecad_funcs
+        freecad_funcs.install_package(psutil)
+        import psutil
+    softwares = []
+    for pid in psutil.pids():
+        try:
+            exe = psutil.Process(pid).exe()
+            if exe == str(exe_path):
+                softwares.append(pid)
+        except psutil.AccessDenied:
+            pass
+        except psutil.NoSuchProcess:
+            pass
+    return softwares
+
 
 def parse_etabs_rot_entry(entry: str):
     """
