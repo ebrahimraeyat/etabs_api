@@ -231,7 +231,6 @@ class SoftwareInfo:
             # Create a temporary directory to save screenshots
             screenshot = window.capture_as_image()  # PIL Image
             screenshot.save(self.screenshot_path, format="PNG")  # Save the screenshot to TEMP
-            print(f"Screenshot saved to {self.screenshot_path}")
             return window
         return None
     
