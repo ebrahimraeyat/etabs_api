@@ -53,6 +53,17 @@ class SoftwareInfo:
         self.software_name = self.get_software_name()
         self.register_exe = self.get_registered_path()
         self.screenshot_path = self.get_screenshot_path()
+        self.app = self._app()
+        self.title = self.get_title()
+
+    def get_title(self):
+        try:
+            window = self.app.top_window()
+            title = window.window_text()
+        except Exception as e:
+            print(f"Can not find the title, {e}")
+            title = self.name
+        return title
 
     def get_screenshot_path(self):
         '''
@@ -80,8 +91,7 @@ class SoftwareInfo:
         register_exe = self.exe_path.parent / f"Register{self.software_name.upper()}.exe"
         return register_exe
     
-    @property
-    def app(self):
+    def _app(self):
         '''
         Get the application object using pywinauto.
         '''
