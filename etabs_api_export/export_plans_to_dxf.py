@@ -231,20 +231,22 @@ def export_to_dxf_beam_rebars(
                 start_ta = ret[4][0]
                 start_ba = ret[6][0]
                 start_lt = ret[10][0] / 2
-                if start_lt == 0:
-                    torsion_rebars_area = 0
-                else:
-                    torsion_rebars_area = torsion_rebars_areas
+                torsion_rebars_area = min(start_lt, torsion_rebars_areas)
+                # if start_lt == 0:
+                #     torsion_rebars_area = 0
+                # else:
+                #     torsion_rebars_area = torsion_rebars_areas
                 additional_start_ta = start_ta * moment_redistribution_negative_coefficient - top_rebars_areas + start_lt - torsion_rebars_area
                 additional_start_ba = start_ba - bot_rebars_areas + start_lt - torsion_rebars_area
                 # end rebars
                 end_ta = ret[4][-1]
                 end_ba = ret[6][-1]
                 end_lt = ret[10][-1] / 2
-                if end_lt == 0:
-                    torsion_rebars_area = 0
-                else:
-                    torsion_rebars_area = torsion_rebars_areas
+                torsion_rebars_area = min(end_lt, torsion_rebars_areas)
+                # if end_lt == 0:
+                #     torsion_rebars_area = 0
+                # else:
+                #     torsion_rebars_area = torsion_rebars_areas
                 additional_end_ta = end_ta * moment_redistribution_negative_coefficient - top_rebars_areas + end_lt - torsion_rebars_area
                 additional_end_ba = end_ba - bot_rebars_areas + end_lt - torsion_rebars_area
                 # midle rebars
@@ -255,10 +257,11 @@ def export_to_dxf_beam_rebars(
                     mid_ta = (ret[4][i] + ret[4][j]) / 2
                     mid_ba = (ret[6][i] + ret[6][j]) / 2
                     mid_lt = (ret[10][i] + ret[10][j]) / 2 / 2
-                    if mid_lt == 0:
-                        torsion_rebars_area = 0
-                    else:
-                        torsion_rebars_area = torsion_rebars_areas
+                    torsion_rebars_area = min(mid_lt, torsion_rebars_areas)
+                    # if mid_lt == 0:
+                    #     torsion_rebars_area = 0
+                    # else:
+                    #     torsion_rebars_area = torsion_rebars_areas
                     additional_mid_ta = mid_ta - top_rebars_areas + mid_lt - torsion_rebars_area
                     additional_mid_ba = mid_ba * moment_redistribution_positive_coefficient - bot_rebars_areas + mid_lt - torsion_rebars_area
                 xc = (x1 + x2) / 2
