@@ -690,6 +690,19 @@ class FrameObj:
             modifiers[3] = j
             self.SapModel.FrameObj.SetModifiers(name, modifiers)
     
+    def multiply_modifiers(self,
+                mult: list= 8*[1.4],
+                frame_names: Union[None, list]=None,
+                ):
+        assert min(mult) >= 0
+        if frame_names is None:
+            frame_names, _ = self.get_beams_columns(2)
+        self.SapModel.SetModelIsLocked(False)
+        for name in frame_names:
+            modifiers = list(self.SapModel.FrameObj.GetModifiers(name)[0])
+            modifiers = [min(modifiers[i] * mult[i], 1) for i in range(len(modifiers))]
+            self.SapModel.FrameObj.SetModifiers(name, modifiers)
+    
     def apply_torsion_stiffness_coefficient(self,
                 beams_coeff : dict,
                 ):

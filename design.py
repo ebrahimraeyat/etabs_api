@@ -339,9 +339,15 @@ class Design:
             area=1,
             as2=1,
             as3=1,
-            torsion=1,
+            # torsion=1,
             i22=1,
             i33=1,
+        )
+        # Multiply j of beams and columns with 1.4
+        print("Multiply j of beams and columns with 1.4")
+        self.etabs.frame_obj.multiply_modifiers(
+            mult=[1, 1, 1, 1.4, 1, 1, 1, 1],
+            frame_names=beams + columns,
         )
         print("Set Slab stiffness modifiers ...")
         self.etabs.area.assign_slab_modifiers(m11=1, m22=1, m12=1, reset=True)

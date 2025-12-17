@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import pytest
+import math
 
 import numpy as np
 import pandas as pd
@@ -307,6 +308,15 @@ def test_assign_frame_modifiers_mass():
     assert modifier == 0.8
     modifier = etabs.SapModel.FrameObj.GetModifiers('253')[0][-2]
     assert modifier == 0.75
+
+@open_etabs_file('shayesteh.EDB')
+def test_multiply_modifiers():
+    beams, columns = etabs.frame_obj.get_beams_columns(type_=2)
+    etabs.frame_obj.set_constant_j(.1)
+    etabs.frame_obj.multiply_modifiers(frame_names=beams)
+    for beam in beams:
+        modifiers = etabs.SapModel.FrameObj.GetModifiers(beam)[0]
+        math.isclose(modifiers[3], 0.14, abs_tol=.001)
 
 @open_etabs_file('shayesteh.EDB')
 def test_assign_frame_modifiers():
