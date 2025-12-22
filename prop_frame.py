@@ -442,7 +442,7 @@ class PropFrame:
         x_above, y_above, x_below, y_below = dimentions
         if (x_below - x_above) > 10 or (y_below - y_above) > 10:
             return CompareTwoColumnsEnum.rebar_slop
-        if self.is_fc_section_above_is_greater_than_below(below_sec, above_sec)[0]:
+        if self.is_fc_section_above_is_greater_than_below(below_sec=below_sec, above_sec=above_sec)[0]:
             return CompareTwoColumnsEnum.material
         # There is no error
         return CompareTwoColumnsEnum.OK
@@ -477,6 +477,6 @@ class PropFrame:
             below_sec = self.SapModel.FrameObj.GetSection(below_col)[0]
         if above_sec is None:
             above_sec = self.SapModel.FrameObj.GetSection(above_col)[0]
-        fc_below = self.get_fc(below_sec)
-        fc_above = self.get_fc(above_sec)
+        fc_below = self.get_fc(sec_name=below_sec)
+        fc_above = self.get_fc(sec_name=above_sec)
         return fc_above > fc_below, (fc_above, fc_below)
