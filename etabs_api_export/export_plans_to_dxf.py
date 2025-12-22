@@ -162,6 +162,128 @@ def export_to_dxf(
         from python_functions import open_file
         open_file(filename=filename)
 
+
+def add_text_along_line(x1, y1, x2, y2, block, text_top, text_bottom, 
+                        offset=0.02, text_height=0.013, block_dx=0, x_coeff=0.1):
+    """
+    Add text parallel to a line at specified positions along the line
+    
+    Args:
+        x1, y1: Start point coordinates
+        x2, y2: End point coordinates
+        block: AutoCAD block to add text to
+        text_top: List of 3 text strings for top at [start, middle, end]
+        text_bottom: List of 3 text strings for bottom at [start, middle, end]
+        offset: Offset distance from line (as fraction of length)
+        text_height: Text height (as fraction of length)
+        block_dx: X offset for block
+        x_coeff: Distance from start/end as fraction of length (e.g., 0.1 for 10%)
+    """
+    
+    # Calculate line properties
+    dx = x2 - x1
+    dy = y2 - y1
+    length = math.sqrt(dx**2 + dy**2)
+    
+    # Calculate unit vector along the line
+    unit_dx = dx / length
+    unit_dy = dy / length
+    # Calculate perpendicular unit vector (rotated 90 degrees clockwise)
+    # This ensures top is always on left side when viewing the plan
+    perp_dx = unit_dy  # For 90-degree clockwise rotation
+    perp_dy = -unit_dx
+    
+    # Calculate rotation angle for text (always left-to-right reading)
+    rotation = math.atan2(dy, dx)
+    
+    # Ensure text is never upside down (always reads left-to-right)
+    if abs(rotation) > math.pi / 2:
+        # Reverse the perpendicular direction if line is pointing mostly left
+        perp_dx = -perp_dx
+        perp_dy = -perp_dy
+        # Adjust rotation to be in readable range
+        if rotation > 0:
+            rotation = rotation - math.pi
+        else:
+            rotation = rotation + math.pi
+    
+    # Convert to degrees for AutoCAD
+    text_rotation_deg = math.degrees(rotation)
+    
+    # Calculate actual offset distance
+    abs_offset = offset * length
+    
+    # Calculate positions along the line
+    # Start position: x_coeff * length from start
+    start_factor = x_coeff
+    start_x = x1 + unit_dx * start_factor * length
+    start_y = y1 + unit_dy * start_factor * length
+    
+    # Middle position
+    middle_x = (x1 + x2) / 2
+    middle_y = (y1 + y2) / 2
+    
+    # End position: (1 - x_coeff) * length from start
+    end_factor = 1 - x_coeff
+    end_x = x1 + unit_dx * end_factor * length
+    end_y = y1 + unit_dy * end_factor * length
+    
+    # Points along the line (start, middle, end)
+    points = [
+        (start_x, start_y),  # Start position
+        (middle_x, middle_y),  # Middle position
+        (end_x, end_y)  # End position
+    ]
+    
+    # Character height
+    char_height = text_height * length
+    
+    # For each point (start, middle, end)
+    for i, (px, py) in enumerate(points):
+        # Skip if text is empty
+        top_text = text_top[i] if i < len(text_top) else ""
+        bottom_text = text_bottom[i] if i < len(text_bottom) else ""
+        
+        if not top_text and not bottom_text:
+            continue
+        
+        # Calculate positions
+        # TOP text: on the "left" side when viewing the plan
+        top_x = px - perp_dx * abs_offset + block_dx
+        top_y = py - perp_dy * abs_offset
+        
+        # BOTTOM text: on the "right" side when viewing the plan
+        bottom_x = px + perp_dx * abs_offset + block_dx
+        bottom_y = py + perp_dy * abs_offset
+        
+        # Add top text if not empty
+        if top_text and top_text.strip():
+            mtext_top = block.add_mtext(
+                top_text, 
+                dxfattribs={'color': 3, 'style': 'ROMANT'}
+            )
+            mtext_top.set_location(
+                insert=(top_x, top_y), 
+                attachment_point=5  # Middle center
+            )
+            mtext_top.dxf.rotation = text_rotation_deg
+            mtext_top.dxf.char_height = char_height
+        
+        # Add bottom text if not empty
+        if bottom_text and bottom_text.strip():
+            mtext_bottom = block.add_mtext(
+                bottom_text, 
+                dxfattribs={'color': 3, 'style': 'ROMANT'}
+            )
+            mtext_bottom.set_location(
+                insert=(bottom_x, bottom_y), 
+                attachment_point=5  # Middle center
+            )
+            mtext_bottom.dxf.rotation = text_rotation_deg
+            mtext_bottom.dxf.char_height = char_height
+
+
+
 def export_to_dxf_beam_rebars(
         etabs,
         filename,
@@ -179,7 +301,7 @@ def export_to_dxf_beam_rebars(
     msp = dwg.modelspace()
     etabs.set_current_unit('kgf', 'm')
     beam_columns = etabs.frame_obj.get_beams_columns_on_stories()
-    x_coeff = 0.1
+    x_coeff = 0.1 # distance of text from start and end, percent of beam length
     block_dx = 0
     etabs.start_design(check_designed=True)
     top_rebars_areas = 0
@@ -211,45 +333,42 @@ def export_to_dxf_beam_rebars(
         block = dwg.blocks.new(name=block_name)
         for name in beams:
             x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
-            length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            
             # Draw center line
-            block.add_line((x1 + block_dx, y1), (x2 + block_dx, y2), dxfattribs = {'color': 8})
+            block.add_line((x1 + block_dx, y1), (x2 + block_dx, y2), dxfattribs={'color': 8})
+            
             if name in frame_names:
                 try:
                     ret = etabs.SapModel.DesignConcrete.GetSummaryResultsBeam(name)
                 except IndexError:
                     continue
+                
                 print(f"processing beam {name=}")
-                abs_dy = .02 * length
+                
                 n = ret[0]
                 if n % 2:
-                    i =  j = int(n / 2) + 1
+                    i = j = int(n / 2) + 1
                 else:
                     i = int(n / 2)
                     j = i + 1
+                
                 # start rebars
                 start_ta = ret[4][0]
                 start_ba = ret[6][0]
                 start_lt = ret[10][0] / 2
                 torsion_rebars_area = min(start_lt, torsion_rebars_areas)
-                # if start_lt == 0:
-                #     torsion_rebars_area = 0
-                # else:
-                #     torsion_rebars_area = torsion_rebars_areas
                 additional_start_ta = start_ta * moment_redistribution_negative_coefficient - top_rebars_areas + start_lt - torsion_rebars_area
                 additional_start_ba = start_ba - bot_rebars_areas + start_lt - torsion_rebars_area
+                
                 # end rebars
                 end_ta = ret[4][-1]
                 end_ba = ret[6][-1]
                 end_lt = ret[10][-1] / 2
                 torsion_rebars_area = min(end_lt, torsion_rebars_areas)
-                # if end_lt == 0:
-                #     torsion_rebars_area = 0
-                # else:
-                #     torsion_rebars_area = torsion_rebars_areas
                 additional_end_ta = end_ta * moment_redistribution_negative_coefficient - top_rebars_areas + end_lt - torsion_rebars_area
                 additional_end_ba = end_ba - bot_rebars_areas + end_lt - torsion_rebars_area
-                # midle rebars
+                
+                # middle rebars
                 if n < 3:
                     additional_mid_ta = 0
                     additional_mid_ba = 0
@@ -258,53 +377,34 @@ def export_to_dxf_beam_rebars(
                     mid_ba = (ret[6][i] + ret[6][j]) / 2
                     mid_lt = (ret[10][i] + ret[10][j]) / 2 / 2
                     torsion_rebars_area = min(mid_lt, torsion_rebars_areas)
-                    # if mid_lt == 0:
-                    #     torsion_rebars_area = 0
-                    # else:
-                    #     torsion_rebars_area = torsion_rebars_areas
                     additional_mid_ta = mid_ta - top_rebars_areas + mid_lt - torsion_rebars_area
                     additional_mid_ba = mid_ba * moment_redistribution_positive_coefficient - bot_rebars_areas + mid_lt - torsion_rebars_area
-                xc = (x1 + x2) / 2
-                yc = (y1 + y2) / 2
-                alpha_start = math.atan(abs_dy / (x_coeff * length))
-                alpha_mid = math.atan(abs_dy / (0.5 * length))
-                alpha_end = math.atan(abs_dy / ((1 - x_coeff) * length))
-                if (x2 - x1) == 0:
-                    rotation = math.radians(90)
-                else:
-                    rotation = math.atan((y2 - y1) / (x2 - x1))
-                for x, y, areas, alpha in zip((x1, x1, x1), (y1, y1, y1), 
-                                    (
-                                        (additional_start_ta, additional_start_ba),
-                                        (additional_mid_ta, additional_mid_ba),
-                                        (additional_end_ta, additional_end_ba),
-                                        ),
-                                        (alpha_start, alpha_mid, alpha_end),
-                                        ):
-                    for area, loc, sign in zip(areas, ('T', 'B'), (1, -1)):
-                        area *= 10000
-                        if area > 0.2 or area < -.5:
-                            color = 3
-                            if area < 0:
-                                color = 8
-                            r = abs(abs_dy / math.sin(alpha))
-                            teta_alph = rotation + sign * alpha
-                            dx = r * math.cos(teta_alph)
-                            dy = r * math.sin(teta_alph)
-                            mtext = block.add_mtext(f"{loc}={area:.2f}", dxfattribs = {'color': color, 'style': 'ROMANT'})
-                            mtext.set_location(insert=(x + dx + block_dx, y + dy), attachment_point=5)
-                            mtext.dxf.rotation = math.degrees(rotation)
-                            mtext.dxf.char_height = .013 * length
-        # frame_props = etabs.frame_obj.get_section_type_and_geometry(columns)
-        # for name in columns:
-        #     x1, y1, x2, y2 = etabs.frame_obj.get_xy_of_frame_points(name)
-        #     rotation = etabs.SapModel.FrameObj.GetLocalAxes(name)[0]
-        #     props = frame_props.get(name)
-        #     b = props.get('b', .5)
-        #     d = props.get('d', .5)
-        #     polygon = convert_5point_to_8point(x1, y1, b, d, a_=rotation - 90)
-        #     for p1, p2 in zip(polygon, polygon[1:] + [polygon[0]]):
-        #         block.add_line((p1[0] + dx, p1[1]), (p2[0] + dx, p2[1]), dxfattribs = {'color': 3})
+                
+                # Ready text for top and bot
+                # [start, middle, end]
+                text_top = [
+                    f"T={additional_start_ta*10000:.2f}" if abs(additional_start_ta*10000) > 0.2 else "",
+                    f"T={additional_mid_ta*10000:.2f}" if abs(additional_mid_ta*10000) > 0.2 else "",
+                    f"T={additional_end_ta*10000:.2f}" if abs(additional_end_ta*10000) > 0.2 else ""
+                ]
+                
+                text_bottom = [
+                    f"B={additional_start_ba*10000:.2f}" if abs(additional_start_ba*10000) > 0.2 else "",
+                    f"B={additional_mid_ba*10000:.2f}" if abs(additional_mid_ba*10000) > 0.2 else "",
+                    f"B={additional_end_ba*10000:.2f}" if abs(additional_end_ba*10000) > 0.2 else ""
+                ]
+                
+                # adding text to dxf
+                add_text_along_line(
+                    x1, y1, x2, y2,
+                    block=block,
+                    text_top=text_top,
+                    text_bottom=text_bottom,
+                    offset=0.02,
+                    text_height=0.013,
+                    block_dx=block_dx,
+                    x_coeff=x_coeff,
+                )
         xmin, ymin, xmax, ymax = etabs.story.get_story_boundbox(story, len_unit='m')
         block.add_text(f"Elevation: {int(level * 100)}", dxfattribs={'height': .30, 'style': 'ROMANT'}).set_pos((block_dx + (xmax - xmin) / 2, ymin - 1))
         block_dx += xmax * 1.2
