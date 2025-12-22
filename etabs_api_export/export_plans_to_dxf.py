@@ -164,7 +164,8 @@ def export_to_dxf(
 
 
 def add_text_along_line(x1, y1, x2, y2, block, text_top, text_bottom, 
-                        offset=0.02, text_height=0.013, block_dx=0, x_coeff=0.1):
+                        offset=0.02, text_height=0.013, block_dx=0, x_coeff=0.1,
+                        positive_color: int=3, negative_color: int=8):
     """
     Add text parallel to a line at specified positions along the line
     
@@ -179,6 +180,13 @@ def add_text_along_line(x1, y1, x2, y2, block, text_top, text_bottom,
         block_dx: X offset for block
         x_coeff: Distance from start/end as fraction of length (e.g., 0.1 for 10%)
     """
+    def get_color(text):
+        area = float(text[2:])
+        if area > 0:
+            color = positive_color
+        else:
+            color = negative_color
+        return color
     
     # Calculate line properties
     dx = x2 - x1
@@ -258,9 +266,10 @@ def add_text_along_line(x1, y1, x2, y2, block, text_top, text_bottom,
         
         # Add top text if not empty
         if top_text and top_text.strip():
+            color = get_color(top_text)
             mtext_top = block.add_mtext(
                 top_text, 
-                dxfattribs={'color': 3, 'style': 'ROMANT'}
+                dxfattribs={'color': color, 'style': 'ROMANT'}
             )
             mtext_top.set_location(
                 insert=(top_x, top_y), 
@@ -271,9 +280,10 @@ def add_text_along_line(x1, y1, x2, y2, block, text_top, text_bottom,
         
         # Add bottom text if not empty
         if bottom_text and bottom_text.strip():
+            color = get_color(bottom_text)
             mtext_bottom = block.add_mtext(
                 bottom_text, 
-                dxfattribs={'color': 3, 'style': 'ROMANT'}
+                dxfattribs={'color': color, 'style': 'ROMANT'}
             )
             mtext_bottom.set_location(
                 insert=(bottom_x, bottom_y), 
@@ -294,6 +304,7 @@ def export_to_dxf_beam_rebars(
         frame_names: Union[Iterable, None]=None,
         moment_redistribution_positive_coefficient: float=1.1,
         moment_redistribution_negative_coefficient: float=0.9,
+        ignore_rebar_area: float=0.2, # cm
 
 ):
     dxf_temp = etabs_api_path / "etabs_api_export" / "templates" / "dxf" / "TEMPLATE_PLANS_OF_STORIES.dxf"
@@ -383,15 +394,15 @@ def export_to_dxf_beam_rebars(
                 # Ready text for top and bot
                 # [start, middle, end]
                 text_top = [
-                    f"T={additional_start_ta*10000:.2f}" if abs(additional_start_ta*10000) > 0.2 else "",
-                    f"T={additional_mid_ta*10000:.2f}" if abs(additional_mid_ta*10000) > 0.2 else "",
-                    f"T={additional_end_ta*10000:.2f}" if abs(additional_end_ta*10000) > 0.2 else ""
+                    f"T={additional_start_ta*10000:.2f}" if abs(additional_start_ta*10000) > ignore_rebar_area else "",
+                    f"T={additional_mid_ta*10000:.2f}" if abs(additional_mid_ta*10000) > ignore_rebar_area else "",
+                    f"T={additional_end_ta*10000:.2f}" if abs(additional_end_ta*10000) > ignore_rebar_area else ""
                 ]
                 
                 text_bottom = [
-                    f"B={additional_start_ba*10000:.2f}" if abs(additional_start_ba*10000) > 0.2 else "",
-                    f"B={additional_mid_ba*10000:.2f}" if abs(additional_mid_ba*10000) > 0.2 else "",
-                    f"B={additional_end_ba*10000:.2f}" if abs(additional_end_ba*10000) > 0.2 else ""
+                    f"B={additional_start_ba*10000:.2f}" if abs(additional_start_ba*10000) > ignore_rebar_area else "",
+                    f"B={additional_mid_ba*10000:.2f}" if abs(additional_mid_ba*10000) > ignore_rebar_area else "",
+                    f"B={additional_end_ba*10000:.2f}" if abs(additional_end_ba*10000) > ignore_rebar_area else ""
                 ]
                 
                 # adding text to dxf
