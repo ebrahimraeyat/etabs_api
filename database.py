@@ -580,8 +580,9 @@ class DatabaseTables:
             cum_story_mass[story] = cum_mass
         return cum_story_mass
 
-    def get_story_mass(self):
-        self.etabs.set_current_unit('kgf', 'm')
+    def get_story_mass(self, unit: tuple=('kgf', 'm')):
+        if unit is not None:
+            self.etabs.set_current_unit(*unit)
         self.etabs.run_analysis()
         TableKey = 'Centers Of Mass And Rigidity'
         [_, _, FieldsKeysIncluded, _, TableData, _] = self.read_table(TableKey)

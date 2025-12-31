@@ -11,6 +11,8 @@ import math
 import sys
 import json
 
+from python_functions import change_unit
+
 
 from load_patterns import LoadPatterns
 from load_cases import LoadCases
@@ -850,7 +852,7 @@ class EtabsModel:
     
     def get_irregularity_of_mass(self, story_mass=None):
         if not story_mass:
-            story_mass = self.database.get_story_mass()
+            story_mass = self.database.get_story_mass(unit=('tonf', 'm'))
         for i, sm in enumerate(story_mass):
             m_neg1 = float(story_mass[i - 1][1]) * 1.5
             m = float(sm[1])
@@ -861,7 +863,7 @@ class EtabsModel:
             if i == 0:
                 m_neg1 = m
             sm.extend([m_neg1, m_plus1])
-        fields = ('Story', 'Mass X', '1.5 * Below', '1.5 * Above')
+        fields = ('Story', 'Mass (tonf)', '1.5 * Below', '1.5 * Above')
         return story_mass, fields
 
     def add_load_case_in_center_of_rigidity(self, story_name, x, y):
