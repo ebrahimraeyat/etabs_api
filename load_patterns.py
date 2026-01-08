@@ -299,7 +299,7 @@ class LoadPatterns:
         for name in names:
             if name in df.Name.unique():
                 ser = df[df['Name'] == name]['C']
-                c.append(float(ser.values))
+                c.append(float(ser.values[0]))
         return c
     
     def get_expanded_seismic_load_patterns(self) -> tuple:
