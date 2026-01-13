@@ -103,7 +103,7 @@ class ShearWall:
         if df is None:
             return
         df['DesignCheck'] = type_
-        self.etabs.database.write(table_key, df.astype(str))
+        return self.etabs.database.write(table_key, df.astype(str))
 
     def get_wall_ratios(self) -> pandas.DataFrame:
         self.start_design()

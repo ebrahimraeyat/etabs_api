@@ -312,7 +312,7 @@ class Area:
         if self.etabs.software == 'ETABS':
             df.insert(loc=1, column='Story', value=story)
         table_key = 'Strip Object Connectivity'
-        self.etabs.database.write(table_key, df)
+        return self.etabs.database.write(table_key, df)
 
     def export_freecad_stiff_elements(self, doc : 'App.Document' = None):
         self.etabs.set_current_unit('kN', 'mm')

@@ -103,7 +103,7 @@ class DatabaseTables:
             data : Union[list, pd.core.frame.DataFrame],
             fields : Union[list, tuple, bool] = None,
             ) -> None:
-        self.apply_data(table_key, data, fields)
+        return self.apply_data(table_key, data, fields)
         
     def apply_data(self,
             table_key : str,
@@ -121,8 +121,7 @@ class DatabaseTables:
                 else:
                     return False
         self.SapModel.DatabaseTables.SetTableForEditingArray(table_key, 0, fields, 0, data)
-        NumFatalErrors, ret = self.apply_table()
-        return True, NumFatalErrors, ret
+        return self.apply_table()
 
     def apply_table(self):
         if self.SapModel.GetModelIsLocked():
@@ -136,7 +135,7 @@ class DatabaseTables:
         [NumFatalErrors, NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog,
             ret] = self.SapModel.DatabaseTables.ApplyEditedTables(FillImportLog, NumFatalErrors,
                                                             NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog)
-        return NumFatalErrors, ret
+        return NumFatalErrors, NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog, ret
 
     def read_table(self, table_key):
         GroupName = table_key
@@ -159,8 +158,8 @@ class DatabaseTables:
 
     def write_seismic_user_coefficient(self, TableKey, FieldsKeysIncluded, TableData):
         df = self.reshape_data_to_df(FieldsKeysIncluded, TableData)
-        ret = self.write_seismic_user_coefficient_df(df)
-        return ret
+        return self.write_seismic_user_coefficient_df(df)
+        
     
     def write_seismic_user_coefficient_df(self, 
             df,
@@ -177,8 +176,7 @@ class DatabaseTables:
                 self.SapModel.LoadPatterns.Add(name, load_type, 0, True)
                 current_names.add(name)
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
-        ret = self.apply_data(table_key, df)
-        return ret[1:]
+        return self.apply_data(table_key, df)
 
     def expand_seismic_load_patterns(self,
         equal_names : dict = {
@@ -426,7 +424,7 @@ class DatabaseTables:
         multi_load_names = list(converted_loads.keys())
         filt = ~(dflp.Name.isin(multi_load_names))
         dflp = dflp.loc[filt]
-        self.apply_data(table_key, dflp)
+        return self.apply_data(table_key, dflp)
 
     def set_expand_loadcases(self,
             df : pd.core.frame.DataFrame,
@@ -644,7 +642,7 @@ class DatabaseTables:
         # input_df = input_df.append(pd.DataFrame.from_records(additional_rows, columns=FieldsKeysIncluded1))
         for row in additional_rows:
             input_df = input_df.append(row)
-        self.apply_data(table_key, input_df, fields_keys_included1)
+        return self.apply_data(table_key, input_df, fields_keys_included1)
     
     
     def write_daynamic_aj_user_coefficient(self, df=None):
@@ -706,7 +704,7 @@ class DatabaseTables:
         if self.etabs.etabs_main_version  < 20:
             df1 = df1.rename(col_map, axis=1)
         self.SapModel.SetModelIsLocked(False)
-        self.apply_data(table_key, df1)
+        return self.apply_data(table_key, df1)
 
     def get_center_of_rigidity(self):
         self.etabs.run_analysis()
@@ -794,14 +792,7 @@ class DatabaseTables:
             elif name in names_y:
                 earthquake[i_c] = str(cy)
         TableData = self.unique_data(data)
-        NumFatalErrors, ret = self.write_seismic_user_coefficient(TableKey, FieldsKeysIncluded, TableData)
-        # edb_filename, e2k_filename = self.etabs.export('.$et')
-        # self.SapModel.File.OpenFile(str(e2k_filename))
-        # solver_options = self.SapModel.Analyze.GetSolverOption_2()
-        # solver_options[1] = 1
-        # self.SapModel.Analyze.SetSolverOption_2(*solver_options[:-1])
-        # self.SapModel.File.Save(str(edb_filename))
-        return NumFatalErrors, ret
+        return self.write_seismic_user_coefficient(TableKey, FieldsKeysIncluded, TableData)
 
     def get_story_forces(
                     self,
@@ -990,7 +981,7 @@ class DatabaseTables:
             )
         data = self.unique_data(data)
         table_key = 'Section Cut Definitions'
-        self.write(table_key, data, fields)
+        return self.write(table_key, data, fields)
 
     def get_section_cuts_sap(self):
         try:
@@ -1350,7 +1341,7 @@ class DatabaseTables:
             df.columns = ['UniqueName', 'Consider for Cracking']
         else:
             df.columns = ['UniqueName', 'Consider']
-        self.write(table_key=table_key, data=df)
+        return self.write(table_key=table_key, data=df)
 
     def create_nonlinear_loadcases(self,
         dead: list,
@@ -1432,7 +1423,7 @@ class DatabaseTables:
         df.iloc[0] = ['User and Designed', str(min_tension_ratio), str(min_compression_ratio)]
         if self.etabs.etabs_main_version < 20:
             df.columns = ['Reinforcement Source', 'Minimum Tension Ratio', 'Minimum Compression Ratio']
-        self.etabs.database.write(table_key, df)
+        return self.etabs.database.write(table_key, df)
     
     def area_mesh_joints(self,
             areas: list = [],

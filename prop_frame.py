@@ -176,7 +176,7 @@ class PropFrame:
             df = pd.concat([df, df2], ignore_index=True)
         if self.etabs.etabs_main_version < 20:
             df = df.rename(columns=map_columns_of_concrete_rectangular_column)
-        self.etabs.database.write(table_key, df)
+        return self.etabs.database.write(table_key, df)
 
     @change_unit('N', 'mm')
     def create_steel_tube_with_command(self,
@@ -230,7 +230,7 @@ class PropFrame:
             df = pd.DataFrame([new_data], columns=cols)
         print(f"{df=}")
         df = df[columns]
-        self.etabs.database.write(table_key, df)
+        return self.etabs.database.write(table_key, df)
 
         
     

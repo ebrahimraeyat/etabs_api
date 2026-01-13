@@ -768,9 +768,9 @@ class EtabsModel:
         for earthquakes, new_factors in data:
             df.loc[df.Name.isin(earthquakes), cols] = new_factors
         print(df)
-        num_fatal_errors, ret = self.database.write_seismic_user_coefficient_df(df)
-        print(f"num_fatal_errors, ret = {num_fatal_errors}, {ret}")
-        return num_fatal_errors
+        ret = self.database.write_seismic_user_coefficient_df(df)
+        print(f"{ret=}")
+        return ret[0]
 
     def is_etabs_running(self):
         try:
@@ -848,7 +848,7 @@ class EtabsModel:
         self.load_patterns.select_all_load_patterns()
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         input_df = self.database.read(table_key, to_dataframe=True)
-        self.database.write_aj_user_coefficient(table_key, input_df, df)
+        return self.database.write_aj_user_coefficient(table_key, input_df, df)
     
     def get_irregularity_of_mass(self, story_mass=None):
         if not story_mass:

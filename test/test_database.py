@@ -75,8 +75,8 @@ def test_get_story_forces_of_loadcases():
 
 @open_etabs_file('shayesteh.EDB')
 def test_multiply_seismic_loads():
-    NumFatalErrors, ret = etabs.database.multiply_seismic_loads(.67)
-    assert NumFatalErrors == ret == 0
+    ret = etabs.database.multiply_seismic_loads(.67)
+    assert ret[0] == ret[1] == 0
     ret = etabs.SapModel.Analyze.RunAnalysis()
     assert ret == 0
 
