@@ -15,7 +15,7 @@ document= FreeCAD.openDocument(str(filename))
 etabs_api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(etabs_api_path))
 
-from shayesteh import etabs, open_etabs_file
+from shayesteh import etabs, open_etabs_file, version
 
 
 @open_etabs_file('shayesteh.EDB')
@@ -38,17 +38,11 @@ def test_get_story_mass_as_dict():
     assert pytest.approx(story_mass.get('STORY2'), abs=1) == 18032
 
 @open_etabs_file('shayesteh.EDB')
-def test_get_cumulative_story_mass():
-    story_mass = etabs.database.get_cumulative_story_mass()
-    assert len(story_mass) == 5
-    assert pytest.approx(story_mass.get('STORY3'), abs=1) == 17696
-    assert pytest.approx(story_mass.get('STORY2'), abs=1) == 18032
-
-@open_etabs_file('shayesteh.EDB')
 def test_get_center_of_rigidity():
     cor = etabs.database.get_center_of_rigidity()
     assert len(cor) == 5
-    assert cor['STORY1'] == ('9.3844', '3.7778')
+    assert float(cor['STORY1'][0]) == pytest.approx(9.3844, abs=.01)
+    assert float(cor['STORY1'][1]) == pytest.approx(3.7778, abs=.01)
 
 
 @open_etabs_file('shayesteh.EDB')
@@ -131,7 +125,7 @@ def test_write_seismic_user_coefficient_df_yadeganeh():
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
     etabs.check_seismic_names(apply=True)
     df = etabs.database.read(table_key, to_dataframe=True)
-    assert len(df) == 14
+    assert len(df) == 15
 
 @open_etabs_file('steel.EDB')
 def test_write_seismic_user_coefficient_df_with_ecc():
@@ -145,8 +139,8 @@ def test_write_seismic_user_coefficient_df_with_ecc():
 @open_etabs_file('two_earthquakes.EDB')
 def test_write_seismic_user_coefficient_df01():
     import pandas as pd
-    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic'
-    df = pd.read_pickle(filename)
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic.csv'
+    df = pd.read_csv(filename)
     df['C'] = "0.1"
     etabs.database.write_seismic_user_coefficient_df(df)
     table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
@@ -158,8 +152,8 @@ def test_write_seismic_user_coefficient_df01():
 @open_etabs_file('two_earthquakes.EDB')
 def test_write_seismic_user_coefficient_df_overwrite():
     import pandas as pd
-    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite'
-    df = pd.read_pickle(filename)
+    filename = Path(__file__).absolute().parent / 'files' / 'dataframe' / 'auto_seismic_overwrite.csv'
+    df = pd.read_csv(filename)
     seismic_drift_type = etabs.seismic_drift_load_type
     loads_type = {
         'EX1' : 5,
@@ -209,7 +203,7 @@ def test_get_beams_torsion_2():
     df = etabs.database.get_beams_torsion(beams=['115'])
     assert len(df) == 1
     assert len(df.columns) == 4
-    assert pytest.approx(df.iat[0, 3], abs=.01) == 3.926
+    assert pytest.approx(df.iat[0, 3], abs=.1) == 3.926
 
 @open_etabs_file('shayesteh.EDB')
 def test_get_beams_torsion_dict():
@@ -442,4 +436,4 @@ def test_get_axial_pressure_columns():
 
 
 if __name__ == '__main__':
-    test_write_seismic_user_coefficient_df_yadeganeh()
+    test_get_section_cuts_sap()

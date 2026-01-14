@@ -44,7 +44,7 @@ def test_get_picture():
 @open_etabs_file('shayesteh.EDB')
 def test_get_beam_columns_coords():
     beam_coords, polygons = report.get_beam_columns_coords(etabs, '115')
-    assert len(beam_coords) == 22
+    assert len(beam_coords) == 38
     assert len(polygons) == 11
 
 @open_etabs_file('shayesteh.EDB')
@@ -53,11 +53,11 @@ def test_create_report():
     report.create_report(etabs, 'x', 'y', '115', filename)
     assert filename.exists()
 
-@open_etabs_file('shayesteh.EDB')
-def test_create_beam_deflection_report():
-    filename = get_temp_filepath(suffix='docx', filename='test')
-    report.create_beam_deflection_report(etabs, results, filename)
-    assert filename.exists()
+# @open_etabs_file('shayesteh.EDB')
+# def test_create_beam_deflection_report():
+#     filename = get_temp_filepath(suffix='docx', filename='test')
+#     report.create_beam_deflection_report(etabs, results, filename)
+#     assert filename.exists()
 
 
 

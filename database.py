@@ -102,13 +102,15 @@ class DatabaseTables:
             table_key : str,
             data : Union[list, pd.core.frame.DataFrame],
             fields : Union[list, tuple, bool] = None,
+            fill_import_log: bool=True,
             ) -> None:
-        return self.apply_data(table_key, data, fields)
+        return self.apply_data(table_key, data, fields, fill_import_log)
         
     def apply_data(self,
             table_key : str,
             data : Union[list, pd.core.frame.DataFrame],
             fields : Union[list, tuple, bool] = None,
+            fill_import_log: bool=True,
             ) -> tuple:
         if isinstance(data, pd.core.frame.DataFrame):
             data = data.fillna(value='')
@@ -121,21 +123,16 @@ class DatabaseTables:
                 else:
                     return False
         self.SapModel.DatabaseTables.SetTableForEditingArray(table_key, 0, fields, 0, data)
-        return self.apply_table()
+        return self.apply_table(fill_import_log)
 
-    def apply_table(self):
-        if self.SapModel.GetModelIsLocked():
-            self.SapModel.SetModelIsLocked(False)
-        FillImportLog = True
-        NumFatalErrors = 0
-        NumErrorMsgs = 0
-        NumWarnMsgs = 0
-        NumInfoMsgs = 0
-        ImportLog = ''
-        [NumFatalErrors, NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog,
-            ret] = self.SapModel.DatabaseTables.ApplyEditedTables(FillImportLog, NumFatalErrors,
-                                                            NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog)
-        return NumFatalErrors, NumErrorMsgs, NumWarnMsgs, NumInfoMsgs, ImportLog, ret
+    def apply_table(self, fill_import_log: bool=True):
+        '''
+        ret: 0 if the function executes correctly, otherwise returns nonzero
+        '''
+        self.SapModel.SetModelIsLocked(False)
+        num_fatal_errors, num_error_msgs, num_warn_msgs, num_info_msgs, import_log, ret = \
+            self.SapModel.DatabaseTables.ApplyEditedTables(fill_import_log)
+        return num_fatal_errors, num_error_msgs, num_warn_msgs, num_info_msgs, import_log, ret
 
     def read_table(self, table_key):
         GroupName = table_key
@@ -491,10 +488,10 @@ class DatabaseTables:
             ):
         for table_key, df in expanded_tables.items():
             if len(df.columns) == 3:
-                fields = ('Design Type', 'Combo Type', 'Combo Name')
+                assert set(df.columns) == {'DesignType', 'ComboType', 'ComboName'}
             elif len(df.columns) == 2:
-                fields = ('Combo Type', 'Combo Name')
-            self.apply_data(table_key, df, fields)
+                assert set(df.columns) == {'ComboType', 'ComboName'}
+            self.apply_data(table_key, df)
 
     def expand_loads(self,
         equal_names : dict = {

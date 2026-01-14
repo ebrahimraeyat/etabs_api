@@ -742,9 +742,9 @@ class EtabsModel:
         table_key = 'Load Pattern Definitions - Auto Seismic - User Coefficient'
         [_, _, fields_keys_included, _, table_data, _] = self.database.read_table(table_key)
         table_data = self.apply_cfactor_to_tabledata(table_data, fields_keys_included, building, bot_story, top_story)
-        num_fatal_errors, ret = self.database.write_seismic_user_coefficient(table_key, fields_keys_included, table_data)
-        print(f"num_fatal_errors, ret = {num_fatal_errors}, {ret}")
-        return num_fatal_errors
+        ret = self.database.write_seismic_user_coefficient(table_key, fields_keys_included, table_data)
+        print(f"num_fatal_errors, ret = {ret[0]}, {ret}")
+        return ret[0]
     
     def apply_cfactors_to_edb(
             self,
