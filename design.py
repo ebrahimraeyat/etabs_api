@@ -265,10 +265,10 @@ class Design:
         additional_rebars: Add this to rebar area for calculating rho
         '''
             # prepare inputs for calculate deflections
+        texts = ['' for i in range(len(beam_names))]
         if isinstance(beam_names, pd.DataFrame):
             def add_beam_prop_to_df(row):
                 torsion_rebar = 'Torsion Rebar'
-                print(row)
                 if row[torsion_rebar]:
                     row[torsion_rebar] = None
                 else:
