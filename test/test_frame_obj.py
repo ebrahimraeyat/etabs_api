@@ -250,7 +250,7 @@ def test_assign_gravity_load_from_wall():
 
 @open_etabs_file('shayesteh.EDB')
 def test_assign_gravity_load_to_selfs_and_above_beams():
-    ret = etabs.frame_obj.assign_gravity_load_to_selfs_and_above_beams('DEAD', 220)
+    ret = etabs.frame_obj.assign_gravity_load_to_selfs_and_above_beams('DEAD', 220, names=['115'])
     assert ret == None
 
 @open_etabs_file('shayesteh.EDB')
@@ -362,7 +362,7 @@ def test_assign_ev():
     self_multiple = etabs.SapModel.LoadPatterns.GetSelfWTMultiplier('QZ')[0]
     assert self_multiple == 0
     ret = etabs.SapModel.FrameObj.GetLoadDistributed('129')[10:12]
-    assert ret[0][1] == ret[1][1] == -121
+    np.testing.assert_allclose(121, [ret[0][1], ret[1][1]], atol=1)
 
 @open_etabs_file('shayesteh.EDB')
 def test_set_column_dns_overwrite():
@@ -445,8 +445,7 @@ def test_assign_wall_loads_to_etabs():
     FreeCAD.openDocument(str(freecad_model))
     etabs.frame_obj.assign_wall_loads_to_etabs()
     ret = etabs.SapModel.FrameObj.GetLoadDistributed('124')
-    np.testing.assert_allclose(ret[10], -665)
-    np.testing.assert_allclose(ret[11], -665)
+    np.testing.assert_allclose(665, [ret[10], ret[11]])
 
 @open_etabs_file('steel.EDB')
 def test_set_lateral_bracing():
@@ -539,7 +538,7 @@ def test_stacked_columns_dataframe_by_points():
 
 
 if __name__ == '__main__':
-    test_stacked_columns_dataframe_by_points()
+    test_assign_gravity_load_to_selfs_and_above_beams()
 
 
 

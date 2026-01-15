@@ -1,15 +1,19 @@
 import os, sys, subprocess
 from typing import Union
 from pathlib import Path
+try:
+    import FreeCAD
+    import Part
+except ModuleNotFoundError:
+    FreeCAD = None
+    Part = None
+
+if FreeCAD and FreeCAD.GuiUp:
+    import FreeCADGui
 
 try:
-    from PySide.QtGui import QMessageBox, QFileDialog
-
-
-    import FreeCAD
-    import FreeCADGui
-    import Part
-    from PySide import QtCore
+    from PySide2.QtWidgets import QMessageBox, QFileDialog
+    from PySide2 import QtCore
     from PySide2 import QtWidgets
 except ModuleNotFoundError:
     pass
