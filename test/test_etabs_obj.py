@@ -272,7 +272,7 @@ def test_get_type_of_structure():
     assert typ == 'concrete'
 
 @open_etabs_file('steel.EDB')
-def test_get_type_of_structureـ۱():
+def test_get_type_of_structure_1():
     typ = etabs.get_type_of_structure()
     assert typ == 'steel'
     etabs.frame_obj.delete_frames()
@@ -758,7 +758,7 @@ def test_purge_model():
 def test_get_json_file_path_for_table_results():
     json_filename = "test.json"
     filename = etabs.get_json_file_path_for_table_results(json_filename=json_filename)
-    table_result_path = etabs.get_filepath() / "shayesteh_table_results"
+    table_result_path = etabs.get_filepath() / f"test{version}_table_results"
     assert filename == table_result_path / json_filename
 
 @open_etabs_file('shayesteh.EDB')
@@ -783,6 +783,6 @@ def test_get_x_and_y_system_ductility():
 
 
 if __name__ == '__main__':
-    test_get_sap_main_version()
+    test_angles_response_spectrums_analysis_two_systems()
 
 
