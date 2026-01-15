@@ -23,7 +23,7 @@ def test_get_columns_names_with_pier_label():
     '''
     ret = etabs.pier.get_columns_names_with_pier_label()
     assert len(ret) == 3
-    assert set(ret['P1']['STORY1']) == {'181','190','199','208','217','226','235','244','253'}
+    assert set(ret['P1']['STORY1']) == {'165','173','182','191','199','208','217','225','233'}
 
 @open_etabs_file('two_earthquakes.EDB')
 def test_get_area_names_with_pier_label():

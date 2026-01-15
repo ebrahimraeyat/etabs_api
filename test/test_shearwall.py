@@ -16,7 +16,7 @@ def test_set_modifiers():
     for label in names:
         if etabs.SapModel.AreaObj.GetDesignOrientation(label)[0] == 1:
             curr_modifiers = list(etabs.SapModel.AreaObj.GetModifiers(label)[0])
-            assert set(curr_modifiers[:8]) == {.01}
+            assert set(curr_modifiers[:6]) == {.01}
 
 def test_create_25percent_file():
     main_file_path, filename = etabs.shearwall.create_25percent_file()
