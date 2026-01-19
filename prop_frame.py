@@ -407,8 +407,8 @@ class PropFrame:
         if above_area > below_area:
             return CompareTwoColumnsEnum.section_area
         # check the rebars areas
-        n3_below, n2_below, area_below, corner_area_below = self.etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(below_sec)
-        n3_above, n2_above, area_above, corner_area_above = self.etabs.prop_frame.get_number_of_rebars_and_areas_of_column_section(above_sec)
+        n3_below, n2_below, area_below, corner_area_below = self.get_number_of_rebars_and_areas_of_column_section(below_sec)
+        n3_above, n2_above, area_above, corner_area_above = self.get_number_of_rebars_and_areas_of_column_section(above_sec)
         if corner_area_above > corner_area_below:
             return CompareTwoColumnsEnum.corner_rebar_size
         if area_above > area_below:

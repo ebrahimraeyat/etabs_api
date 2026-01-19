@@ -5,8 +5,7 @@ try:
     import FreeCAD
     import Part
 except ModuleNotFoundError:
-    FreeCAD = None
-    Part = None
+    pass
 
 if FreeCAD and FreeCAD.GuiUp:
     import FreeCADGui
