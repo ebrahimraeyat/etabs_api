@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Iterable, Union, List, Dict, Tuple, Set, Optional
 import math
 import copy
 
@@ -964,6 +964,166 @@ class FrameObj:
         if unit is not None:
             self.etabs.set_current_unit(*curr_unit)
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+
+    def get_continuous_beam_groups(
+        self,
+        beams: Union[None, Iterable[str]] = None,
+        story: Union[str, None] = None,
+        max_turn_angle_deg: float = 45.0,
+        exclude_frames: Union[None, Iterable[str]] = None,
+    ) -> List[List[str]]:
+        """Return groups of continuous beams based on ETABS connectivity.
+
+        A "continuous" group is a chain of beam frame objects connected end-to-end
+        (sharing a joint) where the angle between successive members at the joint is
+        nearly straight (collinear). This is intended for optimization constraints
+        like "all beams in a continuous line share section dimensions".
+
+        Notes:
+        - This uses ETABS point connectivity (`FrameObj.GetPoints`) and joint XY.
+        - Continuity criterion: angle between direction vectors at the joint satisfies
+          `angle >= 180 - max_turn_angle_deg`.
+        - If a joint branches (T/L), the algorithm follows the most-straight path.
+
+        Parameters
+        - beams: explicit frame object names (UniqueName). If None, beams are auto-detected.
+        - story: optional story filter (only beams on this story are included).
+        - max_turn_angle_deg: maximum allowed deviation from a straight line.
+        - exclude_frames: frames to ignore.
+
+        Returns
+        - list of groups, each group is an ordered list of frame names.
+        """
+
+        import math
+
+        exclude = set(exclude_frames or [])
+
+        if beams is None:
+            try:
+                df = self.etabs.database.read(
+                    table_key='Beam Object Connectivity',
+                    to_dataframe=True,
+                    cols=['UniqueName', 'Story'],
+                )
+                if story is not None:
+                    df = df[df['Story'] == story]
+                beams = list(df['UniqueName'].astype(str))
+            except Exception:
+                # Fallback: scan all frames and use design orientation.
+                names = list(self.SapModel.FrameObj.GetNameList()[1])
+                beams = [n for n in names if self.is_beam(n) and (story is None or self.is_frame_on_story(n, story))]
+
+        beams = [b for b in beams if b not in exclude]
+        if not beams:
+            return []
+
+        # Cache endpoints and point coordinates
+        beam_pts: Dict[str, Tuple[str, str]] = {}
+        pt_xy: Dict[str, Tuple[float, float]] = {}
+        for b in beams:
+            p1, p2, _ = self.SapModel.FrameObj.GetPoints(b)
+            beam_pts[b] = (p1, p2)
+            if p1 not in pt_xy:
+                x, y = self.SapModel.PointObj.GetCoordCartesian(p1)[:2]
+                pt_xy[p1] = (float(x), float(y))
+            if p2 not in pt_xy:
+                x, y = self.SapModel.PointObj.GetCoordCartesian(p2)[:2]
+                pt_xy[p2] = (float(x), float(y))
+
+        joint_to_beams: Dict[str, List[str]] = {}
+        for b, (p1, p2) in beam_pts.items():
+            joint_to_beams.setdefault(p1, []).append(b)
+            joint_to_beams.setdefault(p2, []).append(b)
+
+        def other_point(beam: str, joint: str) -> Optional[str]:
+            p1, p2 = beam_pts[beam]
+            if joint == p1:
+                return p2
+            if joint == p2:
+                return p1
+            return None
+
+        def vec_xy(p_from: str, p_to: str) -> Tuple[float, float]:
+            x1, y1 = pt_xy[p_from]
+            x2, y2 = pt_xy[p_to]
+            return (x2 - x1, y2 - y1)
+
+        def angle_between(v1: Tuple[float, float], v2: Tuple[float, float]) -> float:
+            dot = v1[0] * v2[0] + v1[1] * v2[1]
+            n1 = math.hypot(v1[0], v1[1])
+            n2 = math.hypot(v2[0], v2[1])
+            if n1 == 0.0 or n2 == 0.0:
+                return 0.0
+            c = dot / (n1 * n2)
+            c = max(-1.0, min(1.0, c))
+            return math.degrees(math.acos(c))
+
+        straight_min_angle = 180.0 - float(max_turn_angle_deg)
+
+        def pick_next(curr_beam: str, joint: str, used: Set[str]) -> Optional[str]:
+            op = other_point(curr_beam, joint)
+            if op is None:
+                return None
+            v_curr = vec_xy(joint, op)
+            best_beam = None
+            best_angle = -1.0
+            for cand in joint_to_beams.get(joint, []):
+                if cand == curr_beam or cand in used:
+                    continue
+                cop = other_point(cand, joint)
+                if cop is None:
+                    continue
+                v_cand = vec_xy(joint, cop)
+                ang = angle_between(v_curr, v_cand)
+                if ang >= straight_min_angle and ang > best_angle:
+                    best_beam = cand
+                    best_angle = ang
+            return best_beam
+
+        used_global: Set[str] = set()
+        groups: List[List[str]] = []
+
+        for seed in beams:
+            if seed in used_global:
+                continue
+
+            p1, p2 = beam_pts[seed]
+            used_local = {seed}
+
+            # Extend from p1 and p2 independently
+            left: List[str] = []
+            curr, joint = seed, p1
+            while True:
+                nxt = pick_next(curr, joint, used_local)
+                if not nxt:
+                    break
+                left.append(nxt)
+                used_local.add(nxt)
+                joint = other_point(nxt, joint)
+                if joint is None:
+                    break
+                curr = nxt
+
+            right: List[str] = []
+            curr, joint = seed, p2
+            while True:
+                nxt = pick_next(curr, joint, used_local)
+                if not nxt:
+                    break
+                right.append(nxt)
+                used_local.add(nxt)
+                joint = other_point(nxt, joint)
+                if joint is None:
+                    break
+                curr = nxt
+
+            group = list(reversed(left)) + [seed] + right
+            for b in group:
+                used_global.add(b)
+            groups.append(group)
+
+        return groups
 
     def offset_frame(self, 
                 distance : float,

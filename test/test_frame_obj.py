@@ -11,6 +11,59 @@ sys.path.insert(0, str(etabs_api_path))
 
 from shayesteh import etabs, open_etabs_file, version
 
+
+def test_get_continuous_beam_groups_descending_x_chain():
+    """Regression: continuity grouping should not assume increasing X.
+
+    Example chain (connected end-to-end):
+    p1 = (2, 10)
+    p2 = (0, 0)
+    p3 = (1, -10)
+    p4 = (-1, -20)
+    """
+
+    from frame_obj import FrameObj
+
+    points = {
+        'P1': (2.0, 10.0, 0.0),
+        'P2': (0.0, 0.0, 0.0),
+        'P3': (1.0, -10.0, 0.0),
+        'P4': (-1.0, -20.0, 0.0),
+    }
+    frames = {
+        'F12': ('P1', 'P2'),
+        'F23': ('P2', 'P3'),
+        'F34': ('P3', 'P4'),
+    }
+
+    class _FakeFrameObjAPI:
+        def GetPoints(self, name):
+            p1, p2 = frames[name]
+            return (p1, p2, 0)
+
+    class _FakePointObjAPI:
+        def GetCoordCartesian(self, pt_name):
+            return points[pt_name]
+
+    class _FakeSapModel:
+        def __init__(self):
+            self.FrameObj = _FakeFrameObjAPI()
+            self.PointObj = _FakePointObjAPI()
+
+    fake = _FakeSapModel()
+
+    frame_obj = FrameObj.__new__(FrameObj)
+    frame_obj.SapModel = fake
+    frame_obj.etabs = None
+
+    groups = frame_obj.get_continuous_beam_groups(
+        beams=['F12', 'F23', 'F34'],
+        max_turn_angle_deg=45.0,
+    )
+
+    # Single chain expected; order should be preserved for the provided beam list.
+    assert groups == [['F12', 'F23', 'F34']]
+
 @open_etabs_file('madadi.EDB')
 def test_get_start_end_releases():
     ret = etabs.frame_obj.get_start_end_releases(['215', '157', '152', '150', '123'])
