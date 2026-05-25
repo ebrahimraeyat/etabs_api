@@ -1270,7 +1270,7 @@ class EtabsModel:
         create_file: bool = True,
         ):
         version = self.etabs_main_version
-        if version < 22 and create_file:
+        if create_file:
             # get main file path
             main_file_path = Path(self.SapModel.GetModelFilename())
             main_file_path = main_file_path.with_suffix(".EDB")
@@ -1291,7 +1291,6 @@ class EtabsModel:
             create_file,
             structure_type == 'Sway Intermediate',
             open_main_file,
-            version < 22,
         )):
             self.SapModel.File.OpenFile(str(main_file_path))
         return df
