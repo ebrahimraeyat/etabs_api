@@ -5,7 +5,31 @@ from dataclasses import dataclass
 
 import pandas as pd
 import numpy as np
-from scipy.interpolate import interp1d
+
+
+class interp1d:
+    """Linear interpolation with extrapolation (replaces scipy.interpolate.interp1d kind=1)."""
+
+    def __init__(self, x, y, kind=1, fill_value='extrapolate', **kwargs):
+        self._x = np.asarray(x, dtype=float)
+        self._y = np.asarray(y, dtype=float)
+
+    def __call__(self, x_new):
+        scalar = np.ndim(x_new) == 0
+        x_new = np.atleast_1d(np.asarray(x_new, dtype=float))
+        result = np.interp(x_new, self._x, self._y)
+        # np.interp clamps at endpoints; add linear extrapolation manually
+        if len(self._x) >= 2:
+            left = x_new < self._x[0]
+            if np.any(left):
+                slope = (self._y[1] - self._y[0]) / (self._x[1] - self._x[0])
+                result[left] = self._y[0] + slope * (x_new[left] - self._x[0])
+            right = x_new > self._x[-1]
+            if np.any(right):
+                slope = (self._y[-1] - self._y[-2]) / (self._x[-1] - self._x[-2])
+                result[right] = self._y[-1] + slope * (x_new[right] - self._x[-1])
+        return float(result[0]) if scalar else result
+
 
 import python_functions
 
