@@ -292,6 +292,86 @@ def test_get_beam_point_restraints_with_respect_to_supports_and_remove_duplicate
     assert rets[-1].location == end_support[0]
     assert rets[-1].flange_restraints == end_support[1]
 
+def test_restraint_value():
+    # Strength order U < P < L < F
+    assert design_functions.restraint_value('U') == 0
+    assert design_functions.restraint_value('P') == 1
+    assert design_functions.restraint_value('L') == 2
+    assert design_functions.restraint_value('F') == 3
+    assert design_functions.restraint_value('L') > design_functions.restraint_value('P')
+
+def _gravity_beam_diagram(period=8):
+    x_values = np.arange(0, period + 0.1, 0.1)
+    # negative (hogging) at the ends, positive (sagging) in the middle
+    m_values = -np.cos((2 * np.pi / period) * x_values)
+    return x_values, m_values
+
+def test_dedup_keeps_stronger_restraint_with_bound_support():
+    """When a bound restraint endpoint coincides with a nominal support, the
+    stronger restraint must be kept (regression for bound supports)."""
+    period = 8
+    x_values, m_values = _gravity_beam_diagram(period)
+    # support region modeled as a bound (0..1) 'FF'; nominal end supports 'UU'
+    restraints = [((0.0, 1.0), 'FF')]
+    point_restraints, _ = design_functions.convert_beam_restraints_to_points(
+        restraints, x_values, m_values)
+    rets = design_functions.get_beam_point_restraints_with_respect_to_supports_and_remove_duplicates(
+        point_restraints,
+        (x_values[0], 'UU'),
+        (x_values[-1], 'UU'),
+        x_values=x_values,
+        m_values=m_values,
+    )
+    by_loc = {round(r.location, 3): r for r in rets}
+    # the bound's 'FF' must override the weaker 'UU' support at x = 0
+    assert by_loc[0.0].flange_restraints == 'FF'
+    assert by_loc[0.0].cf_restraint == 'F'
+    # no bound at the far end -> stays unrestrained
+    assert by_loc[round(x_values[-1], 3)].cf_restraint == 'U'
+
+def test_old_dedup_discards_bound_restraint_at_support():
+    """Documents the original (buggy) behaviour kept under the *_old name:
+    the nominal support wins and the bound restraint is lost."""
+    period = 8
+    x_values, m_values = _gravity_beam_diagram(period)
+    restraints = [((0.0, 1.0), 'FF')]
+    point_restraints, _ = design_functions.convert_beam_restraints_to_points(
+        restraints, x_values, m_values)
+    rets = design_functions.get_beam_point_restraints_with_respect_to_supports_and_remove_duplicates_old(
+        point_restraints,
+        (x_values[0], 'UU'),
+        (x_values[-1], 'UU'),
+        x_values=x_values,
+        m_values=m_values,
+    )
+    by_loc = {round(r.location, 3): r for r in rets}
+    # buggy: the 'UU' support discarded the bound's 'FF'
+    assert by_loc[0.0].flange_restraints == 'UU'
+    assert by_loc[0.0].cf_restraint == 'U'
+
+def test_segments_with_bound_supports_both_ends():
+    """Bound supports at both ends ('FF') with 'UU' nominal end points."""
+    period = 8
+    x_values, m_values = _gravity_beam_diagram(period)
+    restraints = [((0.0, 1.0), 'FF'), ((period - 1, period), 'FF')]
+    segments = design_functions.get_segments_of_frame(
+        restraints, x_values, m_values, start_support='UU', end_support='UU')
+    assert len(segments) == 1
+    seg = segments[0]
+    assert seg.restraints == 'FF'
+    assert math.isclose(seg.start_restraint.location, 1.0)
+    assert math.isclose(seg.end_restraint.location, period - 1)
+
+def test_segments_composite_unchanged_by_fix():
+    """Composite full-span bound ('LU') must still yield the two end segments."""
+    period = 8
+    x_values, m_values = _gravity_beam_diagram(period)
+    restraints = [((0.0, period), 'LU')]
+    segments = design_functions.get_segments_of_frame(
+        restraints, x_values, m_values, start_support='FF', end_support='FF')
+    assert len(segments) == 2
+    assert {s.restraints for s in segments} == {'FL', 'LF'}
+
 def test_point_restraint():
     # Beam with fix ends and gravity load
     period = 8  # Period of the cosine function

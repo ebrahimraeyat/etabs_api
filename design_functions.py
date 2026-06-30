@@ -416,7 +416,53 @@ def convert_beam_restraints_to_points(
         key= lambda x: x.location)
     return point_restraints, bounds
 
+_RESTRAINT_STRENGTH = {'U': 0, 'P': 1, 'L': 2, 'F': 3}
+
+
+def restraint_value(restraint):
+    """Numeric strength of a single-flange restraint char (U < P < L < F)."""
+    return _RESTRAINT_STRENGTH.get(restraint, 0)
+
+
 def get_beam_point_restraints_with_respect_to_supports_and_remove_duplicates(
+        point_restraints,
+        start_support,
+        end_support,
+        x_values,
+        m_values,
+        tolerance: float = 0.001,
+        ):
+    if isinstance(start_support, (tuple, list)):
+        start_support = PointRestraint('A', start_support[0], start_support[1], x_values, m_values, toleranc=tolerance)
+    if isinstance(end_support, (tuple, list)):
+        end_support = PointRestraint('B', end_support[0], end_support[1], x_values, m_values, toleranc=tolerance)
+    if len(point_restraints) > 0 and isinstance(point_restraints[0], (tuple, list)):
+        point_restraints = [PointRestraint(None, p[0], p[1], x_values, m_values, toleranc=tolerance) for p in point_restraints]
+
+    point_restraints = [start_support, end_support] + point_restraints
+    results = []
+    repeat = []
+
+    for i, x_restraint in enumerate(point_restraints):
+        if i in repeat:
+            continue
+        # Among all restraints coincident with this location keep the one whose
+        # critical-flange restraint has the maximum value, so a nominal support
+        # cannot discard a real (e.g. bound) restraint at the same location.
+        best = x_restraint
+        for j, y_restraint in enumerate(point_restraints[i + 1:], start=i + 1):
+            if math.isclose(x_restraint.location, y_restraint.location):
+                repeat.append(j)
+                if restraint_value(y_restraint.cf_restraint) > restraint_value(best.cf_restraint):
+                    best = y_restraint
+        # preserve the support label (A/B) when a stronger unnamed restraint wins
+        if best is not x_restraint and x_restraint.name is not None and best.name is None:
+            best.name = x_restraint.name
+        results.append(best)
+    point_restraints = sorted(results, key= lambda x: x.location)
+    return point_restraints
+
+def get_beam_point_restraints_with_respect_to_supports_and_remove_duplicates_old(
         point_restraints,
         start_support,
         end_support,
