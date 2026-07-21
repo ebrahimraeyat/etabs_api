@@ -69,6 +69,45 @@ class FrameObj:
                 ret[i] = "Partially Fixed"
         return ret
 
+    @staticmethod
+    def _classify_end_release(
+        release: Union[Tuple[bool, ...], List[bool]],
+        fixity: Union[Tuple[float, ...], List[float]],
+        tol: float = 1e-9,
+    ) -> str:
+        """Classify one frame end as Fixed, Pinned, or Partially Fixed."""
+        rel = tuple(bool(v) for v in release)
+        fix = tuple(float(v) for v in fixity)
+        if any(abs(v) > tol for v in fix):
+            return "Partially Fixed"
+        # ETABS release tuple has 6 DOFs; rotational releases are the last 3.
+        if len(rel) >= 6 and any(rel[3:]):
+            return "Pinned"
+        return "Fixed"
+
+    def get_beam_end_release_state(self, name: str) -> Tuple[str, str]:
+        """Return (start_state, end_state) for one beam frame object."""
+        releases = self.SapModel.FrameObj.GetReleases(name)
+        start_state = self._classify_end_release(releases[0], releases[2])
+        end_state = self._classify_end_release(releases[1], releases[3])
+        return start_state, end_state
+
+    def is_beam_simply_supported(self, name: str) -> bool:
+        """True if both beam ends are pinned based on ETABS release/fixity."""
+        start_state, end_state = self.get_beam_end_release_state(name)
+        return start_state == "Pinned" and end_state == "Pinned"
+
+    def get_beams_simple_support_map(self, frames: Iterable[str]) -> Dict[str, bool]:
+        """Return {frame_name: is_simply_supported} for the provided beams."""
+        out: Dict[str, bool] = {}
+        for name in frames:
+            try:
+                out[name] = self.is_beam_simply_supported(name)
+            except Exception:
+                # Keep this helper robust for mixed selections / API issues.
+                continue
+        return out
+
     def is_column(self, name):
         return self.SapModel.FrameObj.GetDesignOrientation(name)[0] == 1
     
