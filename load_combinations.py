@@ -96,12 +96,32 @@ class LoadCombination:
         self,
         combo: str,
         seismic_load_cases: Union[list, bool] = None,
-        ):
+        ) -> bool:
         if seismic_load_cases is None:
             seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
-        load_cases = self.SapModel.RespCombo.GetCaseList(combo)[2]
-        for lc in load_cases:
-            if lc in seismic_load_cases:
+        return self._is_seismic_combo(combo, set(seismic_load_cases or []), set())
+
+    def _is_seismic_combo(
+        self,
+        combo: str,
+        seismic_load_cases: set,
+        checked_combos: set,
+        ) -> bool:
+        if combo in checked_combos:
+            return False
+        checked_combos.add(combo)
+        ret = self.SapModel.RespCombo.GetCaseList(combo)
+        if ret[-1] != 0:
+            return False
+        _, case_types, case_names, _ = ret[:-1]
+        for case_type, case_name in zip(case_types, case_names):
+            if case_type == 0 and case_name in seismic_load_cases:
+                return True
+            if case_type == 1 and self._is_seismic_combo(
+                    case_name,
+                    seismic_load_cases,
+                    checked_combos,
+                    ):
                 return True
         return False
     
