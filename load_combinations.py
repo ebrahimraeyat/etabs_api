@@ -99,31 +99,74 @@ class LoadCombination:
         ) -> bool:
         if seismic_load_cases is None:
             seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
-        return self._is_seismic_combo(combo, set(seismic_load_cases or []), set())
+        return self._is_seismic_combo(combo, set(seismic_load_cases or []), set(), set())
 
     def _is_seismic_combo(
         self,
         combo: str,
         seismic_load_cases: set,
-        checked_combos: set,
+        active_combos: set,
+        active_load_cases: set,
         ) -> bool:
-        if combo in checked_combos:
+        if combo in active_combos:
             return False
-        checked_combos.add(combo)
-        ret = self.SapModel.RespCombo.GetCaseList(combo)
-        if ret[-1] != 0:
+        active_combos.add(combo)
+        try:
+            ret = self.SapModel.RespCombo.GetCaseList(combo)
+            if len(ret) < 4:
+                return False
+            case_types = ret[1]
+            case_names = ret[2]
+            for case_type, case_name in zip(case_types, case_names):
+                if case_type == 0 and self._is_seismic_load_case(
+                        case_name,
+                        seismic_load_cases,
+                        active_load_cases,
+                        ):
+                    return True
+                if case_type == 1 and self._is_seismic_combo(
+                        case_name,
+                        seismic_load_cases,
+                        active_combos,
+                        active_load_cases,
+                        ):
+                    return True
             return False
-        _, case_types, case_names, _ = ret[:-1]
-        for case_type, case_name in zip(case_types, case_names):
-            if case_type == 0 and case_name in seismic_load_cases:
+        finally:
+            active_combos.remove(combo)
+
+    def _is_seismic_load_case(
+        self,
+        load_case: str,
+        seismic_load_cases: set,
+        active_load_cases: set,
+        ) -> bool:
+        if load_case in seismic_load_cases:
+            return True
+        if load_case in active_load_cases:
+            return False
+        active_load_cases.add(load_case)
+        try:
+            ret = self.SapModel.LoadCases.GetTypeOAPI(load_case)
+            if not ret:
+                return False
+            load_case_type = ret[0]
+            if load_case_type == 4:
                 return True
-            if case_type == 1 and self._is_seismic_combo(
-                    case_name,
-                    seismic_load_cases,
-                    checked_combos,
-                    ):
-                return True
-        return False
+            if load_case_type == 1:
+                loads = self.SapModel.LoadCases.StaticLinear.GetLoads(load_case)
+            elif load_case_type == 2:
+                loads = self.SapModel.LoadCases.StaticNonlinear.GetLoads(load_case)
+            else:
+                return False
+            if len(loads) < 3:
+                return False
+            for nested_load in loads[2]:
+                if self._is_seismic_load_case(nested_load, seismic_load_cases, active_load_cases):
+                    return True
+            return False
+        finally:
+            active_load_cases.remove(load_case)
     
     def get_table_of_load_combinations(self,
                                        cols: Union[list, None]=['Name', 'LoadName', 'Type', 'SF'],

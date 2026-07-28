@@ -182,6 +182,12 @@ def test_apply_linear_load_combinations():
     assert ret[1:-1] == [(0, 0, 0), ('DL', 'LL', 'EX1'), (1.4, -.3, 0.6)]
     
 
+@open_etabs_file('PowelsRd-Rev26.EDB')
+def test_is_seismic():
+    assert not etabs.load_combinations.is_seismic('0.9G+1.0W(x-)_UP')
+    assert etabs.load_combinations.is_seismic('G+0.3Q-Ex-0.3Ey')
+
+    
 if __name__ == '__main__':
     import etabs_obj
     two_earthquakes = etabs_obj.EtabsModel(backup=True)
