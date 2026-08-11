@@ -56,13 +56,19 @@ class LoadCombination:
         type_: int = 0, # envelop: 1
         ):
         '''
-        Add Envelop Load combination
+        Add a load combination.
+
+        type_ is the combination operator (0=Linear Add, 1=Envelope, ...).
+        Each member is added as a nested load combination (CNameType=1) when its
+        name already exists as a combination; otherwise as a load case (CNameType=0).
         '''
-        self.etabs.SapModel.RespCombo.add(combo_name, type_)
+        self.etabs.SapModel.RespCombo.Add(combo_name, type_)
+        existing_combos = set(self.get_load_combination_names())
         for case_name in load_case_names:
+            cname_type = 1 if case_name in existing_combos else 0
             self.etabs.SapModel.RespCombo.SetCaseList(
                 combo_name,
-                type_, # loadcase=0, loadcombo=1
+                cname_type, # loadcase=0, loadcombo=1
                 case_name,    # cname
                 scale_factor,    # sf
                 )
@@ -79,82 +85,157 @@ class LoadCombination:
             all_load_combos = self.SapModel.RespCombo.GetNameList()[1]
         if type_ == 'ALL':
             return all_load_combos
-        seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
-        seismic_load_combos = []
-        for combo in all_load_combos:
-            if self.is_seismic(
-                        combo,
-                        seismic_load_cases=seismic_load_cases,
-                        ):
-                seismic_load_combos.append(combo)
+        seismic_load_combos = self.get_seismic_load_combinations(all_load_combos)
         if type_ == 'SEISMIC':
-            return seismic_load_combos
+            return list(seismic_load_combos)
         elif type_ == "GRAVITY":
             return set(all_load_combos).difference(seismic_load_combos)
+
+    def get_seismic_load_combinations(
+        self,
+        all_load_combos: Union[list, bool] = None,
+        seismic_load_cases: Union[list, bool] = None,
+        ) -> set:
+        '''
+        Build the set of seismic load combinations.
+
+        Algorithm:
+        - start with an empty seismic-combo set
+        - for each combo, walk its case list
+        - if a member is a nested combo, resolve that combo first (recursively)
+          until only load cases remain
+        - a load case is seismic when it is already known as seismic, is a response
+          spectrum case, or applies at least one seismic load pattern
+        - once a combo is proven seismic it is added to the seismic-combo set; later
+          parents that reference it are accepted immediately without re-walking
+        '''
+        if all_load_combos is None:
+            all_load_combos = self.get_load_combination_names()
+        if seismic_load_cases is None:
+            seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
+        combo_names = set(all_load_combos or [])
+        known_seismic_cases = set(seismic_load_cases or [])
+        seismic_combos = set()
+        for combo in all_load_combos or []:
+            if self._is_seismic_combo(
+                    combo,
+                    known_seismic_cases,
+                    combo_names,
+                    seismic_combos,
+                    set(),
+                    set(),
+                    ):
+                seismic_combos.add(combo)
+        return seismic_combos
         
     def is_seismic(
         self,
         combo: str,
         seismic_load_cases: Union[list, bool] = None,
+        combo_names: Union[set, list, bool] = None,
+        seismic_load_combos: Union[set, list, bool] = None,
         ) -> bool:
         '''
         Return True if the load combination `combo` includes, directly or through
-        nested load combinations, at least one seismic load case.
+        nested load combinations, at least one seismic load case / pattern.
 
-        Recursively inspects the cases and nested combinations that make up `combo`,
-        so a combination that only references another (seismic) combination is also
-        correctly detected as seismic.
+        Nested members are expanded until leaf load cases are reached. A combo that
+        only references another seismic combo is also seismic. Known seismic combos
+        can be passed in `seismic_load_combos` so parents are accepted immediately.
 
         seismic_load_cases: optional pre-computed list of seismic load case names.
         If not provided, it is retrieved from `etabs.load_cases.get_seismic_load_cases()`.
+
+        combo_names: optional set/list of all load combination names used to resolve
+        nested members by name when CNameType is missing or wrong.
+
+        seismic_load_combos: optional growing set of already-known seismic combos.
         '''
         if seismic_load_cases is None:
             seismic_load_cases = self.etabs.load_cases.get_seismic_load_cases()
-        return self._is_seismic_combo(combo, set(seismic_load_cases or []), set(), set())
+        if combo_names is None:
+            combo_names = set(self.get_load_combination_names())
+        else:
+            combo_names = set(combo_names or [])
+        if seismic_load_combos is None:
+            seismic_load_combos = set()
+        elif not isinstance(seismic_load_combos, set):
+            # Keep caller-owned sets mutable so memoization can grow across calls.
+            seismic_load_combos = set(seismic_load_combos or [])
+        known_seismic_cases = set(seismic_load_cases or [])
+        is_seis = self._is_seismic_combo(
+            combo,
+            known_seismic_cases,
+            combo_names,
+            seismic_load_combos,
+            set(),
+            set(),
+            )
+        if is_seis:
+            seismic_load_combos.add(combo)
+        return is_seis
 
     def _is_seismic_combo(
         self,
         combo: str,
         seismic_load_cases: set,
+        combo_names: set,
+        seismic_load_combos: set,
         active_combos: set,
         active_load_cases: set,
         ) -> bool:
         '''
-        Recursive helper for `is_seismic`.
+        Recursive helper for seismic combination detection.
 
-        Walks the items of `combo` (returned by RespCombo.GetCaseList): load cases
-        (case_type == 0) are checked with `_is_seismic_load_case`, nested load
-        combinations (case_type == 1) are checked by recursing into this method.
+        Walk members from RespCombo.GetCaseList:
+        - nested combo (CNameType == 1, known combo name, or already-known seismic
+          combo) is resolved first; known seismic combos short-circuit to True
+        - leaf load cases are checked with `_is_seismic_load_case`
+        - when this combo is seismic it is added to `seismic_load_combos`
 
-        `active_combos` and `active_load_cases` track the combos/load cases that are
-        currently being visited along the current recursion path (not a permanent
-        "visited" set), so that a combination/case is only skipped when it forms a
-        real circular reference, not simply because it was already reached through
-        another branch. Each name is added before descending and removed in the
-        `finally` block once that branch finishes.
+        `active_combos` / `active_load_cases` only guard the current recursion path
+        against circular references.
         '''
+        if combo in seismic_load_combos:
+            return True
         if combo in active_combos:
             return False
         active_combos.add(combo)
         try:
             ret = self.SapModel.RespCombo.GetCaseList(combo)
-            if len(ret) < 4:
+            if ret is None or len(ret) < 3:
                 return False
-            case_types = ret[1]
-            case_names = ret[2]
+            if len(ret) >= 5 and ret[-1] not in (0, None):
+                return False
+            case_types = ret[1] if len(ret) > 1 else ()
+            case_names = ret[2] if len(ret) > 2 else ()
+            if not case_names:
+                return False
+            if not case_types:
+                case_types = (None,) * len(case_names)
             for case_type, case_name in zip(case_types, case_names):
-                if case_type == 0 and self._is_seismic_load_case(
+                is_nested_combo = (
+                    case_type == 1
+                    or case_name in combo_names
+                    or case_name in seismic_load_combos
+                    )
+                if is_nested_combo:
+                    if self._is_seismic_combo(
+                            case_name,
+                            seismic_load_cases,
+                            combo_names,
+                            seismic_load_combos,
+                            active_combos,
+                            active_load_cases,
+                            ):
+                        seismic_load_combos.add(combo)
+                        return True
+                elif self._is_seismic_load_case(
                         case_name,
                         seismic_load_cases,
                         active_load_cases,
                         ):
-                    return True
-                if case_type == 1 and self._is_seismic_combo(
-                        case_name,
-                        seismic_load_cases,
-                        active_combos,
-                        active_load_cases,
-                        ):
+                    seismic_load_combos.add(combo)
                     return True
             return False
         finally:
@@ -167,15 +248,14 @@ class LoadCombination:
         active_load_cases: set,
         ) -> bool:
         '''
-        Recursive helper for `_is_seismic_combo`.
+        Return True if `load_case` is seismic.
 
-        Returns True if `load_case` is in `seismic_load_cases`, is a Response
-        Spectrum case (load case type 4), or is a Static Linear/Nonlinear case that
-        applies at least one seismic load pattern (load pattern type 5).
+        A load case is seismic when:
+        - it is already in `seismic_load_cases`
+        - it is a Response Spectrum case (type 4)
+        - it is Static Linear/Nonlinear and applies a seismic load pattern (type 5)
 
-        `active_load_cases` tracks load cases currently being visited along the
-        current recursion path to guard against circular references; it is not a
-        permanent "visited" set.
+        On success the case name is added to `seismic_load_cases` for later reuse.
         '''
         if load_case in seismic_load_cases:
             return True
@@ -188,6 +268,7 @@ class LoadCombination:
                 return False
             load_case_type = ret[0]
             if load_case_type == 4:
+                seismic_load_cases.add(load_case)
                 return True
             if load_case_type == 1:
                 loads = self.SapModel.LoadCases.StaticLinear.GetLoads(load_case)
@@ -204,6 +285,7 @@ class LoadCombination:
                     continue
                 pattern_type = self.SapModel.LoadPatterns.GetLoadType(load_name)
                 if pattern_type and pattern_type[0] == 5:  # seismic load pattern
+                    seismic_load_cases.add(load_case)
                     return True
             return False
         finally:
