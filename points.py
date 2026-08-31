@@ -80,6 +80,47 @@ class Points:
             x, y, z, _ = self.SapModel.PointObj.GetCoordCartesian(p)
             points_xyz[p] = (x, y, z)
         return points_xyz
+
+    def get_the_points_with_xy(
+            self,
+            x: float,
+            y: float,
+            unit: str='m',
+        ) -> dict:
+        '''
+        Return points with same (x, y) coordinates in model
+        '''
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit("kgf", unit)
+        all_points = self.SapModel.PointObj.GetNameList()[1]
+        similar_points = {}
+        for p in all_points:
+            p_x, p_y, p_z = self.get_point_coordinate(p)
+            if math.isclose(p_x, x, abs_tol=.01) and math.isclose(p_y, y, abs_tol=.01):
+                similar_points[p] = (p_x, p_y, p_z)
+        self.etabs.set_current_unit(*units)
+        return similar_points
+
+    def get_the_points_with_xys(
+            self,
+            xys: list,
+            unit: str='m',
+        ) -> dict:
+        '''
+        Return points with same (x, y) coordinates in model
+        '''
+        units = self.etabs.get_current_unit()
+        self.etabs.set_current_unit("kgf", unit)
+        all_points = self.SapModel.PointObj.GetNameList()[1]
+        similar_points = {}
+        for x, y in xys:
+            similar_points.setdefault((x, y), [])
+            for p in all_points:
+                p_x, p_y, p_z = self.get_point_coordinate(p)
+                if math.isclose(p_x, x, abs_tol=.01) and math.isclose(p_y, y, abs_tol=.01):
+                    similar_points[(x, y)].append(p)
+        self.etabs.set_current_unit(*units)
+        return similar_points
     
     def add_point(self,
         x: float,

@@ -26,6 +26,7 @@ def get_similar_points_in_two_models(
                         similar_points[p1] = p2
                         used_points.append(p2)
                         break
+            used_points.append(p1)
     return similar_points
 
 def transfer_loads_between_two_models(

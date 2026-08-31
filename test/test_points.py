@@ -90,3 +90,12 @@ def test_get_unique_xyz_coordinates():
     # min_x, min_y, min_z, max_x, max_y, max_z
     xs, ys, zs = etabs.points.get_unique_xyz_coordinates()
     assert len(zs) == 7
+
+@pytest.mark.getmethod
+@open_etabs_file('shayesteh.EDB')
+def test_get_the_points_with_xys():
+    xys = [(17.69, 0), (14.69, 0), (-1.1817, 3.4305)]
+    points_coords = etabs.points.get_the_points_with_xys(xys)
+    assert set(points_coords.keys()) == set(xys)
+    assert set(points_coords[xys[0]]) == {'121', '122', '213', '185', '157'}
+    assert len(points_coords[xys[1]]) == 6
