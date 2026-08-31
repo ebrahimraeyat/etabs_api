@@ -6,27 +6,31 @@ def get_similar_points_in_two_models(
         model2,
         level1: float,
         level2: float,
+        left_points: list=None,
+        right_points: list=None
         ):
     '''
     Return points with similar (x, y) coordinates in two models
     '''
     model1.set_current_unit("kgf", 'm')
     model2.set_current_unit("kgf", 'm')
-    left_points = model1.SapModel.PointObj.GetNameList()[1]
-    right_points = model2.SapModel.PointObj.GetNameList()[1]
+    if not left_points:
+        left_points = model1.SapModel.PointObj.GetNameList()[1]
+    if not right_points:
+        right_points = model2.SapModel.PointObj.GetNameList()[1]
     used_points = []
     similar_points = {}
     for p1 in left_points:
-        p1_x, p1_y, p1_z, _ = model1.SapModel.PointObj.GetCoordCartesian(p1)
+        p1_x, p1_y, p1_z = model1.points.get_point_coordinate(p1)
         if math.isclose(p1_z, level1, abs_tol=.01):
             for p2 in right_points:
                 if p2 not in used_points:
-                    p2_x, p2_y, p2_z, _ = model2.SapModel.PointObj.GetCoordCartesian(p2)
+                    p2_x, p2_y, p2_z = model2.points.get_point_coordinate(p2)
                     if math.isclose(p2_z, level2, abs_tol=.01) and math.isclose(p1_x, p2_x, abs_tol=.01) and math.isclose(p1_y, p2_y, abs_tol=.01):
                         similar_points[p1] = p2
                         used_points.append(p2)
                         break
-            used_points.append(p1)
+            similar_points[p1] = None
     return similar_points
 
 def transfer_loads_between_two_models(
@@ -38,8 +42,11 @@ def transfer_loads_between_two_models(
         replace: bool=False,
         multiply: float=1,
         ):
-    similar_points = get_similar_points_in_two_models(model1, model2, level1, level2)
-    not_applied_forces = []
+    '''
+    Transfer loads from model1 to model2
+    '''
+    right_points = model2.SapModel.PointObj.GetNameList()[1]
+    similar_points = get_similar_points_in_two_models(model1, model2, level1, level2, right_points=right_points)
     model1.run_analysis()
     model1.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
     for lc in map_loadcases.keys():
@@ -56,9 +63,11 @@ def transfer_loads_between_two_models(
             my = multiply * -ret[10][i]
             mz = multiply * -ret[11][i]
             lc2 = map_loadcases.get(lc1, None)
-            if lc2 is not None:
-                point_load_value = [fx, fy, fz, mx, my, mz]
-                model2.SapModel.PointObj.SetLoadForce(p2, lc2, point_load_value, replace)
-            else:
-                not_applied_forces.append((p1, lc1))
-    return not_applied_forces
+            if lc2 is None:
+                pat = model1.load_patterns.get_type(lc1)
+                model2.load_patterns.add_load_pattern(lc1, pat)
+            point_load_value = [fx, fy, fz, mx, my, mz]
+            if p2 not in right_points:
+                p2 = model2.points.add_point(*model1.points.get_point_coordinate(p1))
+            model2.SapModel.PointObj.SetLoadForce(p2, lc2, point_load_value, replace)
+    return []

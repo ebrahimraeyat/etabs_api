@@ -51,6 +51,13 @@ class LoadPatterns:
         all_load_patterns = self.SapModel.LoadPatterns.GetNameList()[1]
         return [text for text in all_load_patterns if not text.startswith('~')]
 
+    def get_type(self, pattern_name):
+        '''
+        get a load pattern name and return type number of it appropriate
+        '''
+        type_num = self.SapModel.LoadPatterns.GetLoadType(pattern_name)[0]
+        return type_num
+
     def get_special_load_pattern_names(self, n=5):
         '''
         Each load patterns has a special number ID, for example:

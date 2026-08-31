@@ -68,9 +68,35 @@ def test_transfer_loads_between_two_models():
     model1.close_etabs()
     model2.close_etabs()
 
+def test_transfer_loads_between_two_models_not_existance_points():
+    filename1 = Path(etabs_api_path) / 'test' / 'files' / "shayesteh.EDB"
+    filename2 = Path(etabs_api_path) / 'test' / 'files' / "khiabany.EDB"
+    print(filename1)
+    model1 = etabs_obj.EtabsModel(
+            attach_to_instance=False,
+            backup=False,
+            software="ETABS",
+            model_path=filename1,
+            )
+    model1 = create_test_file(model1)
+    model2 = etabs_obj.EtabsModel(
+            attach_to_instance=False,
+            backup=False,
+            software="ETABS",
+            model_path=filename2,
+            )
+    model2 = create_test_file(model2, filename='test2')
+    storyname_and_levels = model1.story.storyname_and_levels()
+    map_dict = {'DEAD': 'Dead', 'LIVE': 'Live'}
+    for story, level in storyname_and_levels.items():
+        ret = points_functions.transfer_loads_between_two_models(model1, model2, level, level, map_dict)
+        assert len(ret) == 0
+    model1.close_etabs()
+    model2.close_etabs()
+
 
 if __name__ == '__main__':
-    test_get_similar_points_in_two_models()
+    test_transfer_loads_between_two_models_not_existance_points()
 
 
 
