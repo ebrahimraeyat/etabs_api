@@ -400,6 +400,14 @@ class LoadPatterns:
         for name in names:
             self.SapModel.LoadPatterns.Add(name, type_)
         return True
+
+    def add_load_patterns_with_type_number(self,
+                names: list,
+                type_: int,
+                ):
+        for name in names:
+            self.SapModel.LoadPatterns.Add(name, type_)
+        return True
     
     def add_notional_loads(self,
                            loads: list,

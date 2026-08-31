@@ -45,13 +45,17 @@ def transfer_loads_between_two_models(
     '''
     Transfer loads from model1 to model2
     '''
-    right_points = model2.SapModel.PointObj.GetNameList()[1]
+    right_points = list(model2.SapModel.PointObj.GetNameList()[1])
     similar_points = get_similar_points_in_two_models(model1, model2, level1, level2, right_points=right_points)
     model1.run_analysis()
     model1.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
-    for lc in map_loadcases.keys():
-        model1.SapModel.Results.Setup.SetCaseSelectedForOutput(lc)
     model2.unlock_model()
+    for lc1 in map_loadcases.keys():
+        model1.SapModel.Results.Setup.SetCaseSelectedForOutput(lc1)
+        lc2 = map_loadcases.get(lc1, None)
+        if lc2 is None:
+            pat = model1.load_patterns.get_type(lc1)
+            model2.load_patterns.add_load_patterns_with_type_number([lc1], pat)
     for p1, p2 in similar_points.items():
         ret = model1.SapModel.Results.JointReact(p1, 0)
         for i in range(ret[0]):
@@ -62,12 +66,12 @@ def transfer_loads_between_two_models(
             mx = multiply * -ret[9][i]
             my = multiply * -ret[10][i]
             mz = multiply * -ret[11][i]
-            lc2 = map_loadcases.get(lc1, None)
-            if lc2 is None:
-                pat = model1.load_patterns.get_type(lc1)
-                model2.load_patterns.add_load_pattern(lc1, pat)
             point_load_value = [fx, fy, fz, mx, my, mz]
             if p2 not in right_points:
                 p2 = model2.points.add_point(*model1.points.get_point_coordinate(p1))
+                right_points.append(p2)
+            lc2 = map_loadcases.get(lc1, None)
+            if lc2 is None:
+                continue
             model2.SapModel.PointObj.SetLoadForce(p2, lc2, point_load_value, replace)
     return []

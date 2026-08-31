@@ -87,10 +87,12 @@ def test_transfer_loads_between_two_models_not_existance_points():
             )
     model2 = create_test_file(model2, filename='test2')
     storyname_and_levels = model1.story.storyname_and_levels()
-    map_dict = {'DEAD': 'Dead', 'LIVE': 'Live'}
+    map_dict = {'DEAD': 'Dead', 'QX': None}
     for story, level in storyname_and_levels.items():
         ret = points_functions.transfer_loads_between_two_models(model1, model2, level, level, map_dict)
         assert len(ret) == 0
+    loadpatterns2 = model2.load_patterns.get_load_patterns()
+    assert 'QX' in loadpatterns2
     model1.close_etabs()
     model2.close_etabs()
 
