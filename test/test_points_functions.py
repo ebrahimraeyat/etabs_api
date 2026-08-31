@@ -86,13 +86,23 @@ def test_transfer_loads_between_two_models_not_existance_points():
             model_path=filename2,
             )
     model2 = create_test_file(model2, filename='test2')
-    storyname_and_levels = model1.story.storyname_and_levels()
     map_dict = {'DEAD': 'Dead', 'QX': None}
-    for story, level in storyname_and_levels.items():
-        ret = points_functions.transfer_loads_between_two_models(model1, model2, level, level, map_dict)
-        assert len(ret) == 0
+    level1 = 0
+    level2 = -0.3
+    ret = points_functions.transfer_loads_between_two_models(model1, model2, level1, level2, map_dict)
+    assert len(ret) == 11
     loadpatterns2 = model2.load_patterns.get_load_patterns()
     assert 'QX' in loadpatterns2
+    model2.analyze.set_load_cases_to_analyze(['QX'])
+    model2.run_analysis()
+    model2.SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
+    model2.SapModel.Results.Setup.SetCaseSelectedForOutput('QX')
+    for p in ret:
+        r = model2.SapModel.Results.JointReact(p, 0)
+        for i in range(r[0]):
+            lc2 = r[3][i]
+            assert lc2 == 'QX'
+    print(f"Points not exist in model2: {ret}")
     model1.close_etabs()
     model2.close_etabs()
 
